@@ -1,38 +1,78 @@
-.App {
-  text-align: center;
+/* App.css */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.app-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+}
+
+.menu-vertical {
+  background-color: #333;
   color: white;
+  min-width: 200px;
+  transition: width 0.3s ease;
 }
 
-.App-link {
-  color: #61dafb;
+.menu-vertical.fechado {
+  width: 60px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.menu-vertical ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-vertical li {
+  padding: 10px;
+}
+
+.menu-vertical a {
+  color: white;
+  text-decoration: none;
+}
+
+.botao-menu {
+  background: none;
+  color: white;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 10px;
+}
+
+.conteudo {
+  flex: 1;
+}
+
+.menu-horizontal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f4f4f4;
+  border-bottom: 1px solid #ddd;
+}
+
+.barra-pesquisa {
+  width: 300px;
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.perfil-usuario {
+  display: flex;
+  align-items: center;
+}
+
+.foto-perfil {
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.nome-usuario {
+  font-weight: bold;
 }
