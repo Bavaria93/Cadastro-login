@@ -15,6 +15,7 @@ import {
 import { Menu as MenuIcon, Search as SearchIcon } from "@mui/icons-material";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Cadastro from './Cadastro';
+import ListaUsuarios from './ListaUsuarios';
 
 function App() {
   const [menuAberto, setMenuAberto] = useState(true);
@@ -45,6 +46,11 @@ function App() {
               {/* Estilizar o Link diretamente */}
               <Link to="/" style={{ textDecoration: 'none', color: 'white' }}>
                 <ListItemText primary="Home" />
+              </Link>
+            </ListItem>
+            <ListItem button>
+              <Link to="/usuarios" style={{ textDecoration: 'none', color: 'white' }}>
+                <ListItemText primary="Lista de Usuários" />
               </Link>
             </ListItem>
             <ListItem button>
@@ -111,6 +117,7 @@ function App() {
             {/* Definir as rotas */}
             <Routes>
               <Route path="/" element={<Typography>Bem-vindo ao Home!</Typography>} />
+              <Route path="/usuarios" element={<ListaUsuarios />} />
               <Route path="/cadastro" element={<Cadastro/>} />
             </Routes>
           </Box>
