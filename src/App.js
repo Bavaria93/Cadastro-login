@@ -13,6 +13,8 @@ import {
   Box,
 } from "@mui/material";
 import { Menu as MenuIcon, Search as SearchIcon } from "@mui/icons-material";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import Cadastro from './Cadastro';
 
 function App() {
   const [menuAberto, setMenuAberto] = useState(true);
@@ -22,73 +24,99 @@ function App() {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
-      {/* Menu Vertical */}
-      <Drawer
-        variant="persistent"
-        anchor="left"
-        open={menuAberto}
-        sx={{
-          "& .MuiDrawer-paper": {
-            width: menuAberto ? 200 : 60,
-            transition: "width 0.3s",
-            overflowX: "hidden",
-          },
-        }}
-      >
-        <IconButton onClick={alternarMenu} sx={{ margin: "10px" }}>
-          <MenuIcon />
-        </IconButton>
-        <List>
-          <ListItem button>
-            <ListItemText primary="Opção 1" />
-          </ListItem>
-          <ListItem button>
-            <ListItemText primary="Opção 2" />
-          </ListItem>
-          <ListItem button>
-            <ListItemText primary="Opção 3" />
-          </ListItem>
-        </List>
-      </Drawer>
+    <Router>
+      <Box sx={{ display: "flex", height: "100vh" }}>
+        {/* Menu Vertical */}
+        <Drawer
+          variant="persistent"
+          anchor="left"
+          open={menuAberto}
+          sx={{
+            "& .MuiDrawer-paper": {
+              width: menuAberto ? 200 : 60,
+              transition: "width 0.3s",
+              overflowX: "hidden",
+              backgroundColor: "#2C3E50",
+            },
+          }}
+        >
+          <List>
+            <ListItem button>
+              {/* Estilizar o Link diretamente */}
+              <Link to="/" style={{ textDecoration: 'none', color: 'white' }}>
+                <ListItemText primary="Home" />
+              </Link>
+            </ListItem>
+            <ListItem button>
+              <Link to="/cadastro" style={{ textDecoration: 'none', color: 'white' }}>
+                <ListItemText primary="Cadastro de Usuário" />
+              </Link>
+            </ListItem>
+          </List>
+        </Drawer>
 
-      {/* Conteúdo */}
-      <Box sx={{ flex: 1 }}>
-        {/* Menu Horizontal */}
-        <AppBar position="static" color="default">
-          <Toolbar>
-            <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
-              <SearchIcon />
-              <InputBase
-                placeholder="Pesquisar..."
+        {/* Conteúdo Principal */}
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            marginLeft: menuAberto ? "200px" : "0px",
+            transition: "margin-left 0.3s",
+            backgroundColor: "#ECF0F1",
+          }}
+        >
+          {/* Menu Horizontal */}
+          <AppBar position="static" sx={{ backgroundColor: "#3498DB" }}>
+            <Toolbar>
+              <IconButton
+                onClick={alternarMenu}
+                edge="start"
+                sx={{ mr: 2, color: "white" }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Box
                 sx={{
-                  ml: 1,
-                  flex: 1,
-                  backgroundColor: "#f5f5f5",
-                  borderRadius: 1,
-                  padding: "5px 10px",
+                  display: "flex",
+                  alignItems: "center",
+                  flexGrow: 1,
                 }}
-              />
-            </Box>
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <Avatar
-                alt="Foto de Perfil"
-                src="https://via.placeholder.com/40"
-                sx={{ marginRight: 1 }}
-              />
-              <Typography variant="body1">Usuário</Typography>
-            </Box>
-          </Toolbar>
-        </AppBar>
+              >
+                <SearchIcon sx={{ color: "white" }} />
+                <InputBase
+                  placeholder="Pesquisar..."
+                  sx={{
+                    ml: 1,
+                    width: "300px",
+                    backgroundColor: "white",
+                    borderRadius: 1,
+                    padding: "5px 10px",
+                  }}
+                />
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Avatar
+                  alt="Foto de Perfil"
+                  src="https://via.placeholder.com/40"
+                  sx={{ marginRight: 1 }}
+                />
+                <Typography variant="body1" sx={{ color: "white" }}>
+                  Usuário
+                </Typography>
+              </Box>
+            </Toolbar>
+          </AppBar>
 
-        <Box sx={{ padding: "20px" }}>
-          <Typography variant="h4">Bem-vindo!</Typography>
-          <Typography>
-            Este é um exemplo de layout criado com Material UI.
-          </Typography>
+          <Box sx={{ padding: "20px" }}>
+            {/* Definir as rotas */}
+            <Routes>
+              <Route path="/" element={<Typography>Bem-vindo ao Home!</Typography>} />
+              <Route path="/cadastro" element={<Cadastro/>} />
+            </Routes>
+          </Box>
         </Box>
       </Box>
-    </Box>
+    </Router>
   );
 }
 
