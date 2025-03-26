@@ -1,13 +1,28 @@
-import React, { useState } from 'react';
-import { Container, TextField, Button, Box, Typography, IconButton, MenuItem } from '@mui/material';
+import React, { useState, useContext } from 'react';
+import {
+  Container,
+  TextField,
+  Button,
+  Box,
+  Typography,
+  IconButton,
+  MenuItem,
+} from '@mui/material';
 import { Remove } from '@mui/icons-material';
+import { UserContext } from '../contexts/UserContext'; // ajuste o caminho conforme sua estrutura
 
 function Cadastro() {
+  // Consumindo o contexto para acessar o estado global de usuários
+  const { users, setUsers } = useContext(UserContext);
+
+  // Estados dos campos do formulário
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState(''); // Novo campo para senha
   const [cpf, setCpf] = useState('');
   const [phone, setPhone] = useState('');
   const [age, setAge] = useState('');
+  const [addresses, setAddresses] = useState([]);
   const [currentAddress, setCurrentAddress] = useState({
     cep: '',
     logradouro: '',
@@ -16,11 +31,11 @@ function Cadastro() {
     cidade: '',
     estado: '',
   });
-  const [addresses, setAddresses] = useState([]);
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Função para formatar CPF
   const formatCpf = (value) => {
     value = value.replace(/\D/g, '');
     value = value.substring(0, 11);
@@ -34,6 +49,7 @@ function Cadastro() {
     return value;
   };
 
+  // Função para formatar telefone
   const formatPhone = (value) => {
     value = value.replace(/\D/g, '');
     if (value.length > 10) {
@@ -44,6 +60,7 @@ function Cadastro() {
     return value;
   };
 
+  // Função para formatar CEP
   const formatCep = (value) => {
     value = value.replace(/\D/g, '');
     value = value.substring(0, 8);
@@ -53,6 +70,7 @@ function Cadastro() {
     return value;
   };
 
+  // Atualiza os campos do endereço atual
   const handleAddressChange = (field, value) => {
     setCurrentAddress({
       ...currentAddress,
@@ -60,20 +78,7 @@ function Cadastro() {
     });
   };
 
-  const handleAddAddress = () => {
-    if (!validateAddressFields()) return;
-
-    setAddresses([...addresses, currentAddress]);
-    setCurrentAddress({
-      cep: '',
-      logradouro: '',
-      numero: '',
-      bairro: '',
-      cidade: '',
-      estado: '',
-    });
-  };
-
+  // Valida os campos do endereço
   const validateAddressFields = () => {
     let tempErrors = {};
 
@@ -88,6 +93,22 @@ function Cadastro() {
     return Object.values(tempErrors).every((x) => x === '');
   };
 
+  // Adiciona o endereço atual à lista de endereços
+  const handleAddAddress = () => {
+    if (!validateAddressFields()) return;
+
+    setAddresses([...addresses, currentAddress]);
+    setCurrentAddress({
+      cep: '',
+      logradouro: '',
+      numero: '',
+      bairro: '',
+      cidade: '',
+      estado: '',
+    });
+  };
+
+  // Valida os campos do usuário, agora incluindo a senha
   const validateUserFields = () => {
     let tempErrors = {};
 
@@ -99,10 +120,11 @@ function Cadastro() {
       ? (/.+@.+\..+/.test(email) ? '' : 'Email inválido')
       : 'Email é obrigatório';
 
+    // Validação para senha: obrigatório e pode incluir outras regras se necessário
+    tempErrors.senha = senha ? '' : 'Senha é obrigatória';
+
     tempErrors.cpf = cpf.length === 14 ? '' : 'CPF inválido';
-
     tempErrors.phone = phone.length >= 13 ? '' : 'Telefone inválido';
-
     tempErrors.age = age
       ? (/^\d+$/.test(age) ? '' : 'Idade deve incluir apenas números')
       : 'Idade é obrigatória';
@@ -111,26 +133,11 @@ function Cadastro() {
     return Object.values(tempErrors).every((x) => x === '');
   };
 
-  const handleAddUser = (e) => {
-    e.preventDefault();
-  
-    if (!validateUserFields()) return;
-  
-    // Simulação de sucesso
-    setSuccessMessage('Usuário cadastrado com sucesso!');
-    setErrorMessage('');
-    clearForm();
-  };
-  
-
-  const handleRemoveAddress = (index) => {
-    const updatedAddresses = addresses.filter((_, i) => i !== index);
-    setAddresses(updatedAddresses);
-  };
-
+  // Limpa os campos do formulário
   const clearForm = () => {
     setName('');
     setEmail('');
+    setSenha(''); // Limpa o campo senha
     setCpf('');
     setPhone('');
     setAge('');
@@ -146,15 +153,46 @@ function Cadastro() {
     setErrors({});
   };
 
+  // Adiciona um novo usuário ao contexto
+  const handleAddUser = (e) => {
+    e.preventDefault();
+
+    if (!validateUserFields()) return;
+
+    const newUser = {
+      id: users.length + 1,
+      name,
+      email,
+      senha, // Incluindo a senha no cadastro
+      cpf,
+      phone,
+      age,
+      addresses,
+    };
+
+    setUsers([...users, newUser]);
+    setSuccessMessage('Usuário cadastrado com sucesso!');
+    setErrorMessage('');
+    clearForm();
+  };
+
+  // Remove um endereço da lista de endereços
+  const handleRemoveAddress = (index) => {
+    const updatedAddresses = addresses.filter((_, i) => i !== index);
+    setAddresses(updatedAddresses);
+  };
+
   return (
-    <Container maxWidth="sm" style={{ padding: '20px' }}>
+    <Container maxWidth="sm" style={{ padding: '20px', backgroundColor: '#f0f4f8' }}>
       {successMessage && <Typography style={{ color: 'green' }}>{successMessage}</Typography>}
       {errorMessage && <Typography style={{ color: 'red' }}>{errorMessage}</Typography>}
-  
+      <Typography variant="h4" gutterBottom>
+        Cadastro de Usuário
+      </Typography>
       <Box component="form" onSubmit={handleAddUser} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         {/* Formulário de Usuário */}
-        <Box style={{ padding: '20px', borderRadius: '8px' }}>
-          <Typography variant="h6" gutterBottom>Dados Pessoais</Typography>
+        <Box style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '8px' }}>
+          <Typography variant="h6" gutterBottom>Informações do Usuário</Typography>
           <TextField
             label="Nome"
             value={name}
@@ -174,6 +212,16 @@ function Cadastro() {
             helperText={errors.email}
           />
           <TextField
+            label="Senha"
+            type="password"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            fullWidth
+            margin="normal"
+            error={!!errors.senha}
+            helperText={errors.senha}
+          />
+          <TextField
             label="CPF"
             value={cpf}
             onChange={(e) => setCpf(formatCpf(e.target.value))}
@@ -187,7 +235,7 @@ function Cadastro() {
               label="Telefone"
               value={phone}
               onChange={(e) => setPhone(formatPhone(e.target.value))}
-              inputProps={{ maxLength: 15 }}
+              inputProps={{ maxLength: 15 }} // Limite de caracteres para telefone
               fullWidth
               margin="normal"
               error={!!errors.phone}
@@ -204,10 +252,10 @@ function Cadastro() {
             />
           </Box>
         </Box>
-  
+
         {/* Formulário de Endereço */}
-        <Box style={{ padding: '20px', borderRadius: '8px' }}>
-          <Typography variant="h6" gutterBottom>Endereço</Typography>
+        <Box style={{ backgroundColor: '#e0f7fa', padding: '20px', borderRadius: '8px' }}>
+          <Typography variant="h6" gutterBottom>Adicionar Endereço</Typography>
           <TextField
             label="CEP"
             value={currentAddress.cep}
@@ -295,30 +343,38 @@ function Cadastro() {
               <MenuItem value="TO">TO</MenuItem>
             </TextField>
           </Box>
-  
+
           <Box display="flex" justifyContent="center" marginTop="10px">
             <Button onClick={handleAddAddress} variant="contained" color="secondary">
               Salvar Endereço
             </Button>
           </Box>
         </Box>
-  
+
         {/* Lista de Endereços Adicionados */}
-        <Box style={{ marginTop: '20px', padding: '20px', borderRadius: '8px' }}>
+        <Box style={{ marginTop: '20px', backgroundColor: '#ffffff', padding: '20px', borderRadius: '8px' }}>
           <Typography variant="h6" gutterBottom>Lista de Endereços</Typography>
           {addresses.map((address, index) => (
             <Box
               key={index}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid #ddd' }}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '10px',
+                borderBottom: '1px solid #ddd'
+              }}
             >
-              <Typography>{`${address.logradouro}, ${address.numero} - ${address.bairro}, ${address.cidade} - ${address.estado}, CEP: ${address.cep}`}</Typography>
+              <Typography>
+                {`${address.logradouro}, ${address.numero} - ${address.bairro}, ${address.cidade} - ${address.estado}, CEP: ${address.cep}`}
+              </Typography>
               <IconButton onClick={() => handleRemoveAddress(index)} aria-label="Remover Endereço">
                 <Remove />
               </IconButton>
             </Box>
           ))}
         </Box>
-  
+
         {/* Botão de Cadastro */}
         <Box display="flex" justifyContent="center" marginTop="10px">
           <Button type="submit" variant="contained" color="primary">
