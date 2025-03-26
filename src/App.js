@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -11,25 +11,46 @@ import {
   Typography,
   Avatar,
   Box,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import { Menu as MenuIcon, Search as SearchIcon } from "@mui/icons-material";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Cadastro from "./components/Cadastro";
 import ListaUsuarios from "./components/ListaUsuarios";
 import Login from "./components/Login";
-import { UserProvider } from "./contexts/UserContext"; // Certifique-se de que o caminho está correto
+import { UserProvider } from "./contexts/UserContext";
 
 function App() {
   const [menuAberto, setMenuAberto] = useState(true);
-  // Novo estado para armazenar o usuário logado
-  const [loggedUser, setLoggedUser] = useState(null);
+  const [loggedUser, setLoggedUser] = useState(null); // Estado do usuário logado
+  const [anchorEl, setAnchorEl] = useState(null); // Estado para menu dropdown
 
-  const alternarMenu = () => {
-    setMenuAberto(!menuAberto);
+  // Recuperar o usuário logado do localStorage quando a aplicação carrega
+  useEffect(() => {
+    const userFromStorage = localStorage.getItem("loggedUser");
+    if (userFromStorage) {
+      setLoggedUser(JSON.parse(userFromStorage)); // Recupera e atualiza o estado
+    }
+  }, []);
+
+  // Abrir e fechar o menu dropdown
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // Função para logout
+  const handleLogout = () => {
+    setLoggedUser(null); // Remove o usuário logado do estado
+    localStorage.removeItem("loggedUser"); // Remove o usuário do localStorage
+    handleMenuClose();
   };
 
   return (
-    // Envolva todo o aplicativo com o UserProvider para que os dados sejam compartilhados globalmente
     <UserProvider>
       <Router>
         <Box sx={{ display: "flex", height: "100vh" }}>
@@ -94,19 +115,13 @@ function App() {
             <AppBar position="static" sx={{ backgroundColor: "#3498DB" }}>
               <Toolbar>
                 <IconButton
-                  onClick={alternarMenu}
+                  onClick={() => setMenuAberto(!menuAberto)}
                   edge="start"
                   sx={{ mr: 2, color: "white" }}
                 >
                   <MenuIcon />
                 </IconButton>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    flexGrow: 1,
-                  }}
-                >
+                <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
                   <SearchIcon sx={{ color: "white" }} />
                   <InputBase
                     placeholder="Pesquisar..."
@@ -119,10 +134,11 @@ function App() {
                     }}
                   />
                 </Box>
-                <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Box sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+                  onClick={handleMenuOpen} // Adiciona o evento de clique ao Box
+                >
                   <Avatar
                     alt="Foto de Perfil"
-                    // Se o usuário logado possuir uma foto, use-a; se não, use um placeholder
                     src={
                       loggedUser && loggedUser.foto
                         ? loggedUser.foto
@@ -131,15 +147,32 @@ function App() {
                     sx={{ marginRight: 1 }}
                   />
                   <Typography variant="body1" sx={{ color: "white" }}>
-                    {/* Se há usuário logado, exibe "Bem-vindo, [name]", senão "Usuário" */}
                     {loggedUser && loggedUser.name ? loggedUser.name : "Usuário"}
                   </Typography>
                 </Box>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  sx={{
+                    mt: 1.5, // Margem adicional para posicionar abaixo do AppBar
+                  }}
+                >
+                  <MenuItem
+                    onClick={() => {
+                      handleMenuClose();
+                      console.log("Editar usuário clicado");
+                    }}
+                  >
+                    Editar Usuário
+                  </MenuItem>
+                  <MenuItem onClick={handleLogout}>Sair</MenuItem>
+                </Menu>
               </Toolbar>
             </AppBar>
 
             <Box sx={{ padding: "20px" }}>
-              {/* Definição das rotas */}
+              {/* Rotas */}
               <Routes>
                 <Route
                   path="/"
@@ -153,10 +186,12 @@ function App() {
                 />
                 <Route path="/usuarios" element={<ListaUsuarios />} />
                 <Route path="/cadastro" element={<Cadastro />} />
-                {/* Passa a função 'setLoggedUser' para que o Login atualize o usuário logado */}
                 <Route
                   path="/login"
-                  element={<Login setLoggedUser={setLoggedUser} />}
+                  element={<Login setLoggedUser={(user) => {
+                    setLoggedUser(user);
+                    localStorage.setItem("loggedUser", JSON.stringify(user)); // Salva no localStorage
+                  }} />}
                 />
               </Routes>
             </Box>
