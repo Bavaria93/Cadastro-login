@@ -1,15 +1,12 @@
+// src/App.js
 import React, { useState, useEffect } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import {
   BrowserRouter as Router,
-  Routes,
-  Route,
   useNavigate,
   useLocation,
 } from "react-router-dom";
-import Cadastro from "./components/Cadastro";
-import ListaUsuarios from "./components/ListaUsuarios";
-import Login from "./components/Login";
+import MainRoutes from "./routes/MainRoutes";
 import { UserProvider } from "./contexts/UserContext";
 import VerticalMenu from "./components/VerticalMenu";
 import HorizontalMenu from "./components/HorizontalMenu";
@@ -70,7 +67,7 @@ function App() {
   return (
     <UserProvider>
       <Box sx={{ display: "flex", height: "100vh" }}>
-        {/* Renderiza os menus somente se não estivermos na página de Login */}
+        {/* Renderiza os menus somente se NÃO estivermos na página de Login */}
         {!isLoginPage && (
           <>
             <VerticalMenu
@@ -99,39 +96,13 @@ function App() {
             flexGrow: 1,
             marginLeft: isLoginPage ? "0px" : mainMarginLeft,
             marginTop: isLoginPage ? "0px" : "64px",
-            transition: isLoginPage ? "none" : "margin-left 0.3s, margin-top 0.3s",
+            // Aqui você pode manter ou remover transições de layout conforme necessário
+            transition: "none",
             backgroundColor: "#ECF0F1",
             width: "100%",
           }}
         >
-          <Box sx={{ padding: "20px" }}>
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <Typography variant="h5" sx={{ transition: "none" }}>
-                    {loggedUser && loggedUser.name
-                      ? `Bem-vindo ao Home, ${loggedUser.name}!`
-                      : "Bem-vindo ao Home!"}
-                  </Typography>
-                }
-              />
-              <Route path="/usuarios" element={<ListaUsuarios />} />
-              <Route path="/cadastro" element={<Cadastro />} />
-              <Route
-                path="/login"
-                element={
-                  <Login
-                    setLoggedUser={(user) => {
-                      setLoggedUser(user);
-                      localStorage.setItem("loggedUser", JSON.stringify(user));
-                    }}
-                  />
-                }
-              />
-            </Routes>
-
-          </Box>
+          <MainRoutes loggedUser={loggedUser} setLoggedUser={setLoggedUser} />
         </Box>
       </Box>
     </UserProvider>
