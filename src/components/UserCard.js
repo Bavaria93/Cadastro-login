@@ -66,62 +66,67 @@ const UserCard = ({
         </IconButton>
       </Box>
       <CardContent
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          justifyContent: "center",
-          textAlign: "center",
-          padding: "10px",
-          borderRadius: "5px",
-          width: "90%",
-          height: "100px",
-        }}
-      >
-        <Typography
-          variant="h5"
-          style={{
-            fontWeight: "bold",
-            marginBottom: "10px",
-            padding: "3px",
-            borderRadius: "3px",
-          }}
-        >
-          {user.name}
-        </Typography>
-        <Typography
-          variant="body1"
-          color="textSecondary"
-          style={{
-            marginBottom: "5px",
-            padding: "2px",
-            borderRadius: "3px",
-          }}
-        >
-          Email: {user.email}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          style={{
-            marginBottom: "5px",
-            padding: "2px",
-            borderRadius: "3px",
-          }}
-        >
-          Criado em: {formatDate(user.createdAt)}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          style={{
-            padding: "2px",
-            borderRadius: "3px",
-          }}
-        >
-          Atualizado em: {formatDate(user.updatedAt)}
-        </Typography>
-      </CardContent>
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    justifyContent: "center",
+    textAlign: "left",
+    padding: "10px",
+    borderRadius: "5px",
+    width: "100%",
+    height: "150px",
+  }}
+>
+  <Typography
+    variant="h5"
+    style={{
+      fontWeight: "bold",
+      marginBottom: "10px",
+      padding: "3px",
+      borderRadius: "3px",
+      fontSize: "18px", // Define um tamanho fixo para evitar mudanças
+    }}
+  >
+    {user.name}
+  </Typography>
+  <Typography
+    variant="body1"
+    color="textSecondary"
+    style={{
+      marginBottom: "5px",
+      padding: "2px",
+      borderRadius: "3px",
+      fontSize: "14px", // Define um tamanho fixo para evitar mudanças
+    }}
+  >
+    Email: {user.email}
+  </Typography>
+  <Typography
+    variant="body2"
+    color="textSecondary"
+    style={{
+      marginBottom: "5px",
+      padding: "2px",
+      borderRadius: "3px",
+      fontSize: "12px", // Define um tamanho fixo para evitar mudanças
+    }}
+  >
+    Criado em: {formatDate(user.createdAt)}
+  </Typography>
+  <Typography
+    variant="body2"
+    color="textSecondary"
+    style={{
+      padding: "2px",
+      borderRadius: "3px",
+      fontSize: "12px", // Define um tamanho fixo para evitar mudanças
+    }}
+  >
+    Atualizado em: {formatDate(user.updatedAt)}
+  </Typography>
+</CardContent>
+
     </Card>
   );
 };

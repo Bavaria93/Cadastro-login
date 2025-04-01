@@ -85,7 +85,7 @@ function ListaUsuarios() {
           color="primary"
           onClick={() => navigate("/cadastro")} // Navega para a página de cadastro
         >
-          Cadastro de Usuário
+          Cadastrar Usuário
         </Button>
       </Box>
 

@@ -10,6 +10,7 @@ import VerticalMenu from "./components/VerticalMenu";
 import HorizontalMenu from "./components/HorizontalMenu";
 import MainRoutes from "./routes/MainRoutes";
 import EditUserDialog from "./components/EditUserDialog";
+import Breadcrumb from "./components/Breadcrumb"; // Novo: Exibe o caminho da página
 
 function AppWrapper() {
   return (
@@ -119,8 +120,11 @@ function App() {
               : "margin-left 0.3s, margin-top 0.3s",
             backgroundColor: "#ECF0F1",
             width: "100%",
+            position: "relative", // Necessário para posicionar Breadcrumb corretamente
           }}
         >
+          {/* Exibe o caminho da página (exceto Login) */}
+          {!isLoginPage && <Breadcrumb />}
           <MainRoutes loggedUser={loggedUser} setLoggedUser={setLoggedUser} />
         </Box>
 
