@@ -34,16 +34,6 @@ const VerticalMenu = ({ menuAberto, drawerWidthExpanded, drawerWidthCollapsed })
             <ListItemText primary="Lista de Usuários" />
           </Link>
         </ListItem>
-        <ListItem button>
-          <Link to="/cadastro" style={{ textDecoration: "none", color: "white" }}>
-            <ListItemText primary="Cadastro de Usuário" />
-          </Link>
-        </ListItem>
-        <ListItem button>
-          <Link to="/login" style={{ textDecoration: "none", color: "white" }}>
-            <ListItemText primary="Logar" />
-          </Link>
-        </ListItem>
       </List>
     </Drawer>
   );

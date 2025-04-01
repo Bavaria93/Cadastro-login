@@ -1,147 +1,103 @@
-// src/components/ListaUsuarios.js
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from "react";
 import {
   Container,
-  Card,
-  CardContent,
   Grid,
-  Typography,
-  IconButton,
-  Box,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  TextField,
-} from '@mui/material';
-import { Edit, Delete } from '@mui/icons-material';
-import { UserContext } from '../contexts/UserContext';
+  Typography,
+  Box,
+} from "@mui/material";
+import { UserContext } from "../contexts/UserContext";
+import UserCard from "../components/UserCard";
+import EditUserDialog from "../components/EditUserDialog";
+import { useNavigate } from "react-router-dom";
 
 function ListaUsuarios() {
   const { users, setUsers } = useContext(UserContext);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null); // Dados do usuário selecionado
-  
-  const handleOpenEditDialog = (user) => {
-    setSelectedUser(user);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+
+  const navigate = useNavigate();
+
+  // Inicializa as datas para usuários existentes (caso não estejam definidas)
+  useEffect(() => {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) => ({
+        ...user,
+        createdAt: user.createdAt || new Date().toISOString(),
+        updatedAt: user.updatedAt || user.createdAt || new Date().toISOString(),
+      }))
+    );
+  }, [setUsers]);
+
+  const handleOpenEditDialog = (userId) => {
+    setSelectedUserId(userId);
     setEditDialogOpen(true);
   };
 
   const handleCloseEditDialog = () => {
-    setSelectedUser(null);
+    setSelectedUserId(null);
     setEditDialogOpen(false);
   };
 
-  const handleUpdateUser = () => {
-    if (selectedUser) {
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === selectedUser.id ? { ...selectedUser } : user
-        )
-      );
-      handleCloseEditDialog();
-    }
-  };
-
   const handleOpenDeleteDialog = (user) => {
-    setSelectedUser(user);
+    setSelectedUserId(user.id);
     setDeleteDialogOpen(true);
   };
 
   const handleCloseDeleteDialog = () => {
-    setSelectedUser(null);
+    setSelectedUserId(null);
     setDeleteDialogOpen(false);
   };
 
   const handleDeleteUser = () => {
-    if (selectedUser) {
+    if (selectedUserId) {
       setUsers((prevUsers) =>
-        prevUsers.filter((user) => user.id !== selectedUser.id)
+        prevUsers.filter((user) => user.id !== selectedUserId)
       );
       handleCloseDeleteDialog();
     }
   };
 
-  // Função auxiliar para formatar datas
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return date.toLocaleDateString(); // Você pode personalizar o formato conforme necessário
+    return date.toLocaleDateString();
   };
 
   return (
-    <Container maxWidth="md" style={{ padding: '20px' }}>
+    <Container maxWidth="md" style={{ padding: "20px" }}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={3}
+      >
+        <Typography variant="h4" component="h1">
+          Lista de Usuários
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/cadastro")} // Navega para a página de cadastro
+        >
+          Cadastro de Usuário
+        </Button>
+      </Box>
+
       <Grid container spacing={3} justifyContent="center">
         {users.map((user) => (
           <Grid item key={user.id} xs={12} sm={6} md={4}>
-            <Card
-              style={{
-                width: '100%',
-                maxWidth: '300px',
-                height: '300px',
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                border: '1px solid #dee2e6',
-                borderRadius: '10px',
-              }}
-            >
-              <Box
-                position="absolute"
-                top="10px"
-                right="10px"
-                display="flex"
-                gap="10px"
-              >
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOpenEditDialog(user);
-                  }}
-                  style={{ borderRadius: '50%' }}
-                >
-                  <Edit />
-                </IconButton>
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOpenDeleteDialog(user);
-                  }}
-                  style={{ borderRadius: '50%' }}
-                >
-                  <Delete />
-                </IconButton>
-              </Box>
-              <CardContent
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  textAlign: 'left',
-                  padding: '10px',
-                  borderRadius: '5px',
-                  width: '100%',
-                  height: '200px',
-                }}
-              >
-                <Typography variant="h5" style={{ fontWeight: 'bold', marginBottom: '10px' }}>
-                  {user.name}
-                </Typography>
-                <Typography variant="body1" color="textSecondary" style={{ marginBottom: '5px' }}>
-                  Email: {user.email}
-                </Typography>
-                <Typography variant="body2" color="textSecondary" style={{ marginBottom: '5px' }}>
-                  Criado em: {formatDate(user.createdAt)}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Atualizado em: {formatDate(user.updatedAt)}
-                </Typography>
-              </CardContent>
-            </Card>
+            <UserCard
+              user={user}
+              onEdit={() => handleOpenEditDialog(user.id)}
+              onDelete={() => handleOpenDeleteDialog(user)}
+              formatDate={formatDate}
+            />
           </Grid>
         ))}
       </Grid>
@@ -151,7 +107,11 @@ function ListaUsuarios() {
         <DialogTitle>Confirmar Exclusão</DialogTitle>
         <DialogContent>
           <Typography>
-            Tem certeza de que deseja excluir o usuário <strong>{selectedUser?.name}</strong>?
+            Tem certeza de que deseja excluir o usuário{" "}
+            <strong>
+              {users.find((user) => user.id === selectedUserId)?.name}
+            </strong>
+            ?
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -164,53 +124,13 @@ function ListaUsuarios() {
         </DialogActions>
       </Dialog>
 
-      {/* Diálogo de Edição */}
-      <Dialog open={editDialogOpen} onClose={handleCloseEditDialog} maxWidth="md" fullWidth>
-        <DialogTitle>Editar Usuário</DialogTitle>
-        <DialogContent>
-          <Box
-            component="form"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '15px',
-              padding: '20px',
-              borderRadius: '8px',
-            }}
-          >
-            <TextField
-              label="Nome"
-              value={selectedUser?.name || ''}
-              onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })}
-              fullWidth
-              margin="normal"
-            />
-            <TextField
-              label="Email"
-              value={selectedUser?.email || ''}
-              onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
-              fullWidth
-              margin="normal"
-            />
-            <TextField
-              label="Senha"
-              type="password"
-              value={selectedUser?.senha || ''}
-              onChange={(e) => setSelectedUser({ ...selectedUser, senha: e.target.value })}
-              fullWidth
-              margin="normal"
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseEditDialog} color="primary">
-            Cancelar
-          </Button>
-          <Button onClick={handleUpdateUser} color="primary">
-            Salvar
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Modal de edição do usuário */}
+      <EditUserDialog
+        open={editDialogOpen}
+        onClose={handleCloseEditDialog}
+        user={users.find((user) => user.id === selectedUserId)}
+        setUsers={setUsers}
+      />
     </Container>
   );
 }

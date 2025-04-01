@@ -22,6 +22,7 @@ const HorizontalMenu = ({
   loggedUser,
   handleMenuClose,
   handleLogout,
+  handleEditUser, // Nova prop para disparar a edição de usuário
 }) => {
   return (
     <AppBar
@@ -35,7 +36,11 @@ const HorizontalMenu = ({
       }}
     >
       <Toolbar>
-        <IconButton onClick={alternarMenu} edge="start" sx={{ mr: 2, color: "white" }}>
+        <IconButton
+          onClick={alternarMenu}
+          edge="start"
+          sx={{ mr: 2, color: "white" }}
+        >
           <MenuIcon />
         </IconButton>
         <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
@@ -85,7 +90,10 @@ const HorizontalMenu = ({
           <MenuItem
             onClick={() => {
               handleMenuClose();
-              console.log("Editar usuário clicado");
+              // Direciona para EditUserDialog chamando a função passada por handleEditUser
+              if (handleEditUser) {
+                handleEditUser();
+              }
             }}
           >
             Editar Usuário
