@@ -11,8 +11,9 @@ const Breadcrumb = () => {
     "/": "Home",
     "/usuarios": "Lista de Usuários",
     "/cadastroUsuario": "Cadastro de Usuário",
-    "/perfis": "Lista de Usuários",
+    "/perfis": "Lista de Perfis",
     "/cadastroPerfil": "Cadastro de Perfil",
+    "/associarPerfil": "Associar Perfil",
   };
 
   // Obtém o título atual com base na rota

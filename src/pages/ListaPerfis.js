@@ -15,50 +15,51 @@ import ProfileCard from "../components/ProfileCard"; // Agora usamos o ProfileCa
 import EditUserDialog from "../components/EditUserDialog"; // Se for EditPerfilDialog, atualize também
 import { useNavigate } from "react-router-dom";
 
-function ListaPerfis() {
+function ListaProfiles() {
   // Trabalha com perfis usando valores do contexto
   const { profiles, setProfiles } = useContext(UserContext);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [selectedPerfilId, setSelectedPerfilId] = useState(null);
+  const [selectedProfileId, setSelectedProfileId] = useState(null);
 
   const navigate = useNavigate();
 
   // Inicializa as datas para perfis existentes (caso não estejam definidas)
   useEffect(() => {
     setProfiles((prevProfiles) =>
-      prevProfiles.map((perfil) => ({
-        ...perfil,
-        createdAt: perfil.createdAt || new Date().toISOString(),
-        updatedAt: perfil.updatedAt || perfil.createdAt || new Date().toISOString(),
+      prevProfiles.map((profile) => ({
+        ...profile,
+        createdAt: profile.createdAt || new Date().toISOString(),
+        updatedAt:
+          profile.updatedAt || profile.createdAt || new Date().toISOString(),
       }))
     );
   }, [setProfiles]);
 
-  const handleOpenEditDialog = (perfilId) => {
-    setSelectedPerfilId(perfilId);
+  const handleOpenEditDialog = (profileId) => {
+    setSelectedProfileId(profileId);
     setEditDialogOpen(true);
   };
 
   const handleCloseEditDialog = () => {
-    setSelectedPerfilId(null);
+    setSelectedProfileId(null);
     setEditDialogOpen(false);
   };
 
-  const handleOpenDeleteDialog = (perfil) => {
-    setSelectedPerfilId(perfil.id);
+  const handleOpenDeleteDialog = (profile) => {
+    setSelectedProfileId(profile.id);
     setDeleteDialogOpen(true);
   };
 
   const handleCloseDeleteDialog = () => {
-    setSelectedPerfilId(null);
+    setSelectedProfileId(null);
     setDeleteDialogOpen(false);
   };
 
-  const handleDeletePerfil = () => {
-    if (selectedPerfilId) {
+  const handleDeleteProfile = () => {
+    if (selectedProfileId) {
       setProfiles((prevProfiles) =>
-        prevProfiles.filter((perfil) => perfil.id !== selectedPerfilId)
+        prevProfiles.filter((profile) => profile.id !== selectedProfileId)
       );
       handleCloseDeleteDialog();
     }
@@ -100,12 +101,12 @@ function ListaPerfis() {
       </Box>
 
       <Grid container spacing={3} justifyContent="center">
-        {profiles.map((perfil) => (
-          <Grid item key={perfil.id} xs={12} sm={6} md={4}>
+        {profiles.map((profile) => (
+          <Grid item key={profile.id} xs={12} sm={6} md={4}>
             <ProfileCard
-              profile={perfil}
-              onEdit={() => handleOpenEditDialog(perfil.id)}
-              onDelete={() => handleOpenDeleteDialog(perfil)}
+              profile={profile}
+              onEdit={() => handleOpenEditDialog(profile.id)}
+              onDelete={() => handleOpenDeleteDialog(profile)}
               formatDate={formatDate}
             />
           </Grid>
@@ -119,7 +120,9 @@ function ListaPerfis() {
           <Typography>
             Tem certeza de que deseja excluir o perfil{" "}
             <strong>
-              {profiles.find((perfil) => perfil.id === selectedPerfilId)?.type}
+              {profiles.find(
+                (profile) => profile.id === selectedProfileId
+              )?.type}
             </strong>
             ?
           </Typography>
@@ -128,7 +131,7 @@ function ListaPerfis() {
           <Button onClick={handleCloseDeleteDialog} color="primary">
             Cancelar
           </Button>
-          <Button onClick={handleDeletePerfil} color="secondary">
+          <Button onClick={handleDeleteProfile} color="secondary">
             Excluir
           </Button>
         </DialogActions>
@@ -138,11 +141,11 @@ function ListaPerfis() {
       <EditUserDialog
         open={editDialogOpen}
         onClose={handleCloseEditDialog}
-        user={profiles.find((perfil) => perfil.id === selectedPerfilId)}
+        user={profiles.find((profile) => profile.id === selectedProfileId)}
         setUsers={setProfiles}
       />
     </Container>
   );
 }
 
-export default ListaPerfis;
+export default ListaProfiles;
