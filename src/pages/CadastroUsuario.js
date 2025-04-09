@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { Container, TextField, Button, Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { UserContext } from '../contexts/UserContext'; // Ajuste o caminho conforme sua estrutura
 
-function Cadastro() {
+function CadastroUsuario() {
   const { users, setUsers } = useContext(UserContext);
 
   // Estados dos campos do formulário
@@ -72,12 +72,11 @@ function Cadastro() {
 
   return (
     <Container maxWidth="sm" style={{ padding: '20px', backgroundColor: '#f0f4f8' }}>
-      <Typography variant="h4" gutterBottom>
-        Cadastro de Usuário
-      </Typography>
       <Box component="form" onSubmit={handleAddUser} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <Box style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '8px' }}>
-          <Typography variant="h6" gutterBottom>Informações do Usuário</Typography>
+          <Typography variant="h4" gutterBottom>
+            Cadastro de Usuário
+          </Typography>
           <TextField
             label="Nome Completo"
             value={name}
@@ -106,12 +105,11 @@ function Cadastro() {
             error={!!errors.senha}
             helperText={errors.senha}
           />
-        </Box>
-
-        <Box display="flex" justifyContent="center" marginTop="10px">
-          <Button type="submit" variant="contained" color="primary">
-            Cadastrar Usuário
-          </Button>
+          <Box display="flex" justifyContent="center" marginTop="10px">
+            <Button type="submit" variant="contained" color="primary">
+              Cadastrar Usuário
+            </Button>
+          </Box>
         </Box>
       </Box>
 
@@ -131,4 +129,4 @@ function Cadastro() {
   );
 }
 
-export default Cadastro;
+export default CadastroUsuario;

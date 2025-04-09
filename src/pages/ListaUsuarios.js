@@ -83,7 +83,7 @@ function ListaUsuarios() {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => navigate("/cadastro")} // Navega para a página de cadastro
+          onClick={() => navigate("/cadastroUsuario")} // Navega para a página de cadastro
         >
           Cadastrar Usuário
         </Button>

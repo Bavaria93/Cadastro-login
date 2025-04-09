@@ -1,8 +1,8 @@
 // src/components/Login.js
 import React, { useState, useContext } from 'react';
-import { Container, TextField, Button, Box, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../contexts/UserContext'; // ajuste o caminho
+import { Container, TextField, Button, Box, Typography, Link } from '@mui/material';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { UserContext } from '../contexts/UserContext'; // ajuste o caminho conforme sua estrutura
 
 function Login({ setLoggedUser }) {
   const { users } = useContext(UserContext);
@@ -23,7 +23,7 @@ function Login({ setLoggedUser }) {
       setErro('');
       // Atualiza o usuário logado na aplicação
       setLoggedUser(foundUser);
-      // Redireciona para a página Home, sem uso de alert()
+      // Redireciona para a página Home
       navigate('/');
     } else {
       setErro('Email ou senha inválidos!');
@@ -39,7 +39,20 @@ function Login({ setLoggedUser }) {
         padding={4}
         boxShadow={3}
         borderRadius={8}
+        position="relative"
       >
+        {/* Link para cadastro de usuário */}
+        <Box position="absolute" top={10} right={10}>
+          <Link
+            component={RouterLink}
+            to="/cadastroUsuario"
+            variant="body2"
+            color="primary"
+            underline="hover"
+          >
+            Não tem uma conta?
+          </Link>
+        </Box>
         <Typography variant="h4" gutterBottom>
           Login
         </Typography>

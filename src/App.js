@@ -10,7 +10,7 @@ import VerticalMenu from "./components/VerticalMenu";
 import HorizontalMenu from "./components/HorizontalMenu";
 import MainRoutes from "./routes/MainRoutes";
 import EditUserDialog from "./components/EditUserDialog";
-import Breadcrumb from "./components/Breadcrumb"; // Novo: Exibe o caminho da página
+import Breadcrumb from "./components/Breadcrumb"; // Exibe o caminho da página
 
 function AppWrapper() {
   return (
@@ -21,7 +21,7 @@ function AppWrapper() {
 }
 
 function App() {
-  // Estados para menu lateral, usuário logado, dropdown e modal de edição
+  // Estados do aplicativo
   const [menuAberto, setMenuAberto] = useState(true);
   const [loggedUser, setLoggedUser] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -30,35 +30,44 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Determina se estamos na página de Login
-  const isLoginPage =
-    location.pathname === "/login" || location.pathname === "/login/";
+  // Normaliza o pathname removendo a barra final (se houver)
+  const normalizedPath = location.pathname.replace(/\/$/, "");
 
-  // Larguras definidas para o menu lateral quando aberto ou fechado
+  // Definindo as rotas públicas para o redirecionamento (usuário não autenticado pode acessar)
+  // Essas rotas não exigem autenticação.
+  const publicPaths = ["/login", "/cadastroUsuario"];
+  const isPublicAuthPage = publicPaths.includes(normalizedPath);
+
+  // Para exibir os menus, queremos escondê-los somente na página de login.
+  const hideMenus = normalizedPath === "/login";
+
+  // Larguras para o menu lateral (quando exibido)
   const drawerWidthExpanded = 200;
   const drawerWidthCollapsed = 0;
 
-  // Cálculo do posicionamento e largura da área de conteúdo
+  // Cálculo do posicionamento e largura da área de conteúdo.
+  // Se os menus estiverem exibidos, aplicamos um margin-left; caso contrário, 0.
   const mainMarginLeft =
-    !isLoginPage && menuAberto ? `${drawerWidthExpanded}px` : "0px";
+    !hideMenus && menuAberto ? `${drawerWidthExpanded}px` : "0px";
   const appBarLeft =
-    !isLoginPage && menuAberto ? `${drawerWidthExpanded}px` : "0px";
+    !hideMenus && menuAberto ? `${drawerWidthExpanded}px` : "0px";
   const appBarWidth =
-    !isLoginPage && menuAberto
+    !hideMenus && menuAberto
       ? `calc(100% - ${drawerWidthExpanded}px)`
       : "100%";
 
-  // Tenta recuperar o usuário logado pelo localStorage e redireciona para Login, se necessário
+  // Verifica se há um usuário logado; se não houver e a página não for pública,
+  // redireciona para a página de login.
   useEffect(() => {
     const userFromStorage = localStorage.getItem("loggedUser");
     if (userFromStorage) {
       setLoggedUser(JSON.parse(userFromStorage));
-    } else if (!isLoginPage) {
+    } else if (!isPublicAuthPage) {
       navigate("/login");
     }
-  }, [navigate, location.pathname, isLoginPage]);
+  }, [navigate, normalizedPath, isPublicAuthPage]);
 
-  // Função que alterna o estado do menu lateral
+  // Função para alternar o menu lateral
   const alternarMenu = () => setMenuAberto(!menuAberto);
 
   // Funções para abrir/fechar o dropdown do menu
@@ -69,11 +78,11 @@ function App() {
   const handleLogout = () => {
     setLoggedUser(null);
     localStorage.removeItem("loggedUser");
-    handleMenuClose();
+    setAnchorEl(null);
     navigate("/login");
   };
 
-  // Ao clicar na opção "Editar Usuário" do dropdown, abrimos o modal de edição
+  // Funções para abrir/fechar o modal de edição do usuário
   const handleEditUser = () => {
     setEditDialogOpen(true);
   };
@@ -85,8 +94,8 @@ function App() {
   return (
     <UserProvider>
       <Box sx={{ display: "flex", height: "100vh" }}>
-        {/* Renderiza os menus se não estiver na página de Login */}
-        {!isLoginPage && (
+        {/* Renderiza os menus se não estivermos na página de login */}
+        {!hideMenus && (
           <>
             <VerticalMenu
               menuAberto={menuAberto}
@@ -103,7 +112,7 @@ function App() {
               loggedUser={loggedUser}
               handleMenuClose={handleMenuClose}
               handleLogout={handleLogout}
-              handleEditUser={handleEditUser}  // Passa a função para abrir o EditUserDialog
+              handleEditUser={handleEditUser}
             />
           </>
         )}
@@ -113,22 +122,22 @@ function App() {
           component="main"
           sx={{
             flexGrow: 1,
-            marginLeft: isLoginPage ? "0px" : mainMarginLeft,
-            marginTop: isLoginPage ? "0px" : "64px",
-            transition: isLoginPage
+            marginLeft: hideMenus ? "0px" : mainMarginLeft,
+            marginTop: hideMenus ? "0px" : "64px",
+            transition: hideMenus
               ? "none"
-              : "margin-left 0.3s, margin-top 0.3s",
+              : "margin-left none, margin-top 0.3s",
             backgroundColor: "#ECF0F1",
             width: "100%",
-            position: "relative", // Necessário para posicionar Breadcrumb corretamente
+            position: "relative", // Necessário para posicionar o Breadcrumb corretamente
           }}
         >
-          {/* Exibe o caminho da página (exceto Login) */}
-          {!isLoginPage && <Breadcrumb />}
+          {/* Exibe o Breadcrumb se não estivermos na página de login */}
+          {!hideMenus && <Breadcrumb />}
           <MainRoutes loggedUser={loggedUser} setLoggedUser={setLoggedUser} />
         </Box>
 
-        {/* Modal de edição do usuário (EditUserDialog) */}
+        {/* Modal de edição do usuário */}
         {loggedUser && (
           <EditUserDialog
             open={editDialogOpen}

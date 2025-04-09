@@ -10,7 +10,9 @@ const Breadcrumb = () => {
   const pageTitles = {
     "/": "Home",
     "/usuarios": "Lista de Usuários",
-    "/cadastro": "Cadastro de Usuário",
+    "/cadastroUsuario": "Cadastro de Usuário",
+    "/perfis": "Lista de Usuários",
+    "/cadastroPerfil": "Cadastro de Perfil",
   };
 
   // Obtém o título atual com base na rota
@@ -22,15 +24,13 @@ const Breadcrumb = () => {
 
   return (
     <Box
-      position="absolute"
-      top={15}
-      left={20}
       sx={{
         display: "flex",
-        alignItems: "center", // Garante alinhamento vertical correto
-        gap: 1.2,
-        opacity: 0.9,
+        alignItems: "center",
+        gap: 1.2, opacity: 0.9,
         color: "#34495E",
+        mt: 2, // Margem superior para separar do conteúdo
+        ml: 2, // Opcional: margem à esquerda
       }}
     >
       <Typography variant="h6" fontWeight="bold">
@@ -44,7 +44,7 @@ const Breadcrumb = () => {
           </span>
         ))}
       </Typography>
-    </Box>
+    </Box >
   );
 };
 

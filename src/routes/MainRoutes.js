@@ -2,8 +2,11 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { Box } from "@mui/material";
 import Home from "../pages/Home";
-import Cadastro from "../pages/Cadastro";
+import CadastroUsuario from "../pages/CadastroUsuario";
 import ListaUsuarios from "../pages/ListaUsuarios";
+import CadastroPerfil from "../pages/CadastroPerfil";
+import ListaPerfis from "../pages/ListaPerfis";
+import AssociarPerfil from "../pages/AssociarPerfil";
 import Login from "../pages/Login";
 
 const MainRoutes = ({ loggedUser, setLoggedUser }) => {
@@ -12,7 +15,10 @@ const MainRoutes = ({ loggedUser, setLoggedUser }) => {
       <Routes>
         <Route path="/" element={<Home loggedUser={loggedUser} />} />
         <Route path="/usuarios" element={<ListaUsuarios />} />
-        <Route path="/cadastro" element={<Cadastro />} />
+        <Route path="/cadastroUsuario" element={<CadastroUsuario />} />
+        <Route path="/perfis" element={<ListaPerfis />} />
+        <Route path="/cadastroPerfil" element={<CadastroPerfil />} />
+        <Route path="/associarPerfil" element={<AssociarPerfil />} />
         <Route
           path="/login"
           element={

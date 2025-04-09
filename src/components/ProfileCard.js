@@ -8,19 +8,18 @@ import {
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 
-// Componente para exibir as informações de cada usuário sem cores de fundo
-const UserCard = ({
-  user,
+const ProfileCard = ({
+  profile,
   onEdit,
   onDelete,
-  formatDate, // Função para formatar a data
+  formatDate, // função para formatar a data
 }) => {
   return (
     <Card
       style={{
         width: "100%",
         maxWidth: "250px",
-        height: "250px",
+        height: "180px", // Altura menor que a do card de usuário
         position: "relative",
         display: "flex",
         flexDirection: "column",
@@ -44,7 +43,7 @@ const UserCard = ({
         <IconButton
           onClick={(e) => {
             e.stopPropagation();
-            onEdit(user);
+            onEdit(profile);
           }}
           style={{
             borderRadius: "50%",
@@ -55,7 +54,7 @@ const UserCard = ({
         <IconButton
           onClick={(e) => {
             e.stopPropagation();
-            onDelete(user);
+            onDelete(profile);
           }}
           style={{
             borderRadius: "50%",
@@ -74,32 +73,19 @@ const UserCard = ({
           padding: "10px",
           borderRadius: "5px",
           width: "100%",
-          height: "150px",
         }}
       >
         <Typography
-          variant="h5"
+          variant="h6"
           style={{
             fontWeight: "bold",
-            marginBottom: "10px",
+            marginBottom: "5px",
             padding: "3px",
             borderRadius: "3px",
-            fontSize: "18px", // Define um tamanho fixo para evitar mudanças
+            fontSize: "16px",
           }}
         >
-          {user.name}
-        </Typography>
-        <Typography
-          variant="body1"
-          color="textSecondary"
-          style={{
-            marginBottom: "5px",
-            padding: "2px",
-            borderRadius: "3px",
-            fontSize: "14px", // Define um tamanho fixo para evitar mudanças
-          }}
-        >
-          Email: {user.email}
+          Tipo: {profile.type}
         </Typography>
         <Typography
           variant="body2"
@@ -108,10 +94,10 @@ const UserCard = ({
             marginBottom: "5px",
             padding: "2px",
             borderRadius: "3px",
-            fontSize: "12px", // Define um tamanho fixo para evitar mudanças
+            fontSize: "14px",
           }}
         >
-          Criado em: {formatDate(user.createdAt)}
+          Descrição: {profile.description}
         </Typography>
         <Typography
           variant="body2"
@@ -119,14 +105,14 @@ const UserCard = ({
           style={{
             padding: "2px",
             borderRadius: "3px",
-            fontSize: "12px", // Define um tamanho fixo para evitar mudanças
+            fontSize: "12px",
           }}
         >
-          Atualizado em: {formatDate(user.updatedAt)}
+          Criado em: {formatDate(profile.createdAt)}
         </Typography>
       </CardContent>
     </Card>
   );
 };
 
-export default UserCard;
+export default ProfileCard;
