@@ -1,4 +1,4 @@
-// src/pages/AssociarProfile.js
+// src/pages/AssociarPerfil.js
 import React, { useContext, useState } from "react";
 import {
   Container,
@@ -14,7 +14,7 @@ import {
 import { UserContext } from "../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 
-function AssociarProfile() {
+function AssociarPerfil() {
   const navigate = useNavigate();
 
   // Obtém usuários e profiles do contexto global
@@ -135,4 +135,4 @@ function AssociarProfile() {
   );
 }
 
-export default AssociarProfile;
+export default AssociarPerfil;

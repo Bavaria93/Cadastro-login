@@ -1,6 +1,17 @@
+import axios from 'axios';
 import React, { useState, useContext } from 'react';
-import { Container, TextField, Button, Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import { UserContext } from '../contexts/UserContext'; // Ajuste o caminho conforme sua estrutura
+import {
+  Container,
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material';
+import { UserContext } from '../contexts/UserContext';
 
 function CadastroUsuario() {
   const { users, setUsers } = useContext(UserContext);
@@ -40,8 +51,8 @@ function CadastroUsuario() {
     setErrors({});
   };
 
-  // Adiciona um novo usuário ao contexto
-  const handleAddUser = (e) => {
+  // Adiciona um novo usuário chamando o backend
+  const handleAddUser = async (e) => {
     e.preventDefault();
 
     if (!validateUserFields()) {
@@ -51,18 +62,31 @@ function CadastroUsuario() {
       return;
     }
 
-    const newUser = {
-      id: users.length + 1,
+    // Importante: adequar os nomes dos campos para o que o backend espera.
+    // Observe que no seu schema.py, os campos são "nome", "email" e "senha".
+    const newUserData = {
       name,
       email,
       senha,
     };
 
-    setUsers([...users, newUser]);
-    setDialogMessage('Usuário cadastrado com sucesso!');
-    setDialogType('success');
-    setDialogOpen(true);
-    clearForm();
+    try {
+      const response = await axios.post('http://localhost:8000/usuarios/', newUserData);
+      // Note que o backend retorna o usuário criado (com id, data_criacao, etc.)
+      const novoUsuario = response.data;
+      // Atualize o contexto com o novo usuário, se desejar
+      setUsers([...users, novoUsuario]);
+
+      setDialogMessage('Usuário cadastrado com sucesso!');
+      setDialogType('success');
+      setDialogOpen(true);
+      clearForm();
+    } catch (error) {
+      console.error(error);
+      setDialogMessage(error.response?.data?.detail || 'Erro ao cadastrar usuário');
+      setDialogType('error');
+      setDialogOpen(true);
+    }
   };
 
   // Fecha o Dialog
@@ -72,7 +96,11 @@ function CadastroUsuario() {
 
   return (
     <Container maxWidth="sm" style={{ padding: '20px', backgroundColor: '#f0f4f8' }}>
-      <Box component="form" onSubmit={handleAddUser} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <Box
+        component="form"
+        onSubmit={handleAddUser}
+        style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}
+      >
         <Box style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '8px' }}>
           <Typography variant="h4" gutterBottom>
             Cadastro de Usuário
