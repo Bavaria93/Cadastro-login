@@ -16,19 +16,25 @@ import { useNavigate } from "react-router-dom";
 
 function AssociarProfile() {
   const navigate = useNavigate();
-  
+
   // Obtém usuários e profiles do contexto global
   const { users, setUsers, profiles } = useContext(UserContext);
 
   // Estado para armazenar a pesquisa de usuário
   const [searchUser, setSearchUser] = useState("");
   const [selectedUser, setSelectedUser] = useState(null); // Apenas um usuário pode ser selecionado
-  const [selectedProfiles, setSelectedProfiles] = useState([]); // Lista de perfis selecionados
+  const [selectedProfiles, setSelectedProfiles] = useState([]); // Lista de profiles selecionados
 
-  // Filtrar usuários com base na pesquisa
-  const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(searchUser.toLowerCase())
-  );
+  const filteredUsers = users.filter((user) => {
+    const search = searchUser.toLowerCase().trim();
+    const name = (user.name || "").toLowerCase();
+    const email = (user.email || "").toLowerCase();
+
+    // Debug: imprime no console os valores para cada usuário
+    console.log("Busca:", search, "| Nome:", name, "| Email:", email);
+
+    return name.includes(search) || email.includes(search);
+  });
 
   // Atualiza o usuário selecionado
   const handleSelectUser = (user) => {
@@ -47,17 +53,17 @@ function AssociarProfile() {
   // Função para associar os profiles ao usuário selecionado
   const handleAssociarProfile = () => {
     if (!selectedUser || selectedProfiles.length === 0) {
-      alert("Selecione um usuário e ao menos um perfil!");
+      alert("Selecione um usuário e ao menos um profile!");
       return;
     }
 
-    // Atualiza o usuário com os novos perfis
+    // Atualiza o usuário com os novos profiles
     const updatedUsers = users.map((user) =>
       user.id === selectedUser.id ? { ...user, profiles: selectedProfiles } : user
     );
 
     setUsers(updatedUsers);
-    alert("Perfis associados com sucesso!");
+    alert("Profiles associados com sucesso!");
   };
 
   return (
@@ -74,7 +80,10 @@ function AssociarProfile() {
         label="Pesquisar Usuário"
         variant="outlined"
         value={searchUser}
-        onChange={(e) => setSearchUser(e.target.value)}
+        onChange={(e) => {
+          setSearchUser(e.target.value);
+          console.log("Valor da pesquisa:", e.target.value);
+        }}
         style={{ marginBottom: "20px" }}
       />
 
@@ -93,8 +102,8 @@ function AssociarProfile() {
         ))}
       </List>
 
-      {/* Lista de perfis disponíveis */}
-      <Typography variant="h6">Selecione os Perfis:</Typography>
+      {/* Lista de profiles disponíveis */}
+      <Typography variant="h6">Selecione os Profiles:</Typography>
       <List>
         {profiles.map((profile) => (
           <ListItem
@@ -111,7 +120,7 @@ function AssociarProfile() {
       {/* Botões de ação */}
       <Box mt={4}>
         <Button variant="contained" color="primary" onClick={handleAssociarProfile}>
-          Associar Perfis
+          Associar Profiles
         </Button>
         <Button
           variant="outlined"
