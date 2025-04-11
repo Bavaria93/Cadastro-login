@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import {
   Card,
   CardContent,
@@ -8,13 +9,29 @@ import {
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 
-// Componente para exibir as informações de cada usuário sem cores de fundo
-const UserCard = ({
-  user,
-  onEdit,
-  onDelete,
-  formatDate, // Função para formatar a data
-}) => {
+// Componente para exibir as informações de cada usuário
+const UserCard = ({ user, onEdit, onDelete, formatDate }) => {
+  // Função para tratar o clique no botão de edição
+  const handleEditClick = (e) => {
+    e.stopPropagation();
+    onEdit(user);
+  };
+
+  // Função para tratar o clique no botão de exclusão,
+  // realizando a chamada ao backend para remover o usuário.
+  const handleDeleteClick = async (e) => {
+    e.stopPropagation();
+    try {
+      await axios.delete(`http://localhost:8000/usuarios/${user.id}`);
+      // Após a exclusão no backend, chama o callback para atualizar a lista no frontend
+      if (onDelete) {
+        onDelete(user);
+      }
+    } catch (error) {
+      console.error("Erro ao excluir usuário:", error);
+    }
+  };
+
   return (
     <Card
       style={{
@@ -42,10 +59,7 @@ const UserCard = ({
         }}
       >
         <IconButton
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(user);
-          }}
+          onClick={handleEditClick}
           style={{
             borderRadius: "50%",
           }}
@@ -53,10 +67,7 @@ const UserCard = ({
           <Edit />
         </IconButton>
         <IconButton
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(user);
-          }}
+          onClick={handleDeleteClick}
           style={{
             borderRadius: "50%",
           }}
@@ -84,7 +95,7 @@ const UserCard = ({
             marginBottom: "10px",
             padding: "3px",
             borderRadius: "3px",
-            fontSize: "18px", // Define um tamanho fixo para evitar mudanças
+            fontSize: "18px", // Tamanho fixo
           }}
         >
           {user.name}
@@ -96,7 +107,7 @@ const UserCard = ({
             marginBottom: "5px",
             padding: "2px",
             borderRadius: "3px",
-            fontSize: "14px", // Define um tamanho fixo para evitar mudanças
+            fontSize: "14px", // Tamanho fixo
           }}
         >
           Email: {user.email}
@@ -108,10 +119,10 @@ const UserCard = ({
             marginBottom: "5px",
             padding: "2px",
             borderRadius: "3px",
-            fontSize: "12px", // Define um tamanho fixo para evitar mudanças
+            fontSize: "12px", // Tamanho fixo
           }}
         >
-          Criado em: {formatDate(user.createdAt)}
+          Criado em: {formatDate(user.creation_date)}
         </Typography>
         <Typography
           variant="body2"
@@ -119,10 +130,10 @@ const UserCard = ({
           style={{
             padding: "2px",
             borderRadius: "3px",
-            fontSize: "12px", // Define um tamanho fixo para evitar mudanças
+            fontSize: "12px", // Tamanho fixo
           }}
         >
-          Atualizado em: {formatDate(user.updatedAt)}
+          Atualizado em: {formatDate(user.update_date)}
         </Typography>
       </CardContent>
     </Card>

@@ -14,6 +14,7 @@ import { UserContext } from "../contexts/UserContext";
 import UserCard from "../components/UserCard";
 import EditUserDialog from "../components/EditUserDialog";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function ListaUsuarios() {
   const { users, setUsers } = useContext(UserContext);
@@ -23,15 +24,18 @@ function ListaUsuarios() {
 
   const navigate = useNavigate();
 
-  // Inicializa as datas para usuários existentes (caso não estejam definidas)
+  // Busca os usuários do backend
   useEffect(() => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => ({
-        ...user,
-        createdAt: user.createdAt || new Date().toISOString(),
-        updatedAt: user.updatedAt || user.createdAt || new Date().toISOString(),
-      }))
-    );
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/usuarios/");
+        setUsers(response.data);
+      } catch (error) {
+        console.error("Erro ao buscar usuários: ", error);
+      }
+    };
+
+    fetchUsers();
   }, [setUsers]);
 
   const handleOpenEditDialog = (userId) => {
@@ -54,12 +58,19 @@ function ListaUsuarios() {
     setDeleteDialogOpen(false);
   };
 
-  const handleDeleteUser = () => {
+  // Função integrada para excluir usuário no backend
+  const handleDeleteUser = async () => {
     if (selectedUserId) {
-      setUsers((prevUsers) =>
-        prevUsers.filter((user) => user.id !== selectedUserId)
-      );
-      handleCloseDeleteDialog();
+      try {
+        await axios.delete(`http://localhost:8000/usuarios/${selectedUserId}`);
+        // Atualiza o estado removendo o usuário excluído
+        setUsers((prevUsers) =>
+          prevUsers.filter((user) => user.id !== selectedUserId)
+        );
+        handleCloseDeleteDialog();
+      } catch (error) {
+        console.error("Erro ao excluir usuário: ", error);
+      }
     }
   };
 
@@ -71,19 +82,14 @@ function ListaUsuarios() {
 
   return (
     <Container maxWidth="md" style={{ padding: "20px" }}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-      >
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h1">
           Lista de Usuários
         </Typography>
         <Button
           variant="contained"
           color="primary"
-          onClick={() => navigate("/cadastroUsuario")} // Navega para a página de cadastro
+          onClick={() => navigate("/cadastroUsuario")}
         >
           Cadastrar Usuário
         </Button>
@@ -124,7 +130,7 @@ function ListaUsuarios() {
         </DialogActions>
       </Dialog>
 
-      {/* Modal de edição do usuário */}
+      {/* Modal de Edição do Usuário */}
       <EditUserDialog
         open={editDialogOpen}
         onClose={handleCloseEditDialog}

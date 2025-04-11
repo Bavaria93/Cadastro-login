@@ -8,6 +8,7 @@ import {
   Box,
   TextField,
 } from "@mui/material";
+import axios from "axios";
 
 const EditUserDialog = ({ open, onClose, user, setLoggedUser }) => {
   // Estado local para armazenar os dados editados do usuário
@@ -28,14 +29,27 @@ const EditUserDialog = ({ open, onClose, user, setLoggedUser }) => {
     }));
   };
 
-  // Ao salvar, atualiza o estado global e o localStorage, e fecha o dialog
-  const handleSave = () => {
-    // Atualiza o usuário no estado
-    setLoggedUser(editedUser);
-    // Atualiza o usuário no localStorage para persistência
-    localStorage.setItem("loggedUser", JSON.stringify(editedUser));
-    // Fecha o modal
-    onClose();
+  // Ao salvar, faz a requisição PUT para atualizar o usuário no backend
+  // e atualiza o estado global e o localStorage com a resposta
+  const handleSave = async () => {
+    try {
+      // Supondo que o endpoint para atualizar seja:
+      // http://localhost:8000/usuarios/{usuario_id}
+      const response = await axios.put(
+        `http://localhost:8000/usuarios/${editedUser.id}`,
+        editedUser
+      );
+      const updatedUser = response.data;
+      // Atualiza o usuário no estado global
+      setLoggedUser(updatedUser);
+      // Atualiza o usuário no localStorage para persistência
+      localStorage.setItem("loggedUser", JSON.stringify(updatedUser));
+    } catch (error) {
+      console.error("Erro ao atualizar usuário:", error);
+    } finally {
+      // Fecha o diálogo, independentemente do sucesso ou falha da requisição
+      onClose();
+    }
   };
 
   // Se ainda não houver dados para editar, retorne null

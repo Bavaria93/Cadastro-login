@@ -11,12 +11,12 @@ import {
   Box,
 } from "@mui/material";
 import { UserContext } from "../contexts/UserContext"; // Se possuir um contexto exclusivo para perfis, renomeie-o
-import ProfileCard from "../components/ProfileCard"; // Agora usamos o ProfileCard para exibir perfis
-import EditUserDialog from "../components/EditUserDialog"; // Se for EditPerfilDialog, atualize também
+import ProfileCard from "../components/ProfileCard"; // Componente para exibir perfis
+import EditProfileDialog from "../components/EditProfileDialog"; // Novo diálogo específico para perfis
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-function ListaProfiles() {
-  // Trabalha com perfis usando valores do contexto
+function ListaPerfis() {
   const { profiles, setProfiles } = useContext(UserContext);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -24,16 +24,18 @@ function ListaProfiles() {
 
   const navigate = useNavigate();
 
-  // Inicializa as datas para perfis existentes (caso não estejam definidas)
+  // Busca os perfis do backend ao montar o componente
   useEffect(() => {
-    setProfiles((prevProfiles) =>
-      prevProfiles.map((profile) => ({
-        ...profile,
-        createdAt: profile.createdAt || new Date().toISOString(),
-        updatedAt:
-          profile.updatedAt || profile.createdAt || new Date().toISOString(),
-      }))
-    );
+    const fetchProfiles = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/perfis/");
+        setProfiles(response.data);
+      } catch (error) {
+        console.error("Erro ao buscar perfis:", error);
+      }
+    };
+
+    fetchProfiles();
   }, [setProfiles]);
 
   const handleOpenEditDialog = (profileId) => {
@@ -56,12 +58,18 @@ function ListaProfiles() {
     setDeleteDialogOpen(false);
   };
 
-  const handleDeleteProfile = () => {
+  // Exclui o perfil via backend
+  const handleDeleteProfile = async () => {
     if (selectedProfileId) {
-      setProfiles((prevProfiles) =>
-        prevProfiles.filter((profile) => profile.id !== selectedProfileId)
-      );
-      handleCloseDeleteDialog();
+      try {
+        await axios.delete(`http://localhost:8000/perfis/${selectedProfileId}`);
+        setProfiles((prevProfiles) =>
+          prevProfiles.filter((profile) => profile.id !== selectedProfileId)
+        );
+        handleCloseDeleteDialog();
+      } catch (error) {
+        console.error("Erro ao excluir perfil:", error);
+      }
     }
   };
 
@@ -73,12 +81,7 @@ function ListaProfiles() {
 
   return (
     <Container maxWidth="md" style={{ padding: "20px" }}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-      >
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h1">
           Lista de Perfis
         </Typography>
@@ -86,14 +89,14 @@ function ListaProfiles() {
           <Button
             variant="contained"
             color="primary"
-            onClick={() => navigate("/cadastroPerfil")} // Navega para a página de cadastro
+            onClick={() => navigate("/cadastroPerfil")}
           >
             Cadastrar Perfil
           </Button>
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => navigate("/associarPerfil")} // Navega para a página de associação
+            onClick={() => navigate("/associarPerfil")}
           >
             Associar Perfil aos Usuários
           </Button>
@@ -120,9 +123,7 @@ function ListaProfiles() {
           <Typography>
             Tem certeza de que deseja excluir o perfil{" "}
             <strong>
-              {profiles.find(
-                (profile) => profile.id === selectedProfileId
-              )?.type}
+              {profiles.find((profile) => profile.id === selectedProfileId)?.type}
             </strong>
             ?
           </Typography>
@@ -138,14 +139,14 @@ function ListaProfiles() {
       </Dialog>
 
       {/* Modal de edição do perfil */}
-      <EditUserDialog
+      <EditProfileDialog
         open={editDialogOpen}
         onClose={handleCloseEditDialog}
-        user={profiles.find((profile) => profile.id === selectedProfileId)}
-        setUsers={setProfiles}
+        profile={profiles.find((profile) => profile.id === selectedProfileId)}
+        setProfiles={setProfiles}
       />
     </Container>
   );
 }
 
-export default ListaProfiles;
+export default ListaPerfis;

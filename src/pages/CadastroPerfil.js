@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Container, TextField, Button, Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import { UserContext } from '../contexts/UserContext'; // Ajuste o caminho conforme a estrutura do seu projeto
+import { UserContext } from '../contexts/UserContext'; // Ajuste o caminho conforme sua estrutura
+import axios from 'axios';
 
 function CadastroPerfil() {
   // Supondo que o contexto contenha 'profiles' e 'setProfiles'
@@ -14,7 +15,7 @@ function CadastroPerfil() {
   const [dialogMessage, setDialogMessage] = useState('');
   const [dialogType, setDialogType] = useState('success'); // 'success' ou 'error'
 
-  // Validação dos campos do perfil: verifica apenas se cada campo foi preenchido
+  // Validação dos campos do perfil: verifica se cada campo foi preenchido e segue a mesma lógica de validação
   const validatePerfilFields = () => {
     let tempErrors = {};
 
@@ -22,7 +23,10 @@ function CadastroPerfil() {
       ? (/^[A-Za-z\s]+$/.test(type.trim()) ? '' : 'Tipo não pode incluir números ou caracteres especiais')
       : 'Tipo é obrigatório';
       
-    tempErrors.description = description.trim() ? '' : 'Descrição é obrigatória';
+    // Validação da descrição igual à do tipo
+    tempErrors.description = description.trim()
+      ? (/^[A-Za-z\s]+$/.test(description.trim()) ? '' : 'Descrição não pode incluir números ou caracteres especiais')
+      : 'Descrição é obrigatória';
 
     setErrors(tempErrors);
     return Object.values(tempErrors).every((msg) => msg === '');
@@ -35,8 +39,8 @@ function CadastroPerfil() {
     setErrors({});
   };
 
-  // Adiciona um novo perfil ao contexto
-  const handleAddPerfil = (e) => {
+  // Conecta com o backend para cadastrar o perfil
+  const handleAddPerfil = async (e) => {
     e.preventDefault();
 
     if (!validatePerfilFields()) {
@@ -46,17 +50,25 @@ function CadastroPerfil() {
       return;
     }
 
-    const newPerfil = {
-      id: profiles.length + 1,
+    const newPerfilData = {
       type,
       description,
     };
 
-    setProfiles([...profiles, newPerfil]);
-    setDialogMessage('Perfil cadastrado com sucesso!');
-    setDialogType('success');
-    setDialogOpen(true);
-    clearForm();
+    try {
+      const response = await axios.post('http://localhost:8000/perfis/', newPerfilData);
+      const newPerfil = response.data;
+      setProfiles([...profiles, newPerfil]);
+      setDialogMessage('Perfil cadastrado com sucesso!');
+      setDialogType('success');
+      setDialogOpen(true);
+      clearForm();
+    } catch (error) {
+      console.error("Erro ao cadastrar perfil:", error);
+      setDialogMessage(error.response?.data?.detail || 'Erro ao cadastrar perfil');
+      setDialogType('error');
+      setDialogOpen(true);
+    }
   };
 
   // Fecha o Dialog

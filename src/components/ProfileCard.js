@@ -108,7 +108,7 @@ const ProfileCard = ({
             fontSize: "12px",
           }}
         >
-          Criado em: {formatDate(profile.createdAt)}
+          Criado em: {formatDate(profile.creation_date)}
         </Typography>
       </CardContent>
     </Card>
