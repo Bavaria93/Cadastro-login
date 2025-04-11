@@ -1,5 +1,4 @@
-// src/pages/AssociarPerfil.js
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -13,77 +12,104 @@ import {
 } from "@mui/material";
 import { UserContext } from "../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function AssociarPerfil() {
   const navigate = useNavigate();
+  const { users, setUsers, profiles, setProfiles } = useContext(UserContext);
 
-  // Obtém usuários e profiles do contexto global
-  const { users, setUsers, profiles } = useContext(UserContext);
-
-  // Estado para armazenar a pesquisa de usuário
   const [searchUser, setSearchUser] = useState("");
-  const [selectedUser, setSelectedUser] = useState(null); // Apenas um usuário pode ser selecionado
-  const [selectedProfiles, setSelectedProfiles] = useState([]); // Lista de profiles selecionados
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedProfiles, setSelectedProfiles] = useState([]);
+
+  // Busca usuários do backend ao montar o componente
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/usuarios/");
+        setUsers(response.data);
+      } catch (error) {
+        console.error("Erro ao buscar usuários:", error);
+      }
+    };
+
+    const fetchProfiles = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/perfis/");
+        setProfiles(response.data);
+      } catch (error) {
+        console.error("Erro ao buscar perfis:", error);
+      }
+    };
+
+    fetchUsers();
+    fetchProfiles();
+  }, [setUsers, setProfiles]);
 
   const filteredUsers = users.filter((user) => {
     const search = searchUser.toLowerCase().trim();
     const name = (user.name || "").toLowerCase();
     const email = (user.email || "").toLowerCase();
-
-    // Debug: imprime no console os valores para cada usuário
-    console.log("Busca:", search, "| Nome:", name, "| Email:", email);
-
     return name.includes(search) || email.includes(search);
   });
 
-  // Atualiza o usuário selecionado
   const handleSelectUser = (user) => {
     setSelectedUser(user);
+    setSelectedProfiles(user.perfis || []);
   };
 
-  // Alterna a seleção dos profiles na lista
   const handleToggleProfile = (profileId) => {
     setSelectedProfiles((prev) =>
       prev.includes(profileId)
-        ? prev.filter((id) => id !== profileId) // Remove se já estiver selecionado
-        : [...prev, profileId] // Adiciona se não estiver selecionado
+        ? prev.filter((id) => id !== profileId)
+        : [...prev, profileId]
     );
   };
 
-  // Função para associar os profiles ao usuário selecionado
-  const handleAssociarProfile = () => {
+  const handleAssociarProfile = async () => {
     if (!selectedUser || selectedProfiles.length === 0) {
-      alert("Selecione um usuário e ao menos um profile!");
+      alert("Selecione um usuário e ao menos um perfil!");
       return;
     }
 
-    // Atualiza o usuário com os novos profiles
-    const updatedUsers = users.map((user) =>
-      user.id === selectedUser.id ? { ...user, profiles: selectedProfiles } : user
-    );
+    try {
+      const response = await axios.put(
+        `http://localhost:8000/usuarios/${selectedUser.id}`,
+        {
+          name: selectedUser.name,
+          email: selectedUser.email,
+          perfis: selectedProfiles, // Envia a lista de IDs dos perfis associados
+        }
+      );
 
-    setUsers(updatedUsers);
-    alert("Profiles associados com sucesso!");
+      const updatedUser = response.data;
+
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === updatedUser.id ? updatedUser : user
+        )
+      );
+
+      alert("Perfis associados com sucesso!");
+    } catch (error) {
+      console.error("Erro ao associar perfis:", error);
+      alert("Erro ao associar perfis. Tente novamente.");
+    }
   };
 
   return (
     <Container maxWidth="md" style={{ padding: "20px" }}>
       <Box mb={3}>
-        <Typography variant="h4" component="h1">
-          Associação de Perfis ao Usuário
-        </Typography>
+        <Typography variant="h4">Associação de Perfis ao Usuário</Typography>
       </Box>
 
-      {/* Barra de pesquisa para buscar usuários */}
+      {/* Campo de pesquisa de usuários */}
       <TextField
         fullWidth
         label="Pesquisar Usuário"
         variant="outlined"
         value={searchUser}
-        onChange={(e) => {
-          setSearchUser(e.target.value);
-          console.log("Valor da pesquisa:", e.target.value);
-        }}
+        onChange={(e) => setSearchUser(e.target.value)}
         style={{ marginBottom: "20px" }}
       />
 
@@ -102,15 +128,11 @@ function AssociarPerfil() {
         ))}
       </List>
 
-      {/* Lista de profiles disponíveis */}
-      <Typography variant="h6">Selecione os Profiles:</Typography>
+      {/* Lista de perfis disponíveis */}
+      <Typography variant="h6">Selecione os Perfis:</Typography>
       <List>
         {profiles.map((profile) => (
-          <ListItem
-            key={profile.id}
-            button
-            onClick={() => handleToggleProfile(profile.id)}
-          >
+          <ListItem key={profile.id} button onClick={() => handleToggleProfile(profile.id)}>
             <Checkbox checked={selectedProfiles.includes(profile.id)} />
             <ListItemText primary={profile.type} secondary={profile.description} />
           </ListItem>
@@ -120,7 +142,7 @@ function AssociarPerfil() {
       {/* Botões de ação */}
       <Box mt={4}>
         <Button variant="contained" color="primary" onClick={handleAssociarProfile}>
-          Associar Profiles
+          Associar Perfis
         </Button>
         <Button
           variant="outlined"
