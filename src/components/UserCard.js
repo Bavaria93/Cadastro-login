@@ -95,7 +95,7 @@ const UserCard = ({ user, onEdit, onDelete, formatDate }) => {
             marginBottom: "10px",
             padding: "3px",
             borderRadius: "3px",
-            fontSize: "18px", // Tamanho fixo
+            fontSize: "18px",
           }}
         >
           {user.name}
@@ -107,7 +107,7 @@ const UserCard = ({ user, onEdit, onDelete, formatDate }) => {
             marginBottom: "5px",
             padding: "2px",
             borderRadius: "3px",
-            fontSize: "14px", // Tamanho fixo
+            fontSize: "14px",
           }}
         >
           Email: {user.email}
@@ -119,7 +119,7 @@ const UserCard = ({ user, onEdit, onDelete, formatDate }) => {
             marginBottom: "5px",
             padding: "2px",
             borderRadius: "3px",
-            fontSize: "12px", // Tamanho fixo
+            fontSize: "12px",
           }}
         >
           Criado em: {formatDate(user.creation_date)}
@@ -128,12 +128,29 @@ const UserCard = ({ user, onEdit, onDelete, formatDate }) => {
           variant="body2"
           color="textSecondary"
           style={{
+            marginBottom: "5px",
             padding: "2px",
             borderRadius: "3px",
-            fontSize: "12px", // Tamanho fixo
+            fontSize: "12px",
           }}
         >
           Atualizado em: {formatDate(user.update_date)}
+        </Typography>
+        {/* Exibindo os perfis associados */}
+        <Typography
+          variant="body2"
+          color="textSecondary"
+          style={{
+            padding: "2px",
+            borderRadius: "3px",
+            fontSize: "12px",
+          }}
+        >
+          Perfis:{" "}
+          {user.perfis && user.perfis.length > 0
+  ? user.perfis.map((perfil) => perfil.type).join(", ")
+  : "Nenhum"}
+
         </Typography>
       </CardContent>
     </Card>

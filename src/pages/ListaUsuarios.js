@@ -24,11 +24,12 @@ function ListaUsuarios() {
 
   const navigate = useNavigate();
 
-  // Busca os usuários do backend
+  // Busca os usuários do backend com perfis carregados
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get("http://localhost:8000/usuarios/");
+        console.log("Dados retornados da API:", response.data); // Depuração
         setUsers(response.data);
       } catch (error) {
         console.error("Erro ao buscar usuários: ", error);
@@ -63,7 +64,6 @@ function ListaUsuarios() {
     if (selectedUserId) {
       try {
         await axios.delete(`http://localhost:8000/usuarios/${selectedUserId}`);
-        // Atualiza o estado removendo o usuário excluído
         setUsers((prevUsers) =>
           prevUsers.filter((user) => user.id !== selectedUserId)
         );

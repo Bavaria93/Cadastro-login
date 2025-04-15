@@ -10,6 +10,7 @@ import {
   Checkbox,
   ListItemText,
 } from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle"; // Importa o ícone
 import { UserContext } from "../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -22,7 +23,7 @@ function AssociarPerfil() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedProfiles, setSelectedProfiles] = useState([]);
 
-  // Busca usuários do backend ao montar o componente
+  // Busca usuários e perfis do backend ao montar o componente
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -55,14 +56,14 @@ function AssociarPerfil() {
 
   const handleSelectUser = (user) => {
     setSelectedUser(user);
-    setSelectedProfiles(user.perfis || []);
+    setSelectedProfiles(user.perfis || []); // Se o usuário já tiver perfis associados, marca-os
   };
 
   const handleToggleProfile = (profileId) => {
     setSelectedProfiles((prev) =>
       prev.includes(profileId)
-        ? prev.filter((id) => id !== profileId)
-        : [...prev, profileId]
+        ? prev.filter((id) => id !== profileId) // Remove se já estiver selecionado
+        : [...prev, profileId] // Adiciona se não estiver selecionado
     );
   };
 
@@ -74,27 +75,24 @@ function AssociarPerfil() {
 
     try {
       const response = await axios.put(
-        `http://localhost:8000/usuarios/${selectedUser.id}`,
+        `http://localhost:8000/usuarios/${selectedUser.id}/perfis`,
         {
-          name: selectedUser.name,
-          email: selectedUser.email,
-          perfis: selectedProfiles, // Envia a lista de IDs dos perfis associados
+          perfis: selectedProfiles
         }
       );
-
-      const updatedUser = response.data;
-
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === updatedUser.id ? updatedUser : user
-        )
-      );
-
-      alert("Perfis associados com sucesso!");
+      console.log("Resposta da API:", response.data);
+      // Restante do código...
     } catch (error) {
-      console.error("Erro ao associar perfis:", error);
+      // Imprime detalhadamente o erro
+      if (error.response) {
+        console.error("Erro na resposta:", error.response.data);
+        console.error("Status:", error.response.status);
+      } else {
+        console.error("Erro na requisição:", error.message);
+      }
       alert("Erro ao associar perfis. Tente novamente.");
     }
+    
   };
 
   return (
@@ -116,23 +114,41 @@ function AssociarPerfil() {
       {/* Lista de usuários filtrados */}
       <Typography variant="h6">Selecione um Usuário:</Typography>
       <List>
-        {filteredUsers.map((user) => (
-          <ListItem
-            key={user.id}
-            button
-            selected={selectedUser?.id === user.id}
-            onClick={() => handleSelectUser(user)}
-          >
-            <ListItemText primary={user.name} secondary={user.email} />
-          </ListItem>
-        ))}
+        {filteredUsers.map((user) => {
+          const isSelected = selectedUser && selectedUser.id === user.id;
+          return (
+            <ListItem
+              key={user.id}
+              button
+              selected={isSelected}
+              onClick={() => handleSelectUser(user)}
+              // Estilização customizada para destacar a seleção
+              sx={{
+                backgroundColor: isSelected ? "rgba(25, 118, 210, 0.08)" : "inherit",
+                "&:hover": {
+                  backgroundColor: isSelected
+                    ? "rgba(25, 118, 210, 0.2)"
+                    : "rgba(0, 0, 0, 0.04)",
+                },
+                border: isSelected ? "1px solid rgba(25, 118, 210, 0.5)" : "none",
+              }}
+            >
+              <ListItemText primary={user.name} secondary={user.email} />
+              {isSelected && <CheckCircleIcon color="primary" />}
+            </ListItem>
+          );
+        })}
       </List>
 
       {/* Lista de perfis disponíveis */}
       <Typography variant="h6">Selecione os Perfis:</Typography>
       <List>
         {profiles.map((profile) => (
-          <ListItem key={profile.id} button onClick={() => handleToggleProfile(profile.id)}>
+          <ListItem
+            key={profile.id}
+            button
+            onClick={() => handleToggleProfile(profile.id)}
+          >
             <Checkbox checked={selectedProfiles.includes(profile.id)} />
             <ListItemText primary={profile.type} secondary={profile.description} />
           </ListItem>
