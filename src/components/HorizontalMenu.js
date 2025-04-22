@@ -4,13 +4,21 @@ import {
   Toolbar,
   IconButton,
   Box,
-  InputBase,
   Menu,
   MenuItem,
   Avatar,
   Typography,
+  TextField,
 } from "@mui/material";
+import InputAdornment from "@mui/material/InputAdornment";
 import { Menu as MenuIcon, Search as SearchIcon } from "@mui/icons-material";
+
+// Função auxiliar para garantir que a URL da foto esteja limpa e completa
+const getFullImageUrl = (photoPath) => {
+  if (!photoPath) return "https://via.placeholder.com/40";
+  const trimmed = photoPath.trim();
+  return trimmed.startsWith("http") ? trimmed : `http://localhost:8000${trimmed}`;
+};
 
 const HorizontalMenu = ({
   menuAberto,
@@ -44,15 +52,21 @@ const HorizontalMenu = ({
           <MenuIcon />
         </IconButton>
         <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
-          <SearchIcon sx={{ color: "white" }} />
-          <InputBase
+          <TextField
             placeholder="Pesquisar..."
+            variant="outlined"
+            size="small"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: "grey" }} />
+                </InputAdornment>
+              ),
+            }}
             sx={{
-              ml: 1,
-              width: "300px",
               backgroundColor: "white",
               borderRadius: 1,
-              padding: "5px 10px",
+              width: "300px",
             }}
           />
         </Box>
@@ -63,8 +77,8 @@ const HorizontalMenu = ({
           <Avatar
             alt="Foto de Perfil"
             src={
-              loggedUser && loggedUser.foto
-                ? loggedUser.foto
+              loggedUser && loggedUser.photo
+                ? getFullImageUrl(loggedUser.photo)
                 : "https://via.placeholder.com/40"
             }
             sx={{ marginRight: 1 }}
@@ -90,7 +104,6 @@ const HorizontalMenu = ({
           <MenuItem
             onClick={() => {
               handleMenuClose();
-              // Direciona para EditUserDialog chamando a função passada por handleEditUser
               if (handleEditUser) {
                 handleEditUser();
               }

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Grid,
@@ -10,33 +10,35 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import { UserContext } from "../contexts/UserContext"; // Se possuir um contexto exclusivo para perfis, renomeie-o
-import ProfileCard from "../components/ProfileCard"; // Componente para exibir perfis
-import EditProfileDialog from "../components/EditProfileDialog"; // Novo diálogo específico para perfis
+import ProfileCard from "../components/ProfileCard";
+import EditProfileDialog from "../components/EditProfileDialog";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function ListaPerfis() {
-  const { profiles, setProfiles } = useContext(UserContext);
+  // Estado local para os perfis obtidos diretamente da API
+  const [dbProfiles, setDbProfiles] = useState([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState(null);
 
   const navigate = useNavigate();
 
-  // Busca os perfis do backend ao montar o componente
+  // Busca os perfis salvos no banco (via API) e armazena em dbProfiles
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/perfis/");
-        setProfiles(response.data);
+        // Atualize o endpoint conforme o nome usado no backend ("/profiles/" neste exemplo)
+        const response = await axios.get("http://localhost:8000/profiles/");
+        console.log("Dados retornados da API:", response.data);
+        setDbProfiles(response.data);
       } catch (error) {
         console.error("Erro ao buscar perfis:", error);
       }
     };
 
     fetchProfiles();
-  }, [setProfiles]);
+  }, []);
 
   const handleOpenEditDialog = (profileId) => {
     setSelectedProfileId(profileId);
@@ -58,12 +60,13 @@ function ListaPerfis() {
     setDeleteDialogOpen(false);
   };
 
-  // Exclui o perfil via backend
+  // Função para excluir o perfil no backend e atualizar a listagem
   const handleDeleteProfile = async () => {
     if (selectedProfileId) {
       try {
-        await axios.delete(`http://localhost:8000/perfis/${selectedProfileId}`);
-        setProfiles((prevProfiles) =>
+        // Utilize o endpoint correto para perfis, conforme o backend
+        await axios.delete(`http://localhost:8000/profiles/${selectedProfileId}`);
+        setDbProfiles((prevProfiles) =>
           prevProfiles.filter((profile) => profile.id !== selectedProfileId)
         );
         handleCloseDeleteDialog();
@@ -104,7 +107,7 @@ function ListaPerfis() {
       </Box>
 
       <Grid container spacing={3} justifyContent="center">
-        {profiles.map((profile) => (
+        {dbProfiles.map((profile) => (
           <Grid item key={profile.id} xs={12} sm={6} md={4}>
             <ProfileCard
               profile={profile}
@@ -123,7 +126,7 @@ function ListaPerfis() {
           <Typography>
             Tem certeza de que deseja excluir o perfil{" "}
             <strong>
-              {profiles.find((profile) => profile.id === selectedProfileId)?.type}
+              {dbProfiles.find((profile) => profile.id === selectedProfileId)?.type}
             </strong>
             ?
           </Typography>
@@ -138,12 +141,12 @@ function ListaPerfis() {
         </DialogActions>
       </Dialog>
 
-      {/* Modal de edição do perfil */}
+      {/* Modal de Edição do Perfil */}
       <EditProfileDialog
         open={editDialogOpen}
         onClose={handleCloseEditDialog}
-        profile={profiles.find((profile) => profile.id === selectedProfileId)}
-        setProfiles={setProfiles}
+        profile={dbProfiles.find((profile) => profile.id === selectedProfileId)}
+        setProfiles={setDbProfiles}
       />
     </Container>
   );

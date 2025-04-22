@@ -4,28 +4,34 @@ import {
   Typography,
   Button,
   Box,
-  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { UserContext } from "../contexts/UserContext";
-import UserList from "../components/UserList";
-import ProfileList from "../components/ProfileList";
+import UserSection from "../components/UserSection";
+import ProfileSection from "../components/ProfileSection";
 
 function AssociarPerfil() {
   const navigate = useNavigate();
   const { users, setUsers, profiles, setProfiles } = useContext(UserContext);
 
-  const [searchUser, setSearchUser] = useState("");
-  const [searchProfile, setSearchProfile] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedProfiles, setSelectedProfiles] = useState([]);
 
-  // Busca usuários e perfis do backend no mount do componente
+  // Estados para notificações usando Dialog do Material UI
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
+  const [dialogType, setDialogType] = useState("success"); // 'success' ou 'error'
+
+  // Busca usuários e perfis do backend ao montar o componente
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/usuarios/");
+        const response = await axios.get("http://localhost:8000/users/");
         setUsers(response.data);
       } catch (error) {
         console.error("Erro ao buscar usuários:", error);
@@ -45,27 +51,10 @@ function AssociarPerfil() {
     fetchProfiles();
   }, [setUsers, setProfiles]);
 
-  // Filtra usuários com base na pesquisa
-  const filteredUsers = users.filter((user) => {
-    const search = searchUser.toLowerCase().trim();
-    return (
-      (user.name || "").toLowerCase().includes(search) ||
-      (user.email || "").toLowerCase().includes(search)
-    );
-  });
-
-  // Filtra perfis pela pesquisa (tipo e descrição)
-  const filteredProfiles = profiles.filter((profile) => {
-    const search = searchProfile.toLowerCase().trim();
-    return (
-      (profile.type || "").toLowerCase().includes(search) ||
-      (profile.description || "").toLowerCase().includes(search)
-    );
-  });
-
   const handleSelectUser = (user) => {
     setSelectedUser(user);
-    setSelectedProfiles(user.perfis || []); // Seleciona os perfis já associados ao usuário
+    // Converte o array de perfis (objetos) para um array de IDs
+    setSelectedProfiles(user.perfis ? user.perfis.map((perfil) => perfil.id) : []);
   };
 
   const handleToggleProfile = (profileId) => {
@@ -78,19 +67,29 @@ function AssociarPerfil() {
 
   const handleAssociarProfile = async () => {
     if (!selectedUser || selectedProfiles.length === 0) {
-      alert("Selecione um usuário e ao menos um perfil!");
+      setDialogMessage("Selecione um usuário e ao menos um perfil!");
+      setDialogType("error");
+      setDialogOpen(true);
       return;
     }
 
     try {
-      await axios.put(`http://localhost:8000/usuarios/${selectedUser.id}/perfis`, {
+      await axios.put(`http://localhost:8000/users/${selectedUser.id}/perfis`, {
         perfis: selectedProfiles,
       });
-      alert("Perfis associados com sucesso!");
+      setDialogMessage("Perfis associados com sucesso!");
+      setDialogType("success");
+      setDialogOpen(true);
     } catch (error) {
       console.error("Erro ao associar perfis:", error);
-      alert("Erro ao associar perfis. Tente novamente.");
+      setDialogMessage("Erro ao associar perfis. Tente novamente.");
+      setDialogType("error");
+      setDialogOpen(true);
     }
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
   };
 
   return (
@@ -99,38 +98,16 @@ function AssociarPerfil() {
         <Typography variant="h4">Associação de Perfis ao Usuário</Typography>
       </Box>
 
-      {/* Campo de pesquisa de usuários */}
-      <TextField
-        fullWidth
-        label="Pesquisar Usuário"
-        variant="outlined"
-        value={searchUser}
-        onChange={(e) => setSearchUser(e.target.value)}
-        style={{ marginBottom: "20px" }}
-      />
-
-      {/* Renderiza o componente de lista de usuários */}
-      <Typography variant="h6">Selecione um Usuário:</Typography>
-      <UserList
-        users={filteredUsers}
+      {/* Seção de Usuários */}
+      <UserSection
+        users={users}
         selectedUser={selectedUser}
         onSelectUser={handleSelectUser}
       />
 
-      {/* Campo de pesquisa de perfis */}
-      <TextField
-        fullWidth
-        label="Pesquisar Perfil"
-        variant="outlined"
-        value={searchProfile}
-        onChange={(e) => setSearchProfile(e.target.value)}
-        style={{ marginBottom: "20px", marginTop: "20px" }}
-      />
-
-      {/* Renderiza o componente de lista de perfis */}
-      <Typography variant="h6">Selecione os Perfis:</Typography>
-      <ProfileList
-        profiles={filteredProfiles}
+      {/* Seção de Perfis */}
+      <ProfileSection
+        profiles={profiles}
         selectedProfiles={selectedProfiles}
         onToggleProfile={handleToggleProfile}
       />
@@ -149,6 +126,19 @@ function AssociarPerfil() {
           Voltar para a Home
         </Button>
       </Box>
+
+      {/* Notificação via Dialog */}
+      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+        <DialogTitle>{dialogType === "success" ? "Sucesso!" : "Erro!"}</DialogTitle>
+        <DialogContent>
+          <Typography>{dialogMessage}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Fechar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

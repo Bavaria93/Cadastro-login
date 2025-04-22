@@ -14,12 +14,18 @@ const ProfileCard = ({
   onDelete,
   formatDate, // função para formatar a data
 }) => {
+  // Extrai as permissões associadas do perfil – caso existam
+  const permissionList =
+    profile.permissions && profile.permissions.length > 0
+      ? profile.permissions.map((permission) => permission.type).join(", ")
+      : "Nenhuma";
+
   return (
     <Card
       style={{
         width: "100%",
         maxWidth: "250px",
-        height: "180px", // Altura menor que a do card de usuário
+        minHeight: "180px", // usa minHeight para permitir expansão
         position: "relative",
         display: "flex",
         flexDirection: "column",
@@ -45,9 +51,7 @@ const ProfileCard = ({
             e.stopPropagation();
             onEdit(profile);
           }}
-          style={{
-            borderRadius: "50%",
-          }}
+          style={{ borderRadius: "50%" }}
         >
           <Edit />
         </IconButton>
@@ -56,9 +60,7 @@ const ProfileCard = ({
             e.stopPropagation();
             onDelete(profile);
           }}
-          style={{
-            borderRadius: "50%",
-          }}
+          style={{ borderRadius: "50%" }}
         >
           <Delete />
         </IconButton>
@@ -103,12 +105,36 @@ const ProfileCard = ({
           variant="body2"
           color="textSecondary"
           style={{
+            marginBottom: "5px",
             padding: "2px",
             borderRadius: "3px",
             fontSize: "12px",
           }}
         >
           Criado em: {formatDate(profile.creation_date)}
+        </Typography>
+        <Typography
+          variant="body2"
+          color="textSecondary"
+          style={{
+            marginBottom: "5px",
+            padding: "2px",
+            borderRadius: "3px",
+            fontSize: "12px",
+          }}
+        >
+          Atualizado em: {formatDate(profile.update_date)}
+        </Typography>
+        <Typography
+          variant="body2"
+          color="textSecondary"
+          style={{
+            padding: "2px",
+            borderRadius: "3px",
+            fontSize: "12px",
+          }}
+        >
+          Permissões: {permissionList}
         </Typography>
       </CardContent>
     </Card>

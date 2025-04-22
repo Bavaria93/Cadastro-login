@@ -10,12 +10,12 @@ import {
   DialogContent, 
   DialogActions 
 } from '@mui/material';
-import { UserContext } from '../contexts/UserContext'; // Se possuir um contexto exclusivo para perfis, renomeie-o
+import { UserContext } from '../contexts/UserContext';
 import axios from 'axios';
 
-function CadastroPerfil() {
-  // Supondo que o contexto contenha 'profiles' e 'setProfiles'
-  const { profiles, setProfiles } = useContext(UserContext);
+function CadastroPermissao() {
+  // Supondo que o contexto contenha 'permissions' e 'setPermissions'
+  const { permissions, setPermissions } = useContext(UserContext);
 
   // Estados dos campos do formulário
   const [type, setType] = useState('');
@@ -25,11 +25,11 @@ function CadastroPerfil() {
   const [dialogMessage, setDialogMessage] = useState('');
   const [dialogType, setDialogType] = useState('success'); // 'success' ou 'error'
 
-  // Validação dos campos do perfil
-  const validatePerfilFields = () => {
+  // Validação dos campos da permissão
+  const validatePermissionFields = () => {
     let tempErrors = {};
 
-    // Aqui, o regex exige somente letras e espaços
+    // O regex exige somente letras e espaços
     tempErrors.type = type.trim()
       ? (/^[A-Za-z\s]+$/.test(type.trim()) ? '' : 'Tipo não pode incluir números ou caracteres especiais')
       : 'Tipo é obrigatório';
@@ -49,34 +49,33 @@ function CadastroPerfil() {
     setErrors({});
   };
 
-  // Conecta com o backend para cadastrar o perfil
-  const handleAddPerfil = async (e) => {
+  // Conecta com o backend para cadastrar a permissão
+  const handleAddPermission = async (e) => {
     e.preventDefault();
 
-    if (!validatePerfilFields()) {
-      setDialogMessage('Erro ao cadastrar perfil. Verifique os campos.');
+    if (!validatePermissionFields()) {
+      setDialogMessage('Erro ao cadastrar permissão. Verifique os campos.');
       setDialogType('error');
       setDialogOpen(true);
       return;
     }
 
-    const newPerfilData = {
+    const newPermissionData = {
       type,
       description,
     };
 
     try {
-      // Se o backend foi atualizado para usar endpoints em inglês, use "/profiles/" em vez de "/perfis/"
-      const response = await axios.post('http://localhost:8000/profiles/', newPerfilData);
-      const newPerfil = response.data;
-      setProfiles([...profiles, newPerfil]);
-      setDialogMessage('Perfil cadastrado com sucesso!');
+      const response = await axios.post('http://localhost:8000/permissions/', newPermissionData);
+      const newPermission = response.data;
+      setPermissions([...permissions, newPermission]);
+      setDialogMessage('Permissão cadastrada com sucesso!');
       setDialogType('success');
       setDialogOpen(true);
       clearForm();
     } catch (error) {
-      console.error("Erro ao cadastrar perfil:", error);
-      setDialogMessage(error.response?.data?.detail || 'Erro ao cadastrar perfil');
+      console.error("Erro ao cadastrar permissão:", error);
+      setDialogMessage(error.response?.data?.detail || 'Erro ao cadastrar permissão');
       setDialogType('error');
       setDialogOpen(true);
     }
@@ -89,10 +88,10 @@ function CadastroPerfil() {
 
   return (
     <Container maxWidth="sm" style={{ padding: '20px', backgroundColor: '#f0f4f8' }}>
-      <Box component="form" onSubmit={handleAddPerfil} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <Box component="form" onSubmit={handleAddPermission} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <Box style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '8px' }}>
           <Typography variant="h4" gutterBottom>
-            Cadastro de Perfil
+            Cadastro de Permissão
           </Typography>
           <TextField
             label="Tipo"
@@ -114,7 +113,7 @@ function CadastroPerfil() {
           />
           <Box display="flex" justifyContent="center" marginTop="10px">
             <Button type="submit" variant="contained" color="primary">
-              Cadastrar Perfil
+              Cadastrar Permissão
             </Button>
           </Box>
         </Box>
@@ -136,4 +135,4 @@ function CadastroPerfil() {
   );
 }
 
-export default CadastroPerfil;
+export default CadastroPermissao;

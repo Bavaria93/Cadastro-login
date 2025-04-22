@@ -7,6 +7,9 @@ import ListaUsuarios from "../pages/ListaUsuarios";
 import CadastroPerfil from "../pages/CadastroPerfil";
 import ListaPerfis from "../pages/ListaPerfis";
 import AssociarPerfil from "../pages/AssociarPerfil";
+import CadastroPermissao from "../pages/CadastroPermissao";
+import ListaPermissoes from "../pages/ListaPermissoes";
+import AssociarPermissao from "../pages/AssociarPermissao";
 import Login from "../pages/Login";
 
 const MainRoutes = ({ loggedUser, setLoggedUser }) => {
@@ -19,6 +22,9 @@ const MainRoutes = ({ loggedUser, setLoggedUser }) => {
         <Route path="/perfis" element={<ListaPerfis />} />
         <Route path="/cadastroPerfil" element={<CadastroPerfil />} />
         <Route path="/associarPerfil" element={<AssociarPerfil />} />
+        <Route path="/permissoes" element={<ListaPermissoes />} />
+        <Route path="/cadastroPermissao" element={<CadastroPermissao />} />
+        <Route path="/associarPermissao" element={<AssociarPermissao />} />
         <Route
           path="/login"
           element={

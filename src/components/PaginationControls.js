@@ -1,41 +1,34 @@
-import React, { useState, useEffect } from "react";
-import { Box, Typography, IconButton } from "@mui/material";
-import { ArrowBack, ArrowForward } from "@mui/icons-material";
+import React, { useEffect, useState } from "react";
+import { Box, Pagination } from "@mui/material";
 
 const PaginationControls = ({ totalItems, itemsPerPage, onPageChange }) => {
-  const [currentPage, setCurrentPage] = useState(0);
+  // Usamos currentPage iniciando em 1 para compatibilidade com o componente Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-  // Notifica o pai sempre que a página muda
   useEffect(() => {
     if (onPageChange) {
-      onPageChange(currentPage);
+      // Se necessário, convertemos de 1-index para 0-index
+      onPageChange(currentPage - 1);
     }
   }, [currentPage, onPageChange]);
 
-  const handlePrevious = () => {
-    if (currentPage > 0) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if ((currentPage + 1) * itemsPerPage < totalItems) {
-      setCurrentPage((prev) => prev + 1);
-    }
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
   };
 
   return (
     <Box display="flex" justifyContent="center" mt={2}>
-      <IconButton disabled={currentPage === 0} onClick={handlePrevious}>
-        <ArrowBack />
-      </IconButton>
-      <Typography style={{ margin: "0 10px" }}>Página {currentPage + 1}</Typography>
-      <IconButton
-        disabled={(currentPage + 1) * itemsPerPage >= totalItems}
-        onClick={handleNext}
-      >
-        <ArrowForward />
-      </IconButton>
+      <Pagination
+        count={totalPages}
+        page={currentPage}
+        onChange={handlePageChange}
+        color="primary"
+        variant="outlined"
+        shape="rounded"
+        siblingCount={1}
+        boundaryCount={1}
+      />
     </Box>
   );
 };

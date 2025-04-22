@@ -1,4 +1,3 @@
-// src/components/Login.js
 import React, { useState, useContext } from 'react';
 import { Container, TextField, Button, Box, Typography, Link } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
@@ -7,7 +6,7 @@ import { UserContext } from '../contexts/UserContext'; // ajuste o caminho confo
 function Login({ setLoggedUser }) {
   const { users } = useContext(UserContext);
   const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
+  const [password, setPassword] = useState('');
   const [erro, setErro] = useState('');
   const navigate = useNavigate();
 
@@ -16,7 +15,7 @@ function Login({ setLoggedUser }) {
 
     // Busca no contexto o usuário cuja credencial corresponda ao informado
     const foundUser = users.find(
-      (user) => user.email === email && user.senha === senha
+      (user) => user.email === email && user.password === password
     );
 
     if (foundUser) {
@@ -72,8 +71,8 @@ function Login({ setLoggedUser }) {
             fullWidth
             variant="outlined"
             margin="normal"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
           {erro && (
             <Typography color="error" style={{ marginTop: '10px' }}>

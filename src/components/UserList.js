@@ -31,10 +31,16 @@ const UserList = ({ users, selectedUser, onSelectUser, itemsPerPage = 5 }) => {
                       : "rgba(0, 0, 0, 0.04)",
                   },
                   border: isSelected ? "1px solid rgba(25, 118, 210, 0.5)" : "none",
+                  display: "flex",
+                  alignItems: "center",
                 }}
               >
+                {/* Sempre renderiza o ícone, mas com visibilidade oculta se não estiver selecionado */}
+                <CheckCircleIcon 
+                  color="primary" 
+                  sx={{ marginRight: 1, visibility: isSelected ? "visible" : "hidden" }} 
+                />
                 <ListItemText primary={user.name} secondary={user.email} />
-                {isSelected && <CheckCircleIcon color="primary" />}
               </ListItem>
             );
           })}

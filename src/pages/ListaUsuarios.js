@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Grid,
@@ -10,34 +10,34 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import { UserContext } from "../contexts/UserContext";
 import UserCard from "../components/UserCard";
 import EditUserDialog from "../components/EditUserDialog";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function ListaUsuarios() {
-  const { users, setUsers } = useContext(UserContext);
+  // Estado local exclusivo para os usuários vindos do backend
+  const [dbUsers, setDbUsers] = useState([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
 
   const navigate = useNavigate();
 
-  // Busca os usuários do backend com perfis carregados
+  // Busca os usuários salvos no banco usando o endpoint "/users/"
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/usuarios/");
-        console.log("Dados retornados da API:", response.data); // Depuração
-        setUsers(response.data);
+        const response = await axios.get("http://localhost:8000/users/");
+        console.log("Dados retornados da API:", response.data);
+        setDbUsers(response.data);
       } catch (error) {
-        console.error("Erro ao buscar usuários: ", error);
+        console.error("Erro ao buscar usuários:", error);
       }
     };
 
     fetchUsers();
-  }, [setUsers]);
+  }, []);
 
   const handleOpenEditDialog = (userId) => {
     setSelectedUserId(userId);
@@ -59,21 +59,22 @@ function ListaUsuarios() {
     setDeleteDialogOpen(false);
   };
 
-  // Função integrada para excluir usuário no backend
+  // Função para excluir usuário no backend e atualizar a listagem
   const handleDeleteUser = async () => {
     if (selectedUserId) {
       try {
-        await axios.delete(`http://localhost:8000/usuarios/${selectedUserId}`);
-        setUsers((prevUsers) =>
+        await axios.delete(`http://localhost:8000/users/${selectedUserId}`);
+        setDbUsers((prevUsers) =>
           prevUsers.filter((user) => user.id !== selectedUserId)
         );
         handleCloseDeleteDialog();
       } catch (error) {
-        console.error("Erro ao excluir usuário: ", error);
+        console.error("Erro ao excluir usuário:", error);
       }
     }
   };
 
+  // Função para formatação da data, para exibição
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -96,7 +97,7 @@ function ListaUsuarios() {
       </Box>
 
       <Grid container spacing={3} justifyContent="center">
-        {users.map((user) => (
+        {dbUsers.map((user) => (
           <Grid item key={user.id} xs={12} sm={6} md={4}>
             <UserCard
               user={user}
@@ -108,14 +109,14 @@ function ListaUsuarios() {
         ))}
       </Grid>
 
-      {/* Diálogo de Exclusão */}
+      {/* Diálogo para confirmação de exclusão */}
       <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
         <DialogTitle>Confirmar Exclusão</DialogTitle>
         <DialogContent>
           <Typography>
             Tem certeza de que deseja excluir o usuário{" "}
             <strong>
-              {users.find((user) => user.id === selectedUserId)?.name}
+              {dbUsers.find((user) => user.id === selectedUserId)?.name}
             </strong>
             ?
           </Typography>
@@ -130,12 +131,18 @@ function ListaUsuarios() {
         </DialogActions>
       </Dialog>
 
-      {/* Modal de Edição do Usuário */}
+      {/* Modal para edição do usuário */}
       <EditUserDialog
         open={editDialogOpen}
         onClose={handleCloseEditDialog}
-        user={users.find((user) => user.id === selectedUserId)}
-        setUsers={setUsers}
+        user={dbUsers.find((user) => user.id === selectedUserId)}
+        setLoggedUser={(updatedUser) => {
+          setDbUsers((prevUsers) =>
+            prevUsers.map((user) =>
+              user.id === updatedUser.id ? updatedUser : user
+            )
+          );
+        }}
       />
     </Container>
   );
