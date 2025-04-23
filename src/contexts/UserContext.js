@@ -15,6 +15,12 @@ export const UserProvider = ({ children }) => {
     return profilesFromStorage ? JSON.parse(profilesFromStorage) : [];
   });
 
+  // Carrega as permissões do localStorage; se não houver, inicia com um array vazio.
+  const [permissions, setPermissions] = useState(() => {
+    const permissionsFromStorage = localStorage.getItem('permissions');
+    return permissionsFromStorage ? JSON.parse(permissionsFromStorage) : [];
+  });
+
   // Sempre que a lista de usuários mudar, salva no localStorage.
   useEffect(() => {
     localStorage.setItem('users', JSON.stringify(users));
@@ -25,8 +31,13 @@ export const UserProvider = ({ children }) => {
     localStorage.setItem('profiles', JSON.stringify(profiles));
   }, [profiles]);
 
+  // Sempre que a lista de permissões mudar, salva no localStorage.
+  useEffect(() => {
+    localStorage.setItem('permissions', JSON.stringify(permissions));
+  }, [permissions]);
+
   return (
-    <UserContext.Provider value={{ users, setUsers, profiles, setProfiles }}>
+    <UserContext.Provider value={{ users, setUsers, profiles, setProfiles, permissions, setPermissions }}>
       {children}
     </UserContext.Provider>
   );

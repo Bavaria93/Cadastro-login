@@ -94,6 +94,13 @@ function ListaPermissoes() {
           >
             Cadastrar Permissão
           </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => navigate("/associarPermissao")}
+          >
+            Associar Permissão aos Perfis
+          </Button>
         </Box>
       </Box>
 
