@@ -1,126 +1,77 @@
 import React from "react";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  IconButton,
-} from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { Typography } from "@mui/material";
+import GenericCard from "./GenericCard";
+import axios from "axios";
 
-const PermissionCard = ({
-  permission,
-  onEdit,
-  onDelete,
-  formatDate, // função para formatar a data
-}) => {
+const PermissionCard = ({ permission, onEdit, onDelete, formatDate }) => {
+  
+  // Função de exclusão específica para a permissão
+  const handleDeletePermission = async (permissionData) => {
+    try {
+      await axios.delete(`http://localhost:8000/permissions/${permissionData.id}`);
+      if (onDelete) {
+        onDelete(permissionData);
+      }
+    } catch (error) {
+      console.error("Erro ao excluir permissão:", error);
+    }
+  };
+
   return (
-    <Card
-      style={{
-        width: "100%",
-        maxWidth: "250px",
-        minHeight: "180px",
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        border: "1px solid #dee2e6",
-        borderRadius: "10px",
-      }}
+    <GenericCard
+      data={permission}
+      onEdit={onEdit}
+      onDelete={handleDeletePermission}
     >
-      <Box
-        position="absolute"
-        top="10px"
-        right="10px"
-        display="flex"
-        gap="5px"
+      <Typography
+        variant="h6"
         style={{
+          fontWeight: "bold",
+          marginBottom: "5px",
           padding: "3px",
-          borderRadius: "5px",
+          borderRadius: "3px",
+          fontSize: "16px",
         }}
       >
-        <IconButton
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(permission);
-          }}
-          style={{ borderRadius: "50%" }}
-        >
-          <Edit />
-        </IconButton>
-        <IconButton
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(permission);
-          }}
-          style={{ borderRadius: "50%" }}
-        >
-          <Delete />
-        </IconButton>
-      </Box>
-      <CardContent
+        Tipo: {permission.type}
+      </Typography>
+      <Typography
+        variant="body2"
+        color="textSecondary"
         style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          justifyContent: "center",
-          textAlign: "left",
-          padding: "10px",
-          borderRadius: "5px",
-          width: "100%",
+          marginBottom: "5px",
+          padding: "2px",
+          borderRadius: "3px",
+          fontSize: "14px",
         }}
       >
-        <Typography
-          variant="h6"
-          style={{
-            fontWeight: "bold",
-            marginBottom: "5px",
-            padding: "3px",
-            borderRadius: "3px",
-            fontSize: "16px",
-          }}
-        >
-          Tipo: {permission.type}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          style={{
-            marginBottom: "5px",
-            padding: "2px",
-            borderRadius: "3px",
-            fontSize: "14px",
-          }}
-        >
-          Descrição: {permission.description}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          style={{
-            marginBottom: "5px",
-            padding: "2px",
-            borderRadius: "3px",
-            fontSize: "12px",
-          }}
-        >
-          Criado em: {formatDate(permission.creation_date)}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          style={{
-            marginBottom: "5px",
-            padding: "2px",
-            borderRadius: "3px",
-            fontSize: "12px",
-          }}
-        >
-          Atualizado em: {formatDate(permission.update_date)}
-        </Typography>
-      </CardContent>
-    </Card>
+        Descrição: {permission.description}
+      </Typography>
+      <Typography
+        variant="body2"
+        color="textSecondary"
+        style={{
+          marginBottom: "5px",
+          padding: "2px",
+          borderRadius: "3px",
+          fontSize: "12px",
+        }}
+      >
+        Criado em: {formatDate(permission.creation_date)}
+      </Typography>
+      <Typography
+        variant="body2"
+        color="textSecondary"
+        style={{
+          marginBottom: "5px",
+          padding: "2px",
+          borderRadius: "3px",
+          fontSize: "12px",
+        }}
+      >
+        Atualizado em: {formatDate(permission.update_date)}
+      </Typography>
+    </GenericCard>
   );
 };
 

@@ -109,6 +109,7 @@ function AssociarPermissao() {
         profiles={profiles}
         selectedProfile={selectedProfile}
         onSelectProfile={handleSelectProfile}
+        selectionMode="single" // Força seleção única para associar permissões
         itemsPerPage={5}
       />
 

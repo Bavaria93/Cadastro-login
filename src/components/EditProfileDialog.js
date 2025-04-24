@@ -30,7 +30,7 @@ const EditProfileDialog = ({ open, onClose, profile, setProfiles }) => {
   const handleSave = async () => {
     try {
       const response = await axios.put(
-        `http://localhost:8000/perfis/${editedProfile.id}`,
+        `http://localhost:8000/profiles/${editedProfile.id}`,
         editedProfile
       );
       const updatedProfile = response.data;

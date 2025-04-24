@@ -1,31 +1,16 @@
 import React from "react";
+import { Typography } from "@mui/material";
+import GenericCard from "./GenericCard";
 import axios from "axios";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  IconButton,
-} from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
 
-// Componente para exibir as informações de cada usuário
 const UserCard = ({ user, onEdit, onDelete, formatDate }) => {
-  // Função para tratar o clique no botão de edição
-  const handleEditClick = (e) => {
-    e.stopPropagation();
-    onEdit(user);
-  };
-
-  // Função para tratar o clique no botão de exclusão,
-  // realizando a chamada ao backend para remover o usuário.
-  const handleDeleteClick = async (e) => {
-    e.stopPropagation();
+  
+  // Função de exclusão específica para usuário
+  const handleDeleteUser = async (userData) => {
     try {
-      await axios.delete(`http://localhost:8000/users/${user.id}`);
-      // Após a exclusão no backend, chama o callback para atualizar a lista no frontend
+      await axios.delete(`http://localhost:8000/users/${userData.id}`);
       if (onDelete) {
-        onDelete(user);
+        onDelete(userData);
       }
     } catch (error) {
       console.error("Erro ao excluir usuário:", error);
@@ -33,126 +18,70 @@ const UserCard = ({ user, onEdit, onDelete, formatDate }) => {
   };
 
   return (
-    <Card
-      style={{
-        width: "100%",
-        maxWidth: "250px",
-        height: "250px",
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        border: "1px solid #dee2e6",
-        borderRadius: "10px",
-      }}
-    >
-      <Box
-        position="absolute"
-        top="10px"
-        right="10px"
-        display="flex"
-        gap="5px"
+    <GenericCard data={user} onEdit={onEdit} onDelete={handleDeleteUser}>
+      <Typography
+        variant="h5"
         style={{
+          fontWeight: "bold",
+          marginBottom: "10px",
           padding: "3px",
-          borderRadius: "5px",
+          borderRadius: "3px",
+          fontSize: "18px",
         }}
       >
-        <IconButton
-          onClick={handleEditClick}
-          style={{
-            borderRadius: "50%",
-          }}
-        >
-          <Edit />
-        </IconButton>
-        <IconButton
-          onClick={handleDeleteClick}
-          style={{
-            borderRadius: "50%",
-          }}
-        >
-          <Delete />
-        </IconButton>
-      </Box>
-      <CardContent
+        {user.name}
+      </Typography>
+      <Typography
+        variant="body1"
+        color="textSecondary"
         style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          justifyContent: "center",
-          textAlign: "left",
-          padding: "10px",
-          borderRadius: "5px",
-          width: "100%",
-          height: "150px",
+          marginBottom: "5px",
+          padding: "2px",
+          borderRadius: "3px",
+          fontSize: "14px",
         }}
       >
-        <Typography
-          variant="h5"
-          style={{
-            fontWeight: "bold",
-            marginBottom: "10px",
-            padding: "3px",
-            borderRadius: "3px",
-            fontSize: "18px",
-          }}
-        >
-          {user.name}
-        </Typography>
-        <Typography
-          variant="body1"
-          color="textSecondary"
-          style={{
-            marginBottom: "5px",
-            padding: "2px",
-            borderRadius: "3px",
-            fontSize: "14px",
-          }}
-        >
-          Email: {user.email}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          style={{
-            marginBottom: "5px",
-            padding: "2px",
-            borderRadius: "3px",
-            fontSize: "12px",
-          }}
-        >
-          Criado em: {formatDate(user.creation_date)}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          style={{
-            marginBottom: "5px",
-            padding: "2px",
-            borderRadius: "3px",
-            fontSize: "12px",
-          }}
-        >
-          Atualizado em: {formatDate(user.update_date)}
-        </Typography>
-        {/* Exibindo os perfis associados */}
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          style={{
-            padding: "2px",
-            borderRadius: "3px",
-            fontSize: "12px",
-          }}
-        >
-          Perfis:{" "}
-          {user.profiles && user.profiles.length > 0
-            ? user.profiles.map((perfil) => perfil.type).join(", ")
-            : "Nenhum"}
-        </Typography>
-      </CardContent>
-    </Card>
+        Email: {user.email}
+      </Typography>
+      <Typography
+        variant="body2"
+        color="textSecondary"
+        style={{
+          marginBottom: "5px",
+          padding: "2px",
+          borderRadius: "3px",
+          fontSize: "12px",
+        }}
+      >
+        Criado em: {formatDate(user.creation_date)}
+      </Typography>
+      <Typography
+        variant="body2"
+        color="textSecondary"
+        style={{
+          marginBottom: "5px",
+          padding: "2px",
+          borderRadius: "3px",
+          fontSize: "12px",
+        }}
+      >
+        Atualizado em: {formatDate(user.update_date)}
+      </Typography>
+      <Typography
+        variant="body2"
+        color="textSecondary"
+        style={{
+          padding: "2px",
+          borderRadius: "3px",
+          fontSize: "12px",
+        }}
+      >
+        Perfis:{" "}
+        {user.profiles && user.profiles.length > 0
+          ? user.profiles.map((perfil) => perfil.type).join(", ")
+          : "Nenhum"}
+      </Typography>
+    </GenericCard>
   );
 };
 

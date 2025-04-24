@@ -56,9 +56,7 @@ function CadastroUsuario() {
     let tempErrors = {};
 
     tempErrors.name = name
-      ? /^[A-Za-z\s]+$/.test(name)
-        ? ""
-        : "Nome não pode incluir números"
+      ? (/\d/.test(name) ? "Nome não pode incluir números" : "")
       : "Nome é obrigatório";
 
     tempErrors.email = email
@@ -213,9 +211,9 @@ function CadastroUsuario() {
 
   return (
     <Container maxWidth="sm" sx={{ padding: 3, backgroundColor: "#f0f4f8" }}>
-      <Paper 
-        component="form" 
-        onSubmit={handleSalvarDados} 
+      <Paper
+        component="form"
+        onSubmit={handleSalvarDados}
         elevation={4}
         sx={{ display: "flex", flexDirection: "column", gap: 2, p: 3, borderRadius: 2 }}
       >
@@ -224,9 +222,9 @@ function CadastroUsuario() {
         </Typography>
         {/* Seção para upload e visualização da foto (dentro do mesmo box) */}
         <Box display="flex" flexDirection="column" alignItems="center" mb={2}>
-          <Avatar 
-            src={selectedPhoto ? previewPhoto : "/default-avatar.png"} 
-            sx={{ width: 120, height: 120, mb: 1 }} 
+          <Avatar
+            src={selectedPhoto ? previewPhoto : "/default-avatar.png"}
+            sx={{ width: 120, height: 120, mb: 1 }}
           />
           <Button variant="outlined" component="label">
             Atualizar Foto
@@ -274,7 +272,7 @@ function CadastroUsuario() {
 
       {/* Se os dados foram salvos e houver perfis cadastrados, exibe a associação de perfis */}
       {draftUser && fetchedProfiles.length > 0 && (
-        <Paper 
+        <Paper
           elevation={4}
           sx={{ p: 3, borderRadius: 2, mt: 3, backgroundColor: "#fff" }}
         >

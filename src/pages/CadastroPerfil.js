@@ -1,14 +1,14 @@
 import React, { useState, useContext } from 'react';
-import { 
-  Container, 
-  TextField, 
-  Button, 
-  Box, 
-  Typography, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions 
+import {
+  Container,
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import { UserContext } from '../contexts/UserContext'; // Se possuir um contexto exclusivo para perfis, renomeie-o
 import axios from 'axios';
@@ -29,13 +29,12 @@ function CadastroPerfil() {
   const validatePerfilFields = () => {
     let tempErrors = {};
 
-    // Aqui, o regex exige somente letras e espaços
     tempErrors.type = type.trim()
-      ? (/^[A-Za-z\s]+$/.test(type.trim()) ? '' : 'Tipo não pode incluir números ou caracteres especiais')
+      ? (/\d/.test(type.trim()) ? 'Tipo não pode incluir números' : '')
       : 'Tipo é obrigatório';
-      
+
     tempErrors.description = description.trim()
-      ? (/^[A-Za-z\s]+$/.test(description.trim()) ? '' : 'Descrição não pode incluir números ou caracteres especiais')
+      ? (/\d/.test(description.trim()) ? 'Descrição não pode incluir números' : '')
       : 'Descrição é obrigatória';
 
     setErrors(tempErrors);

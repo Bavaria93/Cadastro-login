@@ -40,7 +40,7 @@ function AssociarPerfil() {
 
     const fetchProfiles = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/perfis/");
+        const response = await axios.get("http://localhost:8000/profiles/");
         setProfiles(response.data);
       } catch (error) {
         console.error("Erro ao buscar perfis:", error);
@@ -54,7 +54,7 @@ function AssociarPerfil() {
   const handleSelectUser = (user) => {
     setSelectedUser(user);
     // Converte o array de perfis (objetos) para um array de IDs
-    setSelectedProfiles(user.perfis ? user.perfis.map((perfil) => perfil.id) : []);
+    setSelectedProfiles(user.profiles ? user.profiles.map((perfil) => perfil.id) : []);
   };
 
   const handleToggleProfile = (profileId) => {
@@ -74,8 +74,8 @@ function AssociarPerfil() {
     }
 
     try {
-      await axios.put(`http://localhost:8000/users/${selectedUser.id}/perfis`, {
-        perfis: selectedProfiles,
+      await axios.put(`http://localhost:8000/users/${selectedUser.id}/profiles`, {
+        profiles: selectedProfiles,
       });
       setDialogMessage("Perfis associados com sucesso!");
       setDialogType("success");
@@ -108,8 +108,10 @@ function AssociarPerfil() {
       {/* Seção de Perfis */}
       <ProfileSection
         profiles={profiles}
-        selectedProfiles={selectedProfiles}
+        selectedProfiles={selectedProfiles || []}
         onToggleProfile={handleToggleProfile}
+        selectionMode="multiple"
+        itemsPerPage={5}
       />
 
       {/* Botões de ação */}
