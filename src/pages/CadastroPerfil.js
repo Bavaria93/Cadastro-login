@@ -1,7 +1,6 @@
 import React, { useState, useContext } from 'react';
 import {
   Container,
-  TextField,
   Button,
   Box,
   Typography,
@@ -10,25 +9,21 @@ import {
   DialogContent,
   DialogActions
 } from '@mui/material';
-import { UserContext } from '../contexts/UserContext'; // Se possuir um contexto exclusivo para perfis, renomeie-o
+import { UserContext } from '../contexts/UserContext';
 import axios from 'axios';
+import TypeDescriptionFields from '../components/TypeDescriptionFields';
 
 function CadastroPerfil() {
-  // Supondo que o contexto contenha 'profiles' e 'setProfiles'
   const { profiles, setProfiles } = useContext(UserContext);
-
-  // Estados dos campos do formulário
   const [type, setType] = useState('');
   const [description, setDescription] = useState('');
   const [errors, setErrors] = useState({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
-  const [dialogType, setDialogType] = useState('success'); // 'success' ou 'error'
+  const [dialogType, setDialogType] = useState('success');
 
-  // Validação dos campos do perfil
   const validatePerfilFields = () => {
     let tempErrors = {};
-
     tempErrors.type = type.trim()
       ? (/\d/.test(type.trim()) ? 'Tipo não pode incluir números' : '')
       : 'Tipo é obrigatório';
@@ -41,31 +36,22 @@ function CadastroPerfil() {
     return Object.values(tempErrors).every((msg) => msg === '');
   };
 
-  // Limpa os campos do formulário
   const clearForm = () => {
     setType('');
     setDescription('');
     setErrors({});
   };
 
-  // Conecta com o backend para cadastrar o perfil
   const handleAddPerfil = async (e) => {
     e.preventDefault();
-
     if (!validatePerfilFields()) {
       setDialogMessage('Erro ao cadastrar perfil. Verifique os campos.');
       setDialogType('error');
       setDialogOpen(true);
       return;
     }
-
-    const newPerfilData = {
-      type,
-      description,
-    };
-
+    const newPerfilData = { type, description };
     try {
-      // Se o backend foi atualizado para usar endpoints em inglês, use "/profiles/" em vez de "/perfis/"
       const response = await axios.post('http://localhost:8000/profiles/', newPerfilData);
       const newPerfil = response.data;
       setProfiles([...profiles, newPerfil]);
@@ -81,7 +67,6 @@ function CadastroPerfil() {
     }
   };
 
-  // Fecha o Dialog
   const handleCloseDialog = () => {
     setDialogOpen(false);
   };
@@ -93,23 +78,12 @@ function CadastroPerfil() {
           <Typography variant="h4" gutterBottom>
             Cadastro de Perfil
           </Typography>
-          <TextField
-            label="Tipo"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            fullWidth
-            margin="normal"
-            error={!!errors.type}
-            helperText={errors.type}
-          />
-          <TextField
-            label="Descrição"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            fullWidth
-            margin="normal"
-            error={!!errors.description}
-            helperText={errors.description}
+          <TypeDescriptionFields
+            type={type}
+            description={description}
+            onTypeChange={setType}
+            onDescriptionChange={setDescription}
+            errors={errors}
           />
           <Box display="flex" justifyContent="center" marginTop="10px">
             <Button type="submit" variant="contained" color="primary">
@@ -119,7 +93,6 @@ function CadastroPerfil() {
         </Box>
       </Box>
 
-      {/* Modal de confirmação */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>{dialogType === 'success' ? 'Sucesso!' : 'Erro!'}</DialogTitle>
         <DialogContent>

@@ -1,9 +1,8 @@
 import React, { useState, useContext } from 'react';
 import {
   Container,
-  TextField,
-  Button,
   Box,
+  Button,
   Typography,
   Dialog,
   DialogTitle,
@@ -12,28 +11,22 @@ import {
 } from '@mui/material';
 import { UserContext } from '../contexts/UserContext';
 import axios from 'axios';
+import TypeDescriptionFields from '../components/TypeDescriptionFields';
 
 function CadastroPermissao() {
-  // Supondo que o contexto contenha 'permissions' e 'setPermissions'
   const { permissions, setPermissions } = useContext(UserContext);
-
-  // Estados dos campos do formulário
   const [type, setType] = useState('');
   const [description, setDescription] = useState('');
   const [errors, setErrors] = useState({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
-  const [dialogType, setDialogType] = useState('success'); // 'success' ou 'error'
+  const [dialogType, setDialogType] = useState('success');
 
-  // Validação dos campos da permissão
   const validatePermissionFields = () => {
     let tempErrors = {};
-
-    // O regex exige somente letras e espaços
     tempErrors.type = type.trim()
       ? (/\d/.test(type.trim()) ? 'Tipo não pode incluir números' : '')
       : 'Tipo é obrigatório';
-
     tempErrors.description = description.trim()
       ? (/\d/.test(description.trim()) ? 'Descrição não pode incluir números' : '')
       : 'Descrição é obrigatória';
@@ -42,29 +35,21 @@ function CadastroPermissao() {
     return Object.values(tempErrors).every((msg) => msg === '');
   };
 
-  // Limpa os campos do formulário
   const clearForm = () => {
     setType('');
     setDescription('');
     setErrors({});
   };
 
-  // Conecta com o backend para cadastrar a permissão
   const handleAddPermission = async (e) => {
     e.preventDefault();
-
     if (!validatePermissionFields()) {
       setDialogMessage('Erro ao cadastrar permissão. Verifique os campos.');
       setDialogType('error');
       setDialogOpen(true);
       return;
     }
-
-    const newPermissionData = {
-      type,
-      description,
-    };
-
+    const newPermissionData = { type, description };
     try {
       const response = await axios.post('http://localhost:8000/permissions/', newPermissionData);
       const newPermission = response.data;
@@ -81,7 +66,6 @@ function CadastroPermissao() {
     }
   };
 
-  // Fecha o Dialog
   const handleCloseDialog = () => {
     setDialogOpen(false);
   };
@@ -93,23 +77,12 @@ function CadastroPermissao() {
           <Typography variant="h4" gutterBottom>
             Cadastro de Permissão
           </Typography>
-          <TextField
-            label="Tipo"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            fullWidth
-            margin="normal"
-            error={!!errors.type}
-            helperText={errors.type}
-          />
-          <TextField
-            label="Descrição"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            fullWidth
-            margin="normal"
-            error={!!errors.description}
-            helperText={errors.description}
+          <TypeDescriptionFields
+            type={type}
+            description={description}
+            onTypeChange={setType}
+            onDescriptionChange={setDescription}
+            errors={errors}
           />
           <Box display="flex" justifyContent="center" marginTop="10px">
             <Button type="submit" variant="contained" color="primary">
@@ -119,7 +92,6 @@ function CadastroPermissao() {
         </Box>
       </Box>
 
-      {/* Modal de confirmação */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>{dialogType === 'success' ? 'Sucesso!' : 'Erro!'}</DialogTitle>
         <DialogContent>
