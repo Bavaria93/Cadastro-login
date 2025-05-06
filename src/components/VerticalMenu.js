@@ -44,6 +44,16 @@ const VerticalMenu = ({ menuAberto, drawerWidthExpanded, drawerWidthCollapsed })
             <ListItemText primary="Lista de Permissões" />
           </Link>
         </ListItem>
+        <ListItem button>
+          <Link to="/cursos" style={{ textDecoration: "none", color: "white" }}>
+            <ListItemText primary="Lista de Cursos" />
+          </Link>
+        </ListItem>
+        <ListItem button>
+          <Link to="/solicitacoes" style={{ textDecoration: "none", color: "white" }}>
+            <ListItemText primary="Lista de Solicitações" />
+          </Link>
+        </ListItem>
       </List>
     </Drawer>
   );

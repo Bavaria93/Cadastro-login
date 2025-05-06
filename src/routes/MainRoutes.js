@@ -12,6 +12,12 @@ import ListaPermissoes from "../pages/ListaPermissoes";
 import AssociarPermissao from "../pages/AssociarPermissao";
 import Login from "../pages/Login";
 
+// Novas páginas para Cursos e Solicitações
+import ListaCursos from "../pages/ListaCursos";
+import CadastroCurso from "../pages/CadastroCurso";
+import ListaSolicitacoes from "../pages/ListaSolicitacoes";
+import CadastroSolicitacao from "../pages/CadastroSolicitacao";
+
 const MainRoutes = ({ loggedUser, setLoggedUser }) => {
   return (
     <Box sx={{ padding: "20px" }}>
@@ -25,6 +31,15 @@ const MainRoutes = ({ loggedUser, setLoggedUser }) => {
         <Route path="/permissoes" element={<ListaPermissoes />} />
         <Route path="/cadastroPermissao" element={<CadastroPermissao />} />
         <Route path="/associarPermissao" element={<AssociarPermissao />} />
+
+        {/* Rotas para Cursos */}
+        <Route path="/cursos" element={<ListaCursos />} />
+        <Route path="/cadastroCurso" element={<CadastroCurso />} />
+
+        {/* Rotas para Solicitações */}
+        <Route path="/solicitacoes" element={<ListaSolicitacoes />} />
+        <Route path="/cadastroSolicitacao" element={<CadastroSolicitacao />} />
+
         <Route
           path="/login"
           element={

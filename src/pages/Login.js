@@ -1,14 +1,29 @@
 import React, { useState, useContext } from 'react';
-import { Container, TextField, Button, Box, Typography, Link } from '@mui/material';
+import {
+  Container,
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Link,
+  IconButton,
+  InputAdornment,
+} from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { UserContext } from '../contexts/UserContext'; // ajuste o caminho conforme sua estrutura
+import { UserContext } from '../contexts/UserContext';
 
 function Login({ setLoggedUser }) {
   const { users } = useContext(UserContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [erro, setErro] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -67,12 +82,25 @@ function Login({ setLoggedUser }) {
           />
           <TextField
             label="Senha"
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             fullWidth
             variant="outlined"
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={handleTogglePasswordVisibility}
+                    edge="end"
+                    aria-label="toggle password visibility"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
           {erro && (
             <Typography color="error" style={{ marginTop: '10px' }}>
