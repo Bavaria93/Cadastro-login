@@ -1,81 +1,95 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import {
   Container,
   Button,
   Box,
   Typography,
+  TextField,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Select,
+  MenuItem,
+  InputLabel,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
 } from "@mui/material";
-import { UserContext } from "../contexts/UserContext";
-import axios from "axios";
 
 function CadastroSolicitacao() {
-  // Supondo que o contexto forneça solicitacoes e setSolicitacoes
-  const { solicitacoes, setSolicitacoes } = useContext(UserContext);
-  const [noticeLabel, setNoticeLabel] = useState("");
-  const [jobFunction, setJobFunction] = useState("");
-  const [publicationType, setPublicationType] = useState("");
-  const [sagittaId, setSagittaId] = useState("");
-  const [courseId, setCourseId] = useState("");
-  const [errors, setErrors] = useState({});
+  // Estados para campos
+  const [numeroEdital, setNumeroEdital] = useState("");
+  const [dataEdital, setDataEdital] = useState("");
+  const [funcao, setFuncao] = useState("");
+  const [outraFuncao, setOutraFuncao] = useState("");
+  const [polos, setPolos] = useState("");
+  const [tipoPublicacao, setTipoPublicacao] = useState("");
+  const [inscInicio, setInscInicio] = useState("");
+  const [inscFim, setInscFim] = useState("");
+  const [docComprob, setDocComprob] = useState("Não"); // opção default
+  const [dataPublicacao, setDataPublicacao] = useState("");
+  
+  // Estados para diálogo de feedback
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [dialogType, setDialogType] = useState("success");
 
-  const validateSolicitacaoFields = () => {
-    let tempErrors = {};
-    tempErrors.noticeLabel = noticeLabel.trim() ? "" : "Rótulo é obrigatório";
-    tempErrors.jobFunction = jobFunction.trim() ? "" : "Função é obrigatória";
-    tempErrors.publicationType = publicationType.trim() ? "" : "Tipo de publicação é obrigatório";
-    tempErrors.sagittaId = sagittaId !== "" ? "" : "ID do Sagitta é obrigatório";
-    tempErrors.courseId = courseId !== "" ? "" : "ID do Curso é obrigatório";
-
-    setErrors(tempErrors);
-    return Object.values(tempErrors).every((msg) => msg === "");
+  // Validação simples de campos obrigatórios
+  const validateFields = () => {
+    if (!numeroEdital.trim() || !dataEdital || !funcao || !tipoPublicacao || !dataPublicacao) {
+      return false;
+    }
+    // Se a função for "Outros", exija campo de descrição
+    if (funcao === "Outros" && !outraFuncao.trim()) return false;
+    // Se o tipo de publicação for "Publicação de Edital/Abertura das Inscrições", exija o período de inscrições
+    if (tipoPublicacao === "Publicação de Edital/Abertura das Inscrições" && (!inscInicio || !inscFim)) {
+      return false;
+    }
+    return true;
   };
 
-  const clearForm = () => {
-    setNoticeLabel("");
-    setJobFunction("");
-    setPublicationType("");
-    setSagittaId("");
-    setCourseId("");
-    setErrors({});
-  };
-
-  const handleAddSolicitacao = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validateSolicitacaoFields()) {
-      setDialogMessage("Erro ao cadastrar solicitação. Verifique os campos.");
+    if (!validateFields()) {
+      setDialogMessage("Por favor, preencha todos os campos obrigatórios.");
       setDialogType("error");
       setDialogOpen(true);
       return;
     }
-    const newSolicitacaoData = {
-      notice_label: noticeLabel,
-      job_function: jobFunction,
-      publication_type: publicationType,
-      sagitta_id: parseInt(sagittaId),
-      course_id: parseInt(courseId),
+    // Aqui você pode preparar os dados para envio via axios ou qualquer outra ação
+    const formData = {
+      numeroEdital,
+      dataEdital,
+      funcao: funcao === "Outros" ? outraFuncao : funcao,
+      polos,
+      tipoPublicacao,
+      periodoInscricao: tipoPublicacao === "Publicação de Edital/Abertura das Inscrições" 
+        ? { inicio: inscInicio, fim: inscFim, publicarDocumentacao: docComprob }
+        : null,
+      dataPublicacao,
     };
-    try {
-      const response = await axios.post("http://localhost:8000/requests/", newSolicitacaoData);
-      const newSolicitacao = response.data;
-      setSolicitacoes([...solicitacoes, newSolicitacao]);
-      setDialogMessage("Solicitação cadastrada com sucesso!");
-      setDialogType("success");
-      setDialogOpen(true);
-      clearForm();
-    } catch (error) {
-      console.error("Erro ao cadastrar solicitação:", error);
-      setDialogMessage(error.response?.data?.detail || "Erro ao cadastrar solicitação");
-      setDialogType("error");
-      setDialogOpen(true);
-    }
+    console.log("Dados do formulário:", formData);
+    setDialogMessage("Solicitação enviada com sucesso!");
+    setDialogType("success");
+    setDialogOpen(true);
+    // Após envio, limpar formulário (opcional)
+    clearForm();
+  };
+
+  const clearForm = () => {
+    setNumeroEdital("");
+    setDataEdital("");
+    setFuncao("");
+    setOutraFuncao("");
+    setPolos("");
+    setTipoPublicacao("");
+    setInscInicio("");
+    setInscFim("");
+    setDocComprob("Não");
+    setDataPublicacao("");
   };
 
   const handleCloseDialog = () => {
@@ -84,67 +98,140 @@ function CadastroSolicitacao() {
 
   return (
     <Container maxWidth="sm" style={{ padding: "20px", backgroundColor: "#f0f4f8" }}>
-      <Box
-        component="form"
-        onSubmit={handleAddSolicitacao}
-        style={{ display: "flex", flexDirection: "column", gap: "15px" }}
-      >
-        <Box style={{ backgroundColor: "#ffffff", padding: "20px", borderRadius: "8px" }}>
-          <Typography variant="h4" gutterBottom>
-            Cadastro de Solicitação
-          </Typography>
-          <TextField
-            label="Rótulo do Edital"
-            value={noticeLabel}
-            onChange={(e) => setNoticeLabel(e.target.value)}
-            fullWidth
-            margin="normal"
-            error={!!errors.noticeLabel}
-            helperText={errors.noticeLabel}
-          />
-          <TextField
-            label="Função"
-            value={jobFunction}
-            onChange={(e) => setJobFunction(e.target.value)}
-            fullWidth
-            margin="normal"
-            error={!!errors.jobFunction}
-            helperText={errors.jobFunction}
-          />
-          <TextField
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Typography variant="h4" align="center" gutterBottom>
+          Publicação de Processos Seletivos Simplificados - UAB/UFPA
+        </Typography>
+
+        {/* Número e Data do Edital */}
+        <TextField
+          label="Número do Edital"
+          value={numeroEdital}
+          onChange={(e) => setNumeroEdital(e.target.value)}
+          fullWidth
+          required
+        />
+        <TextField
+          label="Data do Edital"
+          type="date"
+          value={dataEdital}
+          onChange={(e) => setDataEdital(e.target.value)}
+          fullWidth
+          InputLabelProps={{ shrink: true }}
+          required
+        />
+
+        {/* Função do Processo Seletivo */}
+        <FormControl component="fieldset">
+          <FormLabel component="legend">Processo Seletivo para qual função?</FormLabel>
+          <RadioGroup value={funcao} onChange={(e) => setFuncao(e.target.value)} row>
+            <FormControlLabel value="Discente" control={<Radio />} label="Discente" />
+            <FormControlLabel value="Equipe de Apoio Multidisciplinar" control={<Radio />} label="Equipe de Apoio Multidisciplinar" />
+            <FormControlLabel value="Coordenador de Curso" control={<Radio />} label="Coordenador de Curso" />
+            <FormControlLabel value="Coordenador de Tutoria" control={<Radio />} label="Coordenador de Tutoria" />
+            <FormControlLabel value="Professor Formador" control={<Radio />} label="Professor Formador" />
+            <FormControlLabel value="Tutor a Distância" control={<Radio />} label="Tutor a Distância" />
+            <FormControlLabel value="Tutor Presencial" control={<Radio />} label="Tutor Presencial" />
+            <FormControlLabel value="Tutor a Distância e/ou Presencial" control={<Radio />} label="Tutor a Distância e/ou Presencial" />
+            <FormControlLabel value="Outros" control={<Radio />} label="Outros" />
+          </RadioGroup>
+          {funcao === "Outros" && (
+            <TextField
+              label="Informe a função"
+              value={outraFuncao}
+              onChange={(e) => setOutraFuncao(e.target.value)}
+              fullWidth
+              required
+            />
+          )}
+        </FormControl>
+
+        {/* Polos (para Tutor a Distância/Presencial) */}
+        <TextField
+          label="Informe os polos"
+          value={polos}
+          onChange={(e) => setPolos(e.target.value)}
+          fullWidth
+        />
+
+        {/* Tipo de Publicação */}
+        <FormControl fullWidth required>
+          <InputLabel id="tipo-publicacao-label">Tipo de Publicação</InputLabel>
+          <Select
+            labelId="tipo-publicacao-label"
+            value={tipoPublicacao}
             label="Tipo de Publicação"
-            value={publicationType}
-            onChange={(e) => setPublicationType(e.target.value)}
-            fullWidth
-            margin="normal"
-            error={!!errors.publicationType}
-            helperText={errors.publicationType}
-          />
-          <TextField
-            label="ID do Sagitta"
-            value={sagittaId}
-            onChange={(e) => setSagittaId(e.target.value)}
-            fullWidth
-            margin="normal"
-            type="number"
-            error={!!errors.sagittaId}
-            helperText={errors.sagittaId}
-          />
-          <TextField
-            label="ID do Curso"
-            value={courseId}
-            onChange={(e) => setCourseId(e.target.value)}
-            fullWidth
-            margin="normal"
-            type="number"
-            error={!!errors.courseId}
-            helperText={errors.courseId}
-          />
-          <Box display="flex" justifyContent="center" marginTop="10px">
-            <Button type="submit" variant="contained" color="primary">
-              Cadastrar Solicitação
-            </Button>
-          </Box>
+            onChange={(e) => setTipoPublicacao(e.target.value)}
+          >
+            <MenuItem value="Publicação de Edital/Abertura das Inscrições">Publicação de Edital/Abertura das Inscrições</MenuItem>
+            <MenuItem value="Homologação das Inscrições">Homologação das Inscrições</MenuItem>
+            <MenuItem value="Resultado da Análise de Documentos">Resultado da Análise de Documentos</MenuItem>
+            <MenuItem value="Resultado da Entrevista">Resultado da Entrevista</MenuItem>
+            <MenuItem value="Resultado da Prova Escrita">Resultado da Prova Escrita</MenuItem>
+            <MenuItem value="Resultado Preliminar do Processo Seletivo Simplificado">Resultado Preliminar do Processo Seletivo Simplificado</MenuItem>
+            <MenuItem value="Local de Prova">Local de Prova</MenuItem>
+            <MenuItem value="Resultado Final do Processo Seletivo Simplificado">Resultado Final do Processo Seletivo Simplificado</MenuItem>
+            <MenuItem value="Atualização do Cronograma do Processo Seletivo Simplificado">Atualização do Cronograma do Processo Seletivo Simplificado</MenuItem>
+            <MenuItem value="Comunicado">Comunicado</MenuItem>
+            <MenuItem value="Resultado do Recurso">Resultado do Recurso</MenuItem>
+            <MenuItem value="Retificação/Errata">Retificação/Errata</MenuItem>
+            <MenuItem value="Convocação">Convocação</MenuItem>
+            <MenuItem value="Outras publicações">Outras publicações</MenuItem>
+          </Select>
+        </FormControl>
+
+        {/* Campos adicionais para Publicação de Edital */}
+        {tipoPublicacao === "Publicação de Edital/Abertura das Inscrições" && (
+          <>
+            <TextField
+              label="Início das Inscrições"
+              type="date"
+              value={inscInicio}
+              onChange={(e) => setInscInicio(e.target.value)}
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              required
+            />
+            <TextField
+              label="Fim das Inscrições"
+              type="date"
+              value={inscFim}
+              onChange={(e) => setInscFim(e.target.value)}
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              required
+            />
+            <FormControl component="fieldset">
+              <FormLabel component="legend">
+                Publicar documentação comprobatória junto com o edital?
+              </FormLabel>
+              <RadioGroup
+                row
+                value={docComprob}
+                onChange={(e) => setDocComprob(e.target.value)}
+              >
+                <FormControlLabel value="Sim" control={<Radio />} label="Sim" />
+                <FormControlLabel value="Não" control={<Radio />} label="Não" />
+              </RadioGroup>
+            </FormControl>
+          </>
+        )}
+
+        {/* Data da Publicação */}
+        <TextField
+          label="Data da Publicação"
+          type="date"
+          value={dataPublicacao}
+          onChange={(e) => setDataPublicacao(e.target.value)}
+          fullWidth
+          InputLabelProps={{ shrink: true }}
+          required
+        />
+
+        <Box display="flex" justifyContent="center" my={2}>
+          <Button variant="contained" color="primary" type="submit">
+            Enviar Solicitação
+          </Button>
         </Box>
       </Box>
 
