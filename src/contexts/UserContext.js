@@ -21,6 +21,12 @@ export const UserProvider = ({ children }) => {
     return permissionsFromStorage ? JSON.parse(permissionsFromStorage) : [];
   });
 
+  // Adicione o estado para courses
+  const [courses, setCourses] = useState(() => {
+    const coursesFromStorage = localStorage.getItem('courses');
+    return coursesFromStorage ? JSON.parse(coursesFromStorage) : [];
+  });
+
   // Sempre que a lista de usuários mudar, salva no localStorage.
   useEffect(() => {
     localStorage.setItem('users', JSON.stringify(users));
@@ -36,8 +42,18 @@ export const UserProvider = ({ children }) => {
     localStorage.setItem('permissions', JSON.stringify(permissions));
   }, [permissions]);
 
+  // Sempre que a lista de cursos mudar, salva no localStorage.
+  useEffect(() => {
+    localStorage.setItem('courses', JSON.stringify(courses));
+  }, [courses]);
+
   return (
-    <UserContext.Provider value={{ users, setUsers, profiles, setProfiles, permissions, setPermissions }}>
+    <UserContext.Provider value={{ 
+      users, setUsers, 
+      profiles, setProfiles, 
+      permissions, setPermissions, 
+      courses, setCourses
+    }}>
       {children}
     </UserContext.Provider>
   );

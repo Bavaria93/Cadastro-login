@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Container,
   Button,
@@ -20,38 +21,47 @@ import {
 } from "@mui/material";
 
 function CadastroSolicitacao() {
-  // Estados para campos
+  // States for the edital fields and for generating the notice label in real time
   const [numeroEdital, setNumeroEdital] = useState("");
   const [dataEdital, setDataEdital] = useState("");
+  const [noticeLabel, setNoticeLabel] = useState("");
+
+  // States for the other fields
   const [funcao, setFuncao] = useState("");
   const [outraFuncao, setOutraFuncao] = useState("");
   const [polos, setPolos] = useState("");
   const [tipoPublicacao, setTipoPublicacao] = useState("");
   const [inscInicio, setInscInicio] = useState("");
   const [inscFim, setInscFim] = useState("");
-  const [docComprob, setDocComprob] = useState("Não"); // opção default
+  const [docComprob, setDocComprob] = useState("Não");
   const [dataPublicacao, setDataPublicacao] = useState("");
-  
-  // Estados para diálogo de feedback
+
+  // States for dialog feedback
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [dialogType, setDialogType] = useState("success");
 
-  // Validação simples de campos obrigatórios
+  // Update the notice label in real time based on "Número do Edital" and "Data do Edital"
+  useEffect(() => {
+    // Date formatting can be enhanced here if needed.
+    const formattedData = dataEdital;
+    setNoticeLabel(`${numeroEdital} - ${formattedData}`);
+  }, [numeroEdital, dataEdital]);
+
+  // Validate required fields
   const validateFields = () => {
     if (!numeroEdital.trim() || !dataEdital || !funcao || !tipoPublicacao || !dataPublicacao) {
       return false;
     }
-    // Se a função for "Outros", exija campo de descrição
     if (funcao === "Outros" && !outraFuncao.trim()) return false;
-    // Se o tipo de publicação for "Publicação de Edital/Abertura das Inscrições", exija o período de inscrições
     if (tipoPublicacao === "Publicação de Edital/Abertura das Inscrições" && (!inscInicio || !inscFim)) {
       return false;
     }
     return true;
   };
 
-  const handleSubmit = (e) => {
+  // Submit form data to the API
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateFields()) {
       setDialogMessage("Por favor, preencha todos os campos obrigatórios.");
@@ -59,29 +69,40 @@ function CadastroSolicitacao() {
       setDialogOpen(true);
       return;
     }
-    // Aqui você pode preparar os dados para envio via axios ou qualquer outra ação
+    // Prepare the form data. Note: sagitta_id e course_id são valores dummy.
     const formData = {
-      numeroEdital,
-      dataEdital,
-      funcao: funcao === "Outros" ? outraFuncao : funcao,
-      polos,
-      tipoPublicacao,
-      periodoInscricao: tipoPublicacao === "Publicação de Edital/Abertura das Inscrições" 
-        ? { inicio: inscInicio, fim: inscFim, publicarDocumentacao: docComprob }
-        : null,
-      dataPublicacao,
+      notice_label: noticeLabel,
+      job_function: funcao === "Outros" ? outraFuncao : funcao,
+      publication_type: tipoPublicacao,
+      polos: polos,
+      periodoInscricao:
+        tipoPublicacao === "Publicação de Edital/Abertura das Inscrições"
+          ? { inicio: inscInicio, fim: inscFim, publicarDocumentacao: docComprob }
+          : null,
+      dataPublicacao: dataPublicacao,
+      sagitta_id: 0,
+      course_id: 0
     };
-    console.log("Dados do formulário:", formData);
-    setDialogMessage("Solicitação enviada com sucesso!");
-    setDialogType("success");
-    setDialogOpen(true);
-    // Após envio, limpar formulário (opcional)
-    clearForm();
+
+    try {
+      const response = await axios.post("http://localhost:8000/requests/", formData);
+      console.log("Resposta da API:", response.data);
+      setDialogMessage("Solicitação enviada com sucesso!");
+      setDialogType("success");
+      setDialogOpen(true);
+      clearForm();
+    } catch (error) {
+      console.error("Erro ao enviar solicitação:", error);
+      setDialogMessage("Erro ao enviar solicitação. Tente novamente.");
+      setDialogType("error");
+      setDialogOpen(true);
+    }
   };
 
   const clearForm = () => {
     setNumeroEdital("");
     setDataEdital("");
+    setNoticeLabel("");
     setFuncao("");
     setOutraFuncao("");
     setPolos("");
@@ -98,33 +119,52 @@ function CadastroSolicitacao() {
 
   return (
     <Container maxWidth="sm" style={{ padding: "20px", backgroundColor: "#f0f4f8" }}>
-      <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+      >
         <Typography variant="h4" align="center" gutterBottom>
           Publicação de Processos Seletivos Simplificados - UAB/UFPA
         </Typography>
-
-        {/* Número e Data do Edital */}
+        
+        {/* Row for "Número do Edital" and "Data do Edital" */}
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <TextField
+            label="Número do Edital"
+            value={numeroEdital}
+            onChange={(e) => setNumeroEdital(e.target.value)}
+            fullWidth
+            required
+          />
+          <TextField
+            label="Data do Edital"
+            type="date"
+            value={dataEdital}
+            onChange={(e) => setDataEdital(e.target.value)}
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            required
+          />
+        </Box>
+        
+        {/* Non-editable field showing the notice label in real time */}
         <TextField
-          label="Número do Edital"
-          value={numeroEdital}
-          onChange={(e) => setNumeroEdital(e.target.value)}
+          label="Rótulo do Edital"
+          value={noticeLabel}
           fullWidth
-          required
-        />
-        <TextField
-          label="Data do Edital"
-          type="date"
-          value={dataEdital}
-          onChange={(e) => setDataEdital(e.target.value)}
-          fullWidth
-          InputLabelProps={{ shrink: true }}
-          required
+          InputProps={{ readOnly: true }}
+          variant="filled"
         />
 
-        {/* Função do Processo Seletivo */}
+        {/* Job Function - will be saved in the JobFunction table (column "position") */}
         <FormControl component="fieldset">
           <FormLabel component="legend">Processo Seletivo para qual função?</FormLabel>
-          <RadioGroup value={funcao} onChange={(e) => setFuncao(e.target.value)} row>
+          <RadioGroup
+            value={funcao}
+            onChange={(e) => setFuncao(e.target.value)}
+            row
+          >
             <FormControlLabel value="Discente" control={<Radio />} label="Discente" />
             <FormControlLabel value="Equipe de Apoio Multidisciplinar" control={<Radio />} label="Equipe de Apoio Multidisciplinar" />
             <FormControlLabel value="Coordenador de Curso" control={<Radio />} label="Coordenador de Curso" />
@@ -145,8 +185,8 @@ function CadastroSolicitacao() {
             />
           )}
         </FormControl>
-
-        {/* Polos (para Tutor a Distância/Presencial) */}
+        
+        {/* Field for "Polos" */}
         <TextField
           label="Informe os polos"
           value={polos}
@@ -154,7 +194,7 @@ function CadastroSolicitacao() {
           fullWidth
         />
 
-        {/* Tipo de Publicação */}
+        {/* Publication Type - will be saved in the PublicationType table (column "type") */}
         <FormControl fullWidth required>
           <InputLabel id="tipo-publicacao-label">Tipo de Publicação</InputLabel>
           <Select
@@ -163,15 +203,31 @@ function CadastroSolicitacao() {
             label="Tipo de Publicação"
             onChange={(e) => setTipoPublicacao(e.target.value)}
           >
-            <MenuItem value="Publicação de Edital/Abertura das Inscrições">Publicação de Edital/Abertura das Inscrições</MenuItem>
-            <MenuItem value="Homologação das Inscrições">Homologação das Inscrições</MenuItem>
-            <MenuItem value="Resultado da Análise de Documentos">Resultado da Análise de Documentos</MenuItem>
-            <MenuItem value="Resultado da Entrevista">Resultado da Entrevista</MenuItem>
-            <MenuItem value="Resultado da Prova Escrita">Resultado da Prova Escrita</MenuItem>
-            <MenuItem value="Resultado Preliminar do Processo Seletivo Simplificado">Resultado Preliminar do Processo Seletivo Simplificado</MenuItem>
+            <MenuItem value="Publicação de Edital/Abertura das Inscrições">
+              Publicação de Edital/Abertura das Inscrições
+            </MenuItem>
+            <MenuItem value="Homologação das Inscrições">
+              Homologação das Inscrições
+            </MenuItem>
+            <MenuItem value="Resultado da Análise de Documentos">
+              Resultado da Análise de Documentos
+            </MenuItem>
+            <MenuItem value="Resultado da Entrevista">
+              Resultado da Entrevista
+            </MenuItem>
+            <MenuItem value="Resultado da Prova Escrita">
+              Resultado da Prova Escrita
+            </MenuItem>
+            <MenuItem value="Resultado Preliminar do Processo Seletivo Simplificado">
+              Resultado Preliminar do Processo Seletivo Simplificado
+            </MenuItem>
             <MenuItem value="Local de Prova">Local de Prova</MenuItem>
-            <MenuItem value="Resultado Final do Processo Seletivo Simplificado">Resultado Final do Processo Seletivo Simplificado</MenuItem>
-            <MenuItem value="Atualização do Cronograma do Processo Seletivo Simplificado">Atualização do Cronograma do Processo Seletivo Simplificado</MenuItem>
+            <MenuItem value="Resultado Final do Processo Seletivo Simplificado">
+              Resultado Final do Processo Seletivo Simplificado
+            </MenuItem>
+            <MenuItem value="Atualização do Cronograma do Processo Seletivo Simplificado">
+              Atualização do Cronograma do Processo Seletivo Simplificado
+            </MenuItem>
             <MenuItem value="Comunicado">Comunicado</MenuItem>
             <MenuItem value="Resultado do Recurso">Resultado do Recurso</MenuItem>
             <MenuItem value="Retificação/Errata">Retificação/Errata</MenuItem>
@@ -180,7 +236,7 @@ function CadastroSolicitacao() {
           </Select>
         </FormControl>
 
-        {/* Campos adicionais para Publicação de Edital */}
+        {/* Additional fields for Edital Publication */}
         {tipoPublicacao === "Publicação de Edital/Abertura das Inscrições" && (
           <>
             <TextField
@@ -217,7 +273,7 @@ function CadastroSolicitacao() {
           </>
         )}
 
-        {/* Data da Publicação */}
+        {/* Publication Date */}
         <TextField
           label="Data da Publicação"
           type="date"
