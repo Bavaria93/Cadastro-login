@@ -17,38 +17,112 @@ import ListaCursos from "../pages/ListaCursos";
 import CadastroCurso from "../pages/CadastroCurso";
 import ListaSolicitacoes from "../pages/ListaSolicitacoes";
 import CadastroSolicitacao from "../pages/CadastroSolicitacao";
+import PrivateRoute from "../components/PrivateRoute";
 
 const MainRoutes = ({ loggedUser, setLoggedUser }) => {
   return (
     <Box sx={{ padding: "20px" }}>
       <Routes>
-        <Route path="/" element={<Home loggedUser={loggedUser} />} />
-        <Route path="/usuarios" element={<ListaUsuarios />} />
+        <Route path="/login" element={<Login setLoggedUser={setLoggedUser} />} />
         <Route path="/cadastroUsuario" element={<CadastroUsuario />} />
-        <Route path="/perfis" element={<ListaPerfis />} />
-        <Route path="/cadastroPerfil" element={<CadastroPerfil />} />
-        <Route path="/associarPerfil" element={<AssociarPerfil />} />
-        <Route path="/permissoes" element={<ListaPermissoes />} />
-        <Route path="/cadastroPermissao" element={<CadastroPermissao />} />
-        <Route path="/associarPermissao" element={<AssociarPermissao />} />
-
-        {/* Rotas para Cursos */}
-        <Route path="/cursos" element={<ListaCursos />} />
-        <Route path="/cadastroCurso" element={<CadastroCurso />} />
-
-        {/* Rotas para Solicitações */}
-        <Route path="/solicitacoes" element={<ListaSolicitacoes />} />
-        <Route path="/cadastroSolicitacao" element={<CadastroSolicitacao />} />
 
         <Route
-          path="/login"
+          path="/"
           element={
-            <Login
-              setLoggedUser={(user) => {
-                setLoggedUser(user);
-                localStorage.setItem("loggedUser", JSON.stringify(user));
-              }}
-            />
+            <PrivateRoute>
+              <Home loggedUser={loggedUser} />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/usuarios"
+          element={
+            <PrivateRoute>
+              <ListaUsuarios />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/perfis"
+          element={
+            <PrivateRoute>
+              <ListaPerfis />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/cadastroPerfil"
+          element={
+            <PrivateRoute>
+              <CadastroPerfil />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/associarPerfil"
+          element={
+            <PrivateRoute>
+              <AssociarPerfil />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/permissoes"
+          element={
+            <PrivateRoute>
+              <ListaPermissoes />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/cadastroPermissao"
+          element={
+            <PrivateRoute>
+              <CadastroPermissao />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/associarPermissao"
+          element={
+            <PrivateRoute>
+              <AssociarPermissao />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Rotas para Cursos */}
+        <Route
+          path="/cursos"
+          element={
+            <PrivateRoute>
+              <ListaCursos />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/cadastroCurso"
+          element={
+            <PrivateRoute>
+              <CadastroCurso />
+            </PrivateRoute>
+          }
+        />
+        {/* Rotas para Solicitações */}
+        <Route
+          path="/solicitacoes"
+          element={
+            <PrivateRoute>
+              <ListaSolicitacoes />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/cadastroSolicitacao"
+          element={
+            <PrivateRoute>
+              <CadastroSolicitacao />
+            </PrivateRoute>
           }
         />
       </Routes>

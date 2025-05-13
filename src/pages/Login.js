@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   TextField,
@@ -11,13 +11,12 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { UserContext } from '../contexts/UserContext';
+import axios from 'axios';
 
 function Login({ setLoggedUser }) {
-  const { users } = useContext(UserContext);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [erro, setErro] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [erro, setErro] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
@@ -25,22 +24,22 @@ function Login({ setLoggedUser }) {
     setShowPassword(!showPassword);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Busca no contexto o usuário cuja credencial corresponda ao informado
-    const foundUser = users.find(
-      (user) => user.email === email && user.password === password
-    );
-
-    if (foundUser) {
-      setErro('');
-      // Atualiza o usuário logado na aplicação
-      setLoggedUser(foundUser);
-      // Redireciona para a página Home
-      navigate('/');
-    } else {
-      setErro('Email ou senha inválidos!');
+    try {
+      const response = await axios.post("http://localhost:8000/login", {
+        username: email,
+        password: password,
+      });
+      const { access_token } = response.data;
+      localStorage.setItem("token", access_token);
+      // Armazena também os dados do usuário, se desejar decodificar o token ou salvar o email.
+      setLoggedUser({ email, token: access_token });
+      setErro("");
+      navigate("/");
+    } catch (error) {
+      console.error(error);
+      setErro("Email ou senha inválidos!");
     }
   };
 
@@ -55,7 +54,7 @@ function Login({ setLoggedUser }) {
         borderRadius={8}
         position="relative"
       >
-        {/* Link para cadastro de usuário */}
+        {/* Link para cadastro */}
         <Box position="absolute" top={10} right={10}>
           <Link
             component={RouterLink}

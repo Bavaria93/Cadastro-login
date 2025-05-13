@@ -1,3 +1,4 @@
+// src/App.js
 import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 import {
@@ -10,7 +11,20 @@ import VerticalMenu from "./components/VerticalMenu";
 import HorizontalMenu from "./components/HorizontalMenu";
 import MainRoutes from "./routes/MainRoutes";
 import EditUserDialog from "./components/EditUserDialog";
-import Breadcrumb from "./components/Breadcrumb"; // Exibe o caminho da página
+import Breadcrumb from "./components/Breadcrumb";
+import axios from "axios";
+
+// Configura o interceptor do axios para enviar o token em todas as requisições
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 function AppWrapper() {
   return (
@@ -21,7 +35,6 @@ function AppWrapper() {
 }
 
 function App() {
-  // Estados do aplicativo
   const [menuAberto, setMenuAberto] = useState(true);
   const [loggedUser, setLoggedUser] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -29,24 +42,12 @@ function App() {
 
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Normaliza o pathname removendo a barra final (se houver)
   const normalizedPath = location.pathname.replace(/\/$/, "");
-
-  // Definindo as rotas públicas para o redirecionamento (usuário não autenticado pode acessar)
-  // Essas rotas não exigem autenticação.
   const publicPaths = ["/login", "/cadastroUsuario"];
   const isPublicAuthPage = publicPaths.includes(normalizedPath);
-
-  // Para exibir os menus, queremos escondê-los somente na página de login.
   const hideMenus = normalizedPath === "/login";
-
-  // Larguras para o menu lateral (quando exibido)
   const drawerWidthExpanded = 200;
   const drawerWidthCollapsed = 0;
-
-  // Cálculo do posicionamento e largura da área de conteúdo.
-  // Se os menus estiverem exibidos, aplicamos um margin-left; caso contrário, 0.
   const mainMarginLeft =
     !hideMenus && menuAberto ? `${drawerWidthExpanded}px` : "0px";
   const appBarLeft =
@@ -56,8 +57,6 @@ function App() {
       ? `calc(100% - ${drawerWidthExpanded}px)`
       : "100%";
 
-  // Verifica se há um usuário logado; se não houver e a página não for pública,
-  // redireciona para a página de login.
   useEffect(() => {
     const userFromStorage = localStorage.getItem("loggedUser");
     if (userFromStorage) {
@@ -67,22 +66,18 @@ function App() {
     }
   }, [navigate, normalizedPath, isPublicAuthPage]);
 
-  // Função para alternar o menu lateral
   const alternarMenu = () => setMenuAberto(!menuAberto);
-
-  // Funções para abrir/fechar o dropdown do menu
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
 
-  // Função para logout
   const handleLogout = () => {
     setLoggedUser(null);
     localStorage.removeItem("loggedUser");
+    localStorage.removeItem("token");
     setAnchorEl(null);
     navigate("/login");
   };
 
-  // Funções para abrir/fechar o modal de edição do usuário
   const handleEditUser = () => {
     setEditDialogOpen(true);
   };
@@ -94,7 +89,6 @@ function App() {
   return (
     <UserProvider>
       <Box sx={{ display: "flex", height: "100vh" }}>
-        {/* Renderiza os menus se não estivermos na página de login */}
         {!hideMenus && (
           <>
             <VerticalMenu
@@ -116,8 +110,6 @@ function App() {
             />
           </>
         )}
-
-        {/* Área principal */}
         <Box
           component="main"
           sx={{
@@ -129,15 +121,12 @@ function App() {
               : "margin-left none, margin-top 0.3s",
             backgroundColor: "#ECF0F1",
             width: "100%",
-            position: "relative", // Necessário para posicionar o Breadcrumb corretamente
+            position: "relative",
           }}
         >
-          {/* Exibe o Breadcrumb se não estivermos na página de login */}
           {!hideMenus && <Breadcrumb />}
           <MainRoutes loggedUser={loggedUser} setLoggedUser={setLoggedUser} />
         </Box>
-
-        {/* Modal de edição do usuário */}
         {loggedUser && (
           <EditUserDialog
             open={editDialogOpen}
