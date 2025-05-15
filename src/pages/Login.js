@@ -14,32 +14,43 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function Login({ setLoggedUser }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [erro, setErro] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [erro, setErro] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleTogglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+    setShowPassword((prev) => !prev);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Cria os parâmetros no formato URLSearchParams
+    const params = new URLSearchParams();
+    params.append('username', email);
+    params.append('password', password);
+
     try {
-      const response = await axios.post("http://localhost:8000/login", {
-        username: email,
-        password: password,
-      });
+      const response = await axios.post(
+        'http://localhost:8000/login',
+        params,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        }
+      );
       const { access_token } = response.data;
-      localStorage.setItem("token", access_token);
-      // Armazena também os dados do usuário, se desejar decodificar o token ou salvar o email.
+      localStorage.setItem('token', access_token);
+      // Armazena os dados do usuário se necessário
       setLoggedUser({ email, token: access_token });
-      setErro("");
-      navigate("/");
+      setErro('');
+      navigate('/');
     } catch (error) {
       console.error(error);
-      setErro("Email ou senha inválidos!");
+      setErro('Email ou senha inválidos!');
     }
   };
 

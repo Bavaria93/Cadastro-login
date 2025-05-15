@@ -21,39 +21,51 @@ export const UserProvider = ({ children }) => {
     return permissionsFromStorage ? JSON.parse(permissionsFromStorage) : [];
   });
 
-  // Adicione o estado para courses
+  // Carrega as courses do localStorage; se não houver, inicia com um array vazio.
   const [courses, setCourses] = useState(() => {
     const coursesFromStorage = localStorage.getItem('courses');
     return coursesFromStorage ? JSON.parse(coursesFromStorage) : [];
   });
 
-  // Sempre que a lista de usuários mudar, salva no localStorage.
+  // Estado para o token do usuário.
+  const [userToken, setUserToken] = useState(() => localStorage.getItem('token') || null);
+
+  // Atualiza o localStorage sempre que os estados mudarem.
   useEffect(() => {
     localStorage.setItem('users', JSON.stringify(users));
   }, [users]);
 
-  // Sempre que a lista de perfis mudar, salva no localStorage.
   useEffect(() => {
     localStorage.setItem('profiles', JSON.stringify(profiles));
   }, [profiles]);
 
-  // Sempre que a lista de permissões mudar, salva no localStorage.
   useEffect(() => {
     localStorage.setItem('permissions', JSON.stringify(permissions));
   }, [permissions]);
 
-  // Sempre que a lista de cursos mudar, salva no localStorage.
   useEffect(() => {
     localStorage.setItem('courses', JSON.stringify(courses));
   }, [courses]);
 
+  // Sempre que o token mudar, armazena no localStorage ou remove caso esteja nulo.
+  useEffect(() => {
+    if (userToken) {
+      localStorage.setItem('token', userToken);
+    } else {
+      localStorage.removeItem('token');
+    }
+  }, [userToken]);
+
   return (
-    <UserContext.Provider value={{ 
-      users, setUsers, 
-      profiles, setProfiles, 
-      permissions, setPermissions, 
-      courses, setCourses
-    }}>
+    <UserContext.Provider
+      value={{
+        users, setUsers,
+        profiles, setProfiles,
+        permissions, setPermissions,
+        courses, setCourses,
+        userToken, setUserToken,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

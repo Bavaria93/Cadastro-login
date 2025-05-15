@@ -17,7 +17,8 @@ import { UserContext } from "../contexts/UserContext";
 import ProfileSection from "../components/ProfileSection";
 
 function CadastroUsuario() {
-  const { users, setUsers } = useContext(UserContext);
+  // Recupera usuários, função para atualizar usuários e o token do contexto.
+  const { users, setUsers, userToken } = useContext(UserContext);
 
   // Estados dos campos do formulário
   const [name, setName] = useState("");
@@ -56,7 +57,9 @@ function CadastroUsuario() {
     let tempErrors = {};
 
     tempErrors.name = name
-      ? (/\d/.test(name) ? "Nome não pode incluir números" : "")
+      ? /\d/.test(name)
+        ? "Nome não pode incluir números"
+        : ""
       : "Nome é obrigatório";
 
     tempErrors.email = email
@@ -133,7 +136,9 @@ function CadastroUsuario() {
       return;
     }
     setIsProfileAssociated(true);
-    setDialogMessage("Perfil(ns) associado(s)! Agora, clique em 'Cadastrar Usuário' para finalizar o cadastro.");
+    setDialogMessage(
+      "Perfil(ns) associado(s)! Agora, clique em 'Cadastrar Usuário' para finalizar o cadastro."
+    );
     setDialogType("success");
     setDialogOpen(true);
   };
@@ -143,9 +148,13 @@ function CadastroUsuario() {
     const formData = new FormData();
     formData.append("file", selectedPhoto);
     try {
-      const response = await axios.post(`http://localhost:8000/users/${userId}/photo`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const response = await axios.post(
+        `http://localhost:8000/users/${userId}/photo`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" }
+        }
+      );
       return response.data;
     } catch (error) {
       console.error("Erro ao fazer upload da foto:", error);
@@ -176,7 +185,12 @@ function CadastroUsuario() {
     };
 
     try {
-      const response = await axios.post("http://localhost:8000/users/", newUserData);
+      // Configuração para incluir o token de autenticação no header
+      const config = {
+        headers: { Authorization: `Bearer ${userToken}` }
+      };
+
+      const response = await axios.post("http://localhost:8000/users/", newUserData, config);
       let createdUser = response.data;
       if (selectedPhoto) {
         const updatedUser = await handleUploadPhoto(createdUser.id);
