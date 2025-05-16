@@ -42,10 +42,18 @@ function Login({ setLoggedUser }) {
           },
         }
       );
-      const { access_token } = response.data;
+
+      const { access_token, name, photo } = response.data;
+
+      // Salva o token no localStorage
       localStorage.setItem('token', access_token);
-      // Armazena os dados do usuário se necessário
-      setLoggedUser({ email, token: access_token });
+
+      // Salva os dados do usuário (loggedUser) no localStorage
+      const loggedUserData = { email, token: access_token, name, photo };
+      localStorage.setItem('loggedUser', JSON.stringify(loggedUserData));
+
+      // Atualiza o estado do usuário e redireciona para a tela inicial
+      setLoggedUser(loggedUserData);
       setErro('');
       navigate('/');
     } catch (error) {
