@@ -1,3 +1,4 @@
+// CadastroSolicitacao.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -19,36 +20,70 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
+import CourseSelect from "../components/CourseSelect";
+import CampusesSelect from "../components/CampusesSelect";
+import { tipoPublicacaoOptions } from "../constants/tipoPublicacao";
+import { jobFunctionOptions } from "../constants/jobFunctionOptions";
 
 function CadastroSolicitacao() {
-  // States for the edital fields and for generating the notice label in real time
+  // Estados para os campos do edital (sem alterações)
   const [numeroEdital, setNumeroEdital] = useState("");
   const [dataEdital, setDataEdital] = useState("");
   const [noticeLabel, setNoticeLabel] = useState("");
 
-  // States for the other fields
+  // Estados para os demais campos originais
   const [funcao, setFuncao] = useState("");
   const [outraFuncao, setOutraFuncao] = useState("");
-  const [polos, setPolos] = useState("");
+  // Como os polos serão vinculados via dropdown multiselect,
+  // removemos o estado antigo "polos".
   const [tipoPublicacao, setTipoPublicacao] = useState("");
   const [inscInicio, setInscInicio] = useState("");
   const [inscFim, setInscFim] = useState("");
   const [docComprob, setDocComprob] = useState("Não");
   const [dataPublicacao, setDataPublicacao] = useState("");
 
-  // States for dialog feedback
+  // Novos estados para seleção de Curso e Polos (campuses)
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [courses, setCourses] = useState([]);
+  const [campuses, setCampuses] = useState([]);
+  const [selectedCampuses, setSelectedCampuses] = useState([]);
+
+  // Estados para feedback do diálogo
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [dialogType, setDialogType] = useState("success");
 
-  // Update the notice label in real time based on "Número do Edital" and "Data do Edital"
+  // Atualiza o rótulo do edital em tempo real
   useEffect(() => {
-    // Date formatting can be enhanced here if needed.
     const formattedData = dataEdital;
     setNoticeLabel(`${numeroEdital} - ${formattedData}`);
   }, [numeroEdital, dataEdital]);
 
-  // Validate required fields
+  // Carrega os cursos via API quando o componente é montado
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/courses/");
+        setCourses(response.data);
+      } catch (error) {
+        console.error("Erro ao carregar cursos:", error);
+      }
+    };
+    fetchCourses();
+  }, []);
+
+  // Quando um curso é selecionado, carrega os polos vinculados e limpa seleção anterior
+  useEffect(() => {
+    if (selectedCourse) {
+      const course = courses.find((c) => c.id === selectedCourse);
+      setCampuses(course?.campuses || []);
+      setSelectedCampuses([]);
+    } else {
+      setCampuses([]);
+      setSelectedCampuses([]);
+    }
+  }, [selectedCourse, courses]);
+
   const validateFields = () => {
     if (!numeroEdital.trim() || !dataEdital || !funcao || !tipoPublicacao || !dataPublicacao) {
       return false;
@@ -57,10 +92,27 @@ function CadastroSolicitacao() {
     if (tipoPublicacao === "Publicação de Edital/Abertura das Inscrições" && (!inscInicio || !inscFim)) {
       return false;
     }
+    if (!selectedCourse) return false;
+    if (selectedCampuses.length === 0) return false;
     return true;
   };
 
-  // Submit form data to the API
+  const clearForm = () => {
+    setNumeroEdital("");
+    setDataEdital("");
+    setNoticeLabel("");
+    setFuncao("");
+    setOutraFuncao("");
+    setTipoPublicacao("");
+    setInscInicio("");
+    setInscFim("");
+    setDocComprob("Não");
+    setDataPublicacao("");
+    setSelectedCourse("");
+    setCampuses([]);
+    setSelectedCampuses([]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateFields()) {
@@ -69,19 +121,18 @@ function CadastroSolicitacao() {
       setDialogOpen(true);
       return;
     }
-    // Prepare the form data. Note: sagitta_id e course_id são valores dummy.
     const formData = {
       notice_label: noticeLabel,
       job_function: funcao === "Outros" ? outraFuncao : funcao,
       publication_type: tipoPublicacao,
-      polos: polos,
+      campuses: selectedCampuses, // IDs dos polos selecionados
       periodoInscricao:
         tipoPublicacao === "Publicação de Edital/Abertura das Inscrições"
           ? { inicio: inscInicio, fim: inscFim, publicarDocumentacao: docComprob }
           : null,
       dataPublicacao: dataPublicacao,
       sagitta_id: 0,
-      course_id: 0
+      course_id: selectedCourse,
     };
 
     try {
@@ -99,20 +150,6 @@ function CadastroSolicitacao() {
     }
   };
 
-  const clearForm = () => {
-    setNumeroEdital("");
-    setDataEdital("");
-    setNoticeLabel("");
-    setFuncao("");
-    setOutraFuncao("");
-    setPolos("");
-    setTipoPublicacao("");
-    setInscInicio("");
-    setInscFim("");
-    setDocComprob("Não");
-    setDataPublicacao("");
-  };
-
   const handleCloseDialog = () => {
     setDialogOpen(false);
   };
@@ -127,8 +164,8 @@ function CadastroSolicitacao() {
         <Typography variant="h4" align="center" gutterBottom>
           Publicação de Processos Seletivos Simplificados - UAB/UFPA
         </Typography>
-        
-        {/* Row for "Número do Edital" and "Data do Edital" */}
+
+        {/* Linha para "Número do Edital" e "Data do Edital" */}
         <Box sx={{ display: "flex", gap: 2 }}>
           <TextField
             label="Número do Edital"
@@ -147,8 +184,8 @@ function CadastroSolicitacao() {
             required
           />
         </Box>
-        
-        {/* Non-editable field showing the notice label in real time */}
+
+        {/* Campo não editável mostrando o rótulo do edital */}
         <TextField
           label="Rótulo do Edital"
           value={noticeLabel}
@@ -157,44 +194,53 @@ function CadastroSolicitacao() {
           variant="filled"
         />
 
-        {/* Job Function - will be saved in the JobFunction table (column "position") */}
+        {/* Seleção de função e, caso "Outros", campo de texto adicional */}
         <FormControl component="fieldset">
-          <FormLabel component="legend">Processo Seletivo para qual função?</FormLabel>
-          <RadioGroup
-            value={funcao}
-            onChange={(e) => setFuncao(e.target.value)}
-            row
-          >
-            <FormControlLabel value="Discente" control={<Radio />} label="Discente" />
-            <FormControlLabel value="Equipe de Apoio Multidisciplinar" control={<Radio />} label="Equipe de Apoio Multidisciplinar" />
-            <FormControlLabel value="Coordenador de Curso" control={<Radio />} label="Coordenador de Curso" />
-            <FormControlLabel value="Coordenador de Tutoria" control={<Radio />} label="Coordenador de Tutoria" />
-            <FormControlLabel value="Professor Formador" control={<Radio />} label="Professor Formador" />
-            <FormControlLabel value="Tutor a Distância" control={<Radio />} label="Tutor a Distância" />
-            <FormControlLabel value="Tutor Presencial" control={<Radio />} label="Tutor Presencial" />
-            <FormControlLabel value="Tutor a Distância e/ou Presencial" control={<Radio />} label="Tutor a Distância e/ou Presencial" />
-            <FormControlLabel value="Outros" control={<Radio />} label="Outros" />
-          </RadioGroup>
-          {funcao === "Outros" && (
-            <TextField
-              label="Informe a função"
-              value={outraFuncao}
-              onChange={(e) => setOutraFuncao(e.target.value)}
-              fullWidth
-              required
-            />
-          )}
-        </FormControl>
-        
-        {/* Field for "Polos" */}
+      <FormLabel component="legend">
+        Processo Seletivo para qual função?
+      </FormLabel>
+      <RadioGroup
+        value={funcao}
+        onChange={(e) => setFuncao(e.target.value)}
+        row
+      >
+        {jobFunctionOptions.map((option, index) => (
+          <FormControlLabel
+            key={index}
+            value={option}
+            control={<Radio />}
+            label={option}
+          />
+        ))}
+      </RadioGroup>
+      {funcao === "Outros" && (
         <TextField
-          label="Informe os polos"
-          value={polos}
-          onChange={(e) => setPolos(e.target.value)}
+          label="Informe a função"
+          value={outraFuncao}
+          onChange={(e) => setOutraFuncao(e.target.value)}
           fullWidth
+          required
+        />
+      )}
+    </FormControl>
+
+        {/* Dropdown para selecionar um Curso cadastrado */}
+        <CourseSelect
+          courses={courses}
+          selectedCourse={selectedCourse}
+          setSelectedCourse={setSelectedCourse}
         />
 
-        {/* Publication Type - will be saved in the PublicationType table (column "type") */}
+        {/* Dropdown multiselect para selecionar os polos vinculados ao curso escolhido */}
+        {selectedCourse && (
+          <CampusesSelect
+            campuses={campuses}
+            selectedCampuses={selectedCampuses}
+            setSelectedCampuses={setSelectedCampuses}
+          />
+        )}
+
+        {/* Campo para "Tipo de Publicação" */}
         <FormControl fullWidth required>
           <InputLabel id="tipo-publicacao-label">Tipo de Publicação</InputLabel>
           <Select
@@ -203,40 +249,14 @@ function CadastroSolicitacao() {
             label="Tipo de Publicação"
             onChange={(e) => setTipoPublicacao(e.target.value)}
           >
-            <MenuItem value="Publicação de Edital/Abertura das Inscrições">
-              Publicação de Edital/Abertura das Inscrições
-            </MenuItem>
-            <MenuItem value="Homologação das Inscrições">
-              Homologação das Inscrições
-            </MenuItem>
-            <MenuItem value="Resultado da Análise de Documentos">
-              Resultado da Análise de Documentos
-            </MenuItem>
-            <MenuItem value="Resultado da Entrevista">
-              Resultado da Entrevista
-            </MenuItem>
-            <MenuItem value="Resultado da Prova Escrita">
-              Resultado da Prova Escrita
-            </MenuItem>
-            <MenuItem value="Resultado Preliminar do Processo Seletivo Simplificado">
-              Resultado Preliminar do Processo Seletivo Simplificado
-            </MenuItem>
-            <MenuItem value="Local de Prova">Local de Prova</MenuItem>
-            <MenuItem value="Resultado Final do Processo Seletivo Simplificado">
-              Resultado Final do Processo Seletivo Simplificado
-            </MenuItem>
-            <MenuItem value="Atualização do Cronograma do Processo Seletivo Simplificado">
-              Atualização do Cronograma do Processo Seletivo Simplificado
-            </MenuItem>
-            <MenuItem value="Comunicado">Comunicado</MenuItem>
-            <MenuItem value="Resultado do Recurso">Resultado do Recurso</MenuItem>
-            <MenuItem value="Retificação/Errata">Retificação/Errata</MenuItem>
-            <MenuItem value="Convocação">Convocação</MenuItem>
-            <MenuItem value="Outras publicações">Outras publicações</MenuItem>
+            {tipoPublicacaoOptions.map((option, index) => (
+              <MenuItem key={index} value={option}>
+                {option}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
 
-        {/* Additional fields for Edital Publication */}
         {tipoPublicacao === "Publicação de Edital/Abertura das Inscrições" && (
           <>
             <TextField
@@ -266,14 +286,21 @@ function CadastroSolicitacao() {
                 value={docComprob}
                 onChange={(e) => setDocComprob(e.target.value)}
               >
-                <FormControlLabel value="Sim" control={<Radio />} label="Sim" />
-                <FormControlLabel value="Não" control={<Radio />} label="Não" />
+                <FormControlLabel
+                  value="Sim"
+                  control={<Radio />}
+                  label="Sim"
+                />
+                <FormControlLabel
+                  value="Não"
+                  control={<Radio />}
+                  label="Não"
+                />
               </RadioGroup>
             </FormControl>
           </>
         )}
 
-        {/* Publication Date */}
         <TextField
           label="Data da Publicação"
           type="date"
@@ -292,7 +319,9 @@ function CadastroSolicitacao() {
       </Box>
 
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
-        <DialogTitle>{dialogType === "success" ? "Sucesso!" : "Erro!"}</DialogTitle>
+        <DialogTitle>
+          {dialogType === "success" ? "Sucesso!" : "Erro!"}
+        </DialogTitle>
         <DialogContent>
           <Typography>{dialogMessage}</Typography>
         </DialogContent>
