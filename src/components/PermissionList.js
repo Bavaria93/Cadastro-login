@@ -1,31 +1,40 @@
-import React from "react";
-import { Box, Typography, List, ListItem, ListItemText, Checkbox } from "@mui/material";
+import React, { useState } from "react";
+import { List, ListItem, ListItemText, Checkbox } from "@mui/material";
+import PaginationControls from "./PaginationControls";
 
-const PermissionList = ({ permissions, selectedPermissions, onTogglePermission, itemsPerPage }) => {
+const PermissionList = ({ permissions, selectedPermissions, onTogglePermission, itemsPerPage = 5 }) => {
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   return (
-    <Box>
-      {permissions.length === 0 ? (
-        <Typography variant="body2">Nenhuma permissão encontrada.</Typography>
-      ) : (
-        <List>
-          {permissions.map((permission) => (
+    <>
+      <List>
+        {permissions
+          .slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)
+          .map((permission) => (
             <ListItem
               key={permission.id}
               button
               onClick={() => onTogglePermission(permission.id)}
             >
-              <Checkbox
-                edge="start"
-                checked={selectedPermissions.includes(permission.id)}
-                tabIndex={-1}
-                disableRipple
+              <Checkbox checked={selectedPermissions.includes(permission.id)} />
+              <ListItemText
+                primary={permission.type}
+                secondary={permission.description}
               />
-              <ListItemText primary={`${permission.type} - ${permission.description}`} />
             </ListItem>
           ))}
-        </List>
-      )}
-    </Box>
+      </List>
+
+      <PaginationControls
+        totalItems={permissions.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={handlePageChange}
+      />
+    </>
   );
 };
 
