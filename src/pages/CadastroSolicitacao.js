@@ -1,5 +1,5 @@
 // CadastroSolicitacao.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import {
   Container,
@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  CircularProgress,
 } from "@mui/material";
 import CourseSelect from "../components/CourseSelect";
 import CampusesSelect from "../components/CampusesSelect";
@@ -47,6 +48,11 @@ function CadastroSolicitacao() {
   const [courses, setCourses] = useState([]);
   const [campuses, setCampuses] = useState([]);
   const [selectedCampuses, setSelectedCampuses] = useState([]);
+
+  // Estados e ref para upload do documento
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState(null);
 
   // Estados para feedback do diálogo
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -95,6 +101,41 @@ function CadastroSolicitacao() {
     if (!selectedCourse) return false;
     if (selectedCampuses.length === 0) return false;
     return true;
+  };
+
+  // Função acionada quando o usuário seleciona um arquivo
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+      // A opção verbose pode ser passada via query string se necessária, ou através do formData
+      try {
+        setUploading(true);
+        const response = await axios.post(
+          "http://200.239.90.80:8000/documents/analyze-document",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        console.log("Análise do documento:", response.data);
+        setAnalysisResult(response.data);
+      } catch (error) {
+        console.error("Erro ao enviar documento para análise:", error);
+      } finally {
+        setUploading(false);
+      }
+    }
+  };
+
+  // Função para abrir o input de arquivo via botão
+  const handleUploadButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   const clearForm = () => {
@@ -196,33 +237,33 @@ function CadastroSolicitacao() {
 
         {/* Seleção de função e, caso "Outros", campo de texto adicional */}
         <FormControl component="fieldset">
-      <FormLabel component="legend">
-        Processo Seletivo para qual função?
-      </FormLabel>
-      <RadioGroup
-        value={funcao}
-        onChange={(e) => setFuncao(e.target.value)}
-        row
-      >
-        {jobFunctionOptions.map((option, index) => (
-          <FormControlLabel
-            key={index}
-            value={option}
-            control={<Radio />}
-            label={option}
-          />
-        ))}
-      </RadioGroup>
-      {funcao === "Outros" && (
-        <TextField
-          label="Informe a função"
-          value={outraFuncao}
-          onChange={(e) => setOutraFuncao(e.target.value)}
-          fullWidth
-          required
-        />
-      )}
-    </FormControl>
+          <FormLabel component="legend">
+            Processo Seletivo para qual função?
+          </FormLabel>
+          <RadioGroup
+            value={funcao}
+            onChange={(e) => setFuncao(e.target.value)}
+            row
+          >
+            {jobFunctionOptions.map((option, index) => (
+              <FormControlLabel
+                key={index}
+                value={option}
+                control={<Radio />}
+                label={option}
+              />
+            ))}
+          </RadioGroup>
+          {funcao === "Outros" && (
+            <TextField
+              label="Informe a função"
+              value={outraFuncao}
+              onChange={(e) => setOutraFuncao(e.target.value)}
+              fullWidth
+              required
+            />
+          )}
+        </FormControl>
 
         {/* Dropdown para selecionar um Curso cadastrado */}
         <CourseSelect
@@ -310,6 +351,43 @@ function CadastroSolicitacao() {
           InputLabelProps={{ shrink: true }}
           required
         />
+
+        {/* Botão que dispara o upload para análise */}
+        <Box display="flex" justifyContent="center" my={2}>
+          <Button
+            variant="contained"
+            color="secondary"
+            type="button"
+            onClick={handleUploadButtonClick}
+          >
+            Analisar Documento
+          </Button>
+        </Box>
+
+        {/* Input oculto para upload */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
+
+        {/* Exibe um feedback enquanto o arquivo está sendo enviado */}
+        {uploading && (
+          <Box display="flex" justifyContent="center" m={2}>
+            <CircularProgress />
+          </Box>
+        )}
+        
+        {/* Exibe o resultado da análise, se houver */}
+        {analysisResult && (
+          <Box m={2} p={2} border="1px solid #ddd" borderRadius={2}>
+            <Typography variant="subtitle1" gutterBottom>
+              Resultado da Análise do Documento:
+            </Typography>
+            <pre>{JSON.stringify(analysisResult, null, 2)}</pre>
+          </Box>
+        )}
 
         <Box display="flex" justifyContent="center" my={2}>
           <Button variant="contained" color="primary" type="submit">

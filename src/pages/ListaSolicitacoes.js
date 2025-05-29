@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function ListaSolicitacoes() {
-  // Estado local para as solicitações obtidas da API
+  // Estados para as solicitações e diálogos.
   const [dbSolicitacoes, setDbSolicitacoes] = useState([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -58,7 +58,6 @@ function ListaSolicitacoes() {
     setDeleteDialogOpen(false);
   };
 
-  // Exclui a solicitação e atualiza a listagem
   const handleDeleteSolicitacao = async () => {
     if (selectedSolicitacaoId) {
       try {
