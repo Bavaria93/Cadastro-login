@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   AppBar,
   Toolbar,
@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import { Menu as MenuIcon, Search as SearchIcon } from "@mui/icons-material";
+import { AuthContext } from "../contexts/AuthContext";
 
 // Função auxiliar para garantir que a URL da foto esteja limpa e completa
 const getFullImageUrl = (photoPath) => {
@@ -27,11 +28,12 @@ const HorizontalMenu = ({
   alternarMenu,
   handleMenuOpen,
   anchorEl,
-  loggedUser,
   handleMenuClose,
   handleLogout,
-  handleEditUser, // Nova prop para disparar a edição de usuário
+  handleEditUser,
 }) => {
+  const { user } = useContext(AuthContext);
+
   return (
     <AppBar
       position="fixed"
@@ -77,14 +79,14 @@ const HorizontalMenu = ({
           <Avatar
             alt="Foto de Perfil"
             src={
-              loggedUser && loggedUser.photo
-                ? getFullImageUrl(loggedUser.photo)
+              user && user.photo
+                ? getFullImageUrl(user.photo)
                 : "https://via.placeholder.com/40"
             }
             sx={{ marginRight: 1 }}
           />
           <Typography variant="body1" sx={{ color: "white" }}>
-            {loggedUser && loggedUser.name ? loggedUser.name : "Usuário"}
+            {user && user.name ? user.name : "Usuário"}
           </Typography>
         </Box>
         <Menu

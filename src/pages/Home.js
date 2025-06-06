@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Typography } from "@mui/material";
+import { AuthContext } from "../contexts/AuthContext";
 
-const Home = ({ loggedUser }) => {
+const Home = () => {
+  const { user } = useContext(AuthContext);
+
   return (
     <Typography variant="h5">
-      {loggedUser && loggedUser.name
-        ? `Bem-vindo ao Home, ${loggedUser.name}!`
+      {user && user.name
+        ? `Bem-vindo ao Home, ${user.name}!`
         : "Bem-vindo ao Home!"}
     </Typography>
   );

@@ -1,39 +1,37 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
-import { Box } from "@mui/material";
-import Home from "../pages/Home";
-import CadastroUsuario from "../pages/CadastroUsuario";
-import ListaUsuarios from "../pages/ListaUsuarios";
-import CadastroPerfil from "../pages/CadastroPerfil";
-import ListaPerfis from "../pages/ListaPerfis";
-import AssociarPerfil from "../pages/AssociarPerfil";
-import CadastroPermissao from "../pages/CadastroPermissao";
-import ListaPermissoes from "../pages/ListaPermissoes";
-import AssociarPermissao from "../pages/AssociarPermissao";
-import Login from "../pages/Login";
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { Box } from '@mui/material';
+import Home from '../pages/Home';
+import CadastroUsuario from '../pages/CadastroUsuario';
+import ListaUsuarios from '../pages/ListaUsuarios';
+import CadastroPerfil from '../pages/CadastroPerfil';
+import ListaPerfis from '../pages/ListaPerfis';
+import AssociarPerfil from '../pages/AssociarPerfil';
+import CadastroPermissao from '../pages/CadastroPermissao';
+import ListaPermissoes from '../pages/ListaPermissoes';
+import AssociarPermissao from '../pages/AssociarPermissao';
+import Login from '../pages/Login';
+import ListaCursos from '../pages/ListaCursos';
+import CadastroCurso from '../pages/CadastroCurso';
+import ListaSolicitacoes from '../pages/ListaSolicitacoes';
+import CadastroSolicitacao from '../pages/CadastroSolicitacao';
+import PrivateRoute from '../components/PrivateRoute';
 
-// Novas páginas para Cursos e Solicitações
-import ListaCursos from "../pages/ListaCursos";
-import CadastroCurso from "../pages/CadastroCurso";
-import ListaSolicitacoes from "../pages/ListaSolicitacoes";
-import CadastroSolicitacao from "../pages/CadastroSolicitacao";
-import PrivateRoute from "../components/PrivateRoute";
-
-const MainRoutes = ({ loggedUser, setLoggedUser }) => {
+const MainRoutes = () => {
   return (
-    <Box sx={{ padding: "20px" }}>
+    <Box sx={{ padding: '20px' }}>
       <Routes>
-        <Route path="/login" element={<Login setLoggedUser={setLoggedUser} />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/cadastroUsuario" element={<CadastroUsuario />} />
-
         <Route
           path="/"
           element={
             <PrivateRoute>
-              <Home loggedUser={loggedUser} />
+              <Home />
             </PrivateRoute>
           }
         />
+        {/* Outras rotas protegidas */}
         <Route
           path="/usuarios"
           element={
@@ -90,8 +88,6 @@ const MainRoutes = ({ loggedUser, setLoggedUser }) => {
             </PrivateRoute>
           }
         />
-
-        {/* Rotas para Cursos */}
         <Route
           path="/cursos"
           element={
@@ -108,7 +104,6 @@ const MainRoutes = ({ loggedUser, setLoggedUser }) => {
             </PrivateRoute>
           }
         />
-        {/* Rotas para Solicitações */}
         <Route
           path="/solicitacoes"
           element={

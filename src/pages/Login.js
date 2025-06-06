@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   Container,
   TextField,
@@ -11,14 +11,15 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { AuthContext } from '../contexts/AuthContext';
 
-function Login({ setLoggedUser }) {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [erro, setErro] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { signIn } = useContext(AuthContext);
 
   const handleTogglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
@@ -26,38 +27,12 @@ function Login({ setLoggedUser }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Cria os parâmetros no formato URLSearchParams
-    const params = new URLSearchParams();
-    params.append('username', email);
-    params.append('password', password);
-
+    setErro('');
     try {
-      const response = await axios.post(
-        'http://localhost:8000/login',
-        params,
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-        }
-      );
-
-      const { access_token, name, photo } = response.data;
-
-      // Salva o token no localStorage
-      localStorage.setItem('token', access_token);
-
-      // Salva os dados do usuário (loggedUser) no localStorage
-      const loggedUserData = { email, token: access_token, name, photo };
-      localStorage.setItem('loggedUser', JSON.stringify(loggedUserData));
-
-      // Atualiza o estado do usuário e redireciona para a tela inicial
-      setLoggedUser(loggedUserData);
-      setErro('');
+      await signIn(email, password);
       navigate('/');
     } catch (error) {
-      console.error(error);
+      console.error('Erro no login:', error);
       setErro('Email ou senha inválidos!');
     }
   };
@@ -138,6 +113,6 @@ function Login({ setLoggedUser }) {
       </Box>
     </Container>
   );
-}
+};
 
 export default Login;

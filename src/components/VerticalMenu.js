@@ -1,8 +1,16 @@
 import React from "react";
 import { Drawer, List, ListItem, ListItemText } from "@mui/material";
 import { Link } from "react-router-dom";
+import { usePermission } from "../hooks/usePermission";
 
 const VerticalMenu = ({ menuAberto, drawerWidthExpanded, drawerWidthCollapsed }) => {
+  // Verifica as permissões necessárias para exibir cada item.
+  const canViewUsers = usePermission("LIST_USERS");
+  const canViewProfiles = usePermission("VIEW_PROFILES");
+  const canViewPermissions = usePermission("VIEW_PERMISSIONS");
+  const canViewCourses = usePermission("VIEW_COURSES");
+  const canViewRequests = usePermission("VIEW_REQUESTS");
+
   return (
     <Drawer
       variant="persistent"
@@ -29,31 +37,46 @@ const VerticalMenu = ({ menuAberto, drawerWidthExpanded, drawerWidthCollapsed })
             <ListItemText primary="Home" />
           </Link>
         </ListItem>
-        <ListItem button>
-          <Link to="/usuarios" style={{ textDecoration: "none", color: "white" }}>
-            <ListItemText primary="Lista de Usuários" />
-          </Link>
-        </ListItem>
-        <ListItem button>
-          <Link to="/perfis" style={{ textDecoration: "none", color: "white" }}>
-            <ListItemText primary="Lista de Perfis" />
-          </Link>
-        </ListItem>
-        <ListItem button>
-          <Link to="/permissoes" style={{ textDecoration: "none", color: "white" }}>
-            <ListItemText primary="Lista de Permissões" />
-          </Link>
-        </ListItem>
-        <ListItem button>
-          <Link to="/cursos" style={{ textDecoration: "none", color: "white" }}>
-            <ListItemText primary="Lista de Cursos" />
-          </Link>
-        </ListItem>
-        <ListItem button>
-          <Link to="/solicitacoes" style={{ textDecoration: "none", color: "white" }}>
-            <ListItemText primary="Lista de Solicitações" />
-          </Link>
-        </ListItem>
+
+        {canViewUsers && (
+          <ListItem button>
+            <Link to="/usuarios" style={{ textDecoration: "none", color: "white" }}>
+              <ListItemText primary="Lista de Usuários" />
+            </Link>
+          </ListItem>
+        )}
+
+        {canViewProfiles && (
+          <ListItem button>
+            <Link to="/perfis" style={{ textDecoration: "none", color: "white" }}>
+              <ListItemText primary="Lista de Perfis" />
+            </Link>
+          </ListItem>
+        )}
+
+        {canViewPermissions && (
+          <ListItem button>
+            <Link to="/permissoes" style={{ textDecoration: "none", color: "white" }}>
+              <ListItemText primary="Lista de Permissões" />
+            </Link>
+          </ListItem>
+        )}
+
+        {canViewCourses && (
+          <ListItem button>
+            <Link to="/cursos" style={{ textDecoration: "none", color: "white" }}>
+              <ListItemText primary="Lista de Cursos" />
+            </Link>
+          </ListItem>
+        )}
+
+        {canViewRequests && (
+          <ListItem button>
+            <Link to="/solicitacoes" style={{ textDecoration: "none", color: "white" }}>
+              <ListItemText primary="Lista de Solicitações" />
+            </Link>
+          </ListItem>
+        )}
       </List>
     </Drawer>
   );
