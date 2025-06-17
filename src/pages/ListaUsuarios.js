@@ -14,6 +14,7 @@ import UserCard from "../components/UserCard";
 import EditUserDialog from "../components/EditUserDialog";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { usePermission } from "../hooks/usePermission";
 
 function ListaUsuarios() {
   // Estado local exclusivo para os usuários vindos do backend
@@ -23,6 +24,10 @@ function ListaUsuarios() {
   const [selectedUserId, setSelectedUserId] = useState(null);
 
   const navigate = useNavigate();
+
+  // Verifica as permissões necessárias para exibir cada item.
+  const canEditUsers = usePermission("Atualizar Usuário");
+  const canDeleteUsers = usePermission("Excluir Usuário");
 
   // Busca os usuários salvos no banco usando o endpoint "/users/"
   useEffect(() => {
@@ -101,49 +106,53 @@ function ListaUsuarios() {
           <Grid item key={user.id} xs={12} sm={6} md={4}>
             <UserCard
               user={user}
-              onEdit={() => handleOpenEditDialog(user.id)}
-              onDelete={() => handleOpenDeleteDialog(user)}
+              onEdit={canEditUsers ? () => handleOpenEditDialog(user.id) : null}
+              onDelete={canDeleteUsers ? () => handleOpenDeleteDialog(user) : null}
               formatDate={formatDate}
             />
           </Grid>
         ))}
       </Grid>
 
-      {/* Diálogo para confirmação de exclusão */}
-      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
-        <DialogTitle>Confirmar Exclusão</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Tem certeza de que deseja excluir o usuário{" "}
-            <strong>
-              {dbUsers.find((user) => user.id === selectedUserId)?.name}
-            </strong>
-            ?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="primary">
-            Cancelar
-          </Button>
-          <Button onClick={handleDeleteUser} color="secondary">
-            Excluir
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Diálogo para confirmação de exclusão (aparece só se houver permissão) */}
+      {canDeleteUsers && (
+        <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
+          <DialogTitle>Confirmar Exclusão</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Tem certeza de que deseja excluir o usuário{" "}
+              <strong>
+                {dbUsers.find((user) => user.id === selectedUserId)?.name}
+              </strong>
+              ?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDeleteDialog} color="primary">
+              Cancelar
+            </Button>
+            <Button onClick={handleDeleteUser} color="secondary">
+              Excluir
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
 
-      {/* Modal para edição do usuário */}
-      <EditUserDialog
-        open={editDialogOpen}
-        onClose={handleCloseEditDialog}
-        user={dbUsers.find((user) => user.id === selectedUserId)}
-        setLoggedUser={(updatedUser) => {
-          setDbUsers((prevUsers) =>
-            prevUsers.map((user) =>
-              user.id === updatedUser.id ? updatedUser : user
-            )
-          );
-        }}
-      />
+      {/* Modal para edição do usuário (aparece só se houver permissão) */}
+      {canEditUsers && (
+        <EditUserDialog
+          open={editDialogOpen}
+          onClose={handleCloseEditDialog}
+          user={dbUsers.find((user) => user.id === selectedUserId)}
+          setLoggedUser={(updatedUser) => {
+            setDbUsers((prevUsers) =>
+              prevUsers.map((user) =>
+                user.id === updatedUser.id ? updatedUser : user
+              )
+            );
+          }}
+        />
+      )}
     </Container>
   );
 }

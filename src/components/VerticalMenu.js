@@ -5,11 +5,10 @@ import { usePermission } from "../hooks/usePermission";
 
 const VerticalMenu = ({ menuAberto, drawerWidthExpanded, drawerWidthCollapsed }) => {
   // Verifica as permissões necessárias para exibir cada item.
-  const canViewUsers = usePermission("LIST_USERS");
-  const canViewProfiles = usePermission("VIEW_PROFILES");
-  const canViewPermissions = usePermission("VIEW_PERMISSIONS");
-  const canViewCourses = usePermission("VIEW_COURSES");
-  const canViewRequests = usePermission("VIEW_REQUESTS");
+  const canViewUsers = usePermission("Listar Usuário");
+  const canViewProfiles = usePermission("Listar Perfil");
+  const canViewPermissions = usePermission("Listar Permissão");
+  const canViewCourses = usePermission("Listar Curso");
 
   return (
     <Drawer
@@ -70,13 +69,11 @@ const VerticalMenu = ({ menuAberto, drawerWidthExpanded, drawerWidthCollapsed })
           </ListItem>
         )}
 
-        {canViewRequests && (
           <ListItem button>
             <Link to="/solicitacoes" style={{ textDecoration: "none", color: "white" }}>
               <ListItemText primary="Lista de Solicitações" />
             </Link>
           </ListItem>
-        )}
       </List>
     </Drawer>
   );

@@ -1,8 +1,8 @@
-// src/App.js
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 import { BrowserRouter as Router, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './contexts/AuthContext';
+import { UserProvider } from "./contexts/UserContext";
 import VerticalMenu from './components/VerticalMenu';
 import HorizontalMenu from './components/HorizontalMenu';
 import MainRoutes from './routes/MainRoutes';
@@ -45,7 +45,9 @@ function AppWrapper() {
   return (
     <Router>
       <AuthProvider>
-        <App />
+        <UserProvider>
+          <App />
+        </UserProvider>
       </AuthProvider>
     </Router>
   );

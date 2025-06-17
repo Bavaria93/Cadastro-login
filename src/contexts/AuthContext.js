@@ -29,28 +29,34 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const signIn = async (email, password) => {
-    try {
-      const data = await authService.login(email, password);
-      if (data) {
-        // Atualiza localStorage e estados
-        localStorage.setItem('token', data.access_token);
-        const userData = {
-          email,
-          token: data.access_token,
-          name: data.name,
-          photo: data.photo,
-          permissions: data.permissions, // campo contendo um array com as permissões do usuário
-        };
-        localStorage.setItem('loggedUser', JSON.stringify(userData));
+  try {
+    const data = await authService.login(email, password);
+    if (data) {
+      // Decodifica o token para extrair as informações adicionais, como as permissões
+      const decodedToken = jwtDecode(data.access_token);
 
-        setToken(data.access_token);
-        setUser(userData);
-      }
-      return data;
-    } catch (error) {
-      throw error;
+      // Cria o objeto de usuário incluindo as permissões extraídas do token.
+      const userData = { 
+        email, 
+        token: data.access_token, 
+        name: data.name, 
+        photo: data.photo,
+        permissions: decodedToken.permissions || []  // use o campo correto conforme o token
+      };
+
+      // Armazena os dados no localStorage
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('loggedUser', JSON.stringify(userData));
+
+      // Atualiza os estados do contexto
+      setToken(data.access_token);
+      setUser(userData);
     }
-  };
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
 
   const signOut = () => {
     localStorage.removeItem('token');

@@ -4,13 +4,16 @@ import GenericCard from "./GenericCard";
 import axios from "axios";
 
 const UserCard = ({ user, onEdit, onDelete, formatDate }) => {
-  
+  // Verifica se o componente pai enviou o callback de exclusão
+  // (isso indica que o usuário tem permissão para excluir)
+  const deleteEnabled = Boolean(onDelete);
+
   // Função de exclusão específica para usuário
   const handleDeleteUser = async (userData) => {
     try {
       await axios.delete(`http://localhost:8000/users/${userData.id}`);
       if (onDelete) {
-        onDelete(userData);
+        onDelete(userData); // avisa o componente pai para remover da lista
       }
     } catch (error) {
       console.error("Erro ao excluir usuário:", error);
@@ -18,7 +21,11 @@ const UserCard = ({ user, onEdit, onDelete, formatDate }) => {
   };
 
   return (
-    <GenericCard data={user} onEdit={onEdit} onDelete={handleDeleteUser}>
+    <GenericCard
+      data={user}
+      onEdit={onEdit}
+      {...(deleteEnabled && { onDelete: handleDeleteUser })}
+    >
       <Typography
         variant="h5"
         style={{
