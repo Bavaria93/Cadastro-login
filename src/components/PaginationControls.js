@@ -1,34 +1,70 @@
-import React, { useEffect, useState } from "react";
-import { Box, Pagination } from "@mui/material";
+import React, { useEffect, useState, useRef } from "react";
+import { Box, CircularProgress, Pagination } from "@mui/material";
 
-const PaginationControls = ({ totalItems, itemsPerPage, onPageChange }) => {
-  // Usamos currentPage iniciando em 1 para compatibilidade com o componente Pagination
+const PaginationControls = ({
+  totalItems,
+  itemsPerPage,
+  onPageChange,
+  lazyLoad = false,
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const observerRef = useRef();
 
+  // Notifica o pai quando a página muda (convertendo de 1-index para 0-index, se necessário)
   useEffect(() => {
     if (onPageChange) {
-      // Se necessário, convertemos de 1-index para 0-index
       onPageChange(currentPage - 1);
     }
   }, [currentPage, onPageChange]);
 
+  // Se lazyLoad estiver ativo, usamos IntersectionObserver para atualizar a página
+  useEffect(() => {
+    if (lazyLoad && observerRef.current && currentPage < totalPages) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+            }
+          });
+        },
+        {
+          threshold: 0.5, // ativa quando 50% do elemento estiver visível
+        }
+      );
+      observer.observe(observerRef.current);
+      return () => observer.disconnect();
+    }
+  }, [lazyLoad, currentPage, totalPages]);
+
+  // Handler padrão (para modo não lazy)
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
 
   return (
-    <Box display="flex" justifyContent="center" mt={2}>
-      <Pagination
-        count={totalPages}
-        page={currentPage}
-        onChange={handlePageChange}
-        color="primary"
-        variant="outlined"
-        shape="rounded"
-        siblingCount={1}
-        boundaryCount={1}
-      />
+    <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
+      {lazyLoad ? (
+        // Quando lazyLoad está ativo, não exibimos o controle de paginação,
+        // apenas um spinner que, ao ficar visível, dispara a próxima página.
+        currentPage < totalPages && (
+          <div ref={observerRef} style={{ marginTop: 20 }}>
+            <CircularProgress />
+          </div>
+        )
+      ) : (
+        <Pagination
+          count={totalPages}
+          page={currentPage}
+          onChange={handlePageChange}
+          color="primary"
+          variant="outlined"
+          shape="rounded"
+          siblingCount={1}
+          boundaryCount={1}
+        />
+      )}
     </Box>
   );
 };
