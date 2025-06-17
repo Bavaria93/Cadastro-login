@@ -28,6 +28,7 @@ function ListaUsuarios() {
   // Verifica as permissões necessárias para exibir cada item.
   const canEditUsers = usePermission("Atualizar Usuário");
   const canDeleteUsers = usePermission("Excluir Usuário");
+  const canCreateUsers = usePermission("Cadastrar Usuário");
 
   // Busca os usuários salvos no banco usando o endpoint "/users/"
   useEffect(() => {
@@ -92,13 +93,15 @@ function ListaUsuarios() {
         <Typography variant="h4" component="h1">
           Lista de Usuários
         </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate("/cadastroUsuario")}
-        >
-          Cadastrar Usuário
-        </Button>
+        {canCreateUsers && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/cadastroUsuario")}
+          >
+            Cadastrar Usuário
+          </Button>
+        )}
       </Box>
 
       <Grid container spacing={3} justifyContent="center">

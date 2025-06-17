@@ -4,8 +4,10 @@ import GenericCard from "./GenericCard";
 import axios from "axios";
 
 const ProfileCard = ({ profile, onEdit, onDelete, formatDate }) => {
-  
-  // Função de exclusão específica para perfil
+  // Se onDelete não foi passado pelo pai, significa que o usuário não tem permissão
+  const deleteEnabled = Boolean(onDelete);
+
+  // Função de exclusão específica para perfil (executada apenas se houver permissão)
   const handleDeleteProfile = async (profileData) => {
     try {
       await axios.delete(`http://localhost:8000/profiles/${profileData.id}`);
@@ -23,7 +25,12 @@ const ProfileCard = ({ profile, onEdit, onDelete, formatDate }) => {
       : "Nenhuma";
 
   return (
-    <GenericCard data={profile} onEdit={onEdit} onDelete={handleDeleteProfile}>
+    <GenericCard
+      data={profile}
+      onEdit={onEdit}
+      // Passa onDelete APENAS quando o usuário tem permissão
+      {...(deleteEnabled && { onDelete: handleDeleteProfile })}
+    >
       <Typography
         variant="h6"
         style={{

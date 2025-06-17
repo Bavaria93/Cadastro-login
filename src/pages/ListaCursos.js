@@ -14,6 +14,7 @@ import CourseCard from "../components/CourseCard";
 import EditCourseDialog from "../components/EditCourseDialog";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { usePermission } from "../hooks/usePermission";
 
 function ListaCursos() {
   // Estado local para os cursos obtidos diretamente da API
@@ -23,6 +24,11 @@ function ListaCursos() {
   const [selectedCourseId, setSelectedCourseId] = useState(null);
 
   const navigate = useNavigate();
+
+  // Permissões
+  const canCreateCourses = usePermission("Cadastrar Curso");
+  const canEditCourses = usePermission("Atualizar Curso");
+  const canDeleteCourses = usePermission("Excluir Curso");
 
   // Busca os cursos salvos no banco (via API) e armazena em dbCourses
   useEffect(() => {
@@ -83,23 +89,20 @@ function ListaCursos() {
 
   return (
     <Container maxWidth="md" style={{ padding: "20px" }}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-      >
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h1">
           Lista de Cursos
         </Typography>
         <Box display="flex" gap={2}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate("/cadastroCurso")}
-          >
-            Cadastrar Curso
-          </Button>
+          {canCreateCourses && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate("/cadastroCurso")}
+            >
+              Cadastrar Curso
+            </Button>
+          )}
         </Box>
       </Box>
 
@@ -108,8 +111,8 @@ function ListaCursos() {
           <Grid item key={course.id} xs={12} sm={6} md={4}>
             <CourseCard
               course={course}
-              onEdit={() => handleOpenEditDialog(course.id)}
-              onDelete={() => handleOpenDeleteDialog(course)}
+              onEdit={canEditCourses ? () => handleOpenEditDialog(course.id) : null}
+              onDelete={canDeleteCourses ? () => handleOpenDeleteDialog(course) : null}
               formatDate={formatDate}
             />
           </Grid>
@@ -117,38 +120,38 @@ function ListaCursos() {
       </Grid>
 
       {/* Diálogo de Exclusão */}
-      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
-        <DialogTitle>Confirmar Exclusão</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Tem certeza de que deseja excluir o curso{" "}
-            <strong>
-              {
-                dbCourses.find(
-                  (course) => course.id === selectedCourseId
-                )?.name
-              }
-            </strong>
-            ?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="primary">
-            Cancelar
-          </Button>
-          <Button onClick={handleDeleteCourse} color="secondary">
-            Excluir
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {canDeleteCourses && (
+        <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
+          <DialogTitle>Confirmar Exclusão</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Tem certeza de que deseja excluir o curso{" "}
+              <strong>
+                {dbCourses.find((course) => course.id === selectedCourseId)?.name}
+              </strong>
+              ?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDeleteDialog} color="primary">
+              Cancelar
+            </Button>
+            <Button onClick={handleDeleteCourse} color="secondary">
+              Excluir
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
 
       {/* Modal de Edição do Curso */}
-      <EditCourseDialog
-        open={editDialogOpen}
-        onClose={handleCloseEditDialog}
-        course={dbCourses.find((course) => course.id === selectedCourseId)}
-        setCourses={setDbCourses}
-      />
+      {canEditCourses && (
+        <EditCourseDialog
+          open={editDialogOpen}
+          onClose={handleCloseEditDialog}
+          course={dbCourses.find((course) => course.id === selectedCourseId)}
+          setCourses={setDbCourses}
+        />
+      )}
     </Container>
   );
 }

@@ -14,6 +14,7 @@ import ProfileCard from "../components/ProfileCard";
 import EditProfileDialog from "../components/EditProfileDialog";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { usePermission } from "../hooks/usePermission";
 
 function ListaPerfis() {
   // Estado local para os perfis obtidos diretamente da API
@@ -23,6 +24,12 @@ function ListaPerfis() {
   const [selectedProfileId, setSelectedProfileId] = useState(null);
 
   const navigate = useNavigate();
+
+  // Permissões
+  const canCreateProfiles = usePermission("Cadastrar Perfil");
+  const canAssociarPerfil = usePermission("Atualizar Usuário");
+  const canEditProfiles = usePermission("Atualizar Perfil");
+  const canDeleteProfiles = usePermission("Excluir Perfil");
 
   // Busca os perfis salvos no banco (via API) e armazena em dbProfiles
   useEffect(() => {
@@ -84,25 +91,34 @@ function ListaPerfis() {
 
   return (
     <Container maxWidth="md" style={{ padding: "20px" }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={3}
+      >
         <Typography variant="h4" component="h1">
           Lista de Perfis
         </Typography>
         <Box display="flex" gap={2}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate("/cadastroPerfil")}
-          >
-            Cadastrar Perfil
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => navigate("/associarPerfil")}
-          >
-            Associar Perfil aos Usuários
-          </Button>
+          {canCreateProfiles && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate("/cadastroPerfil")}
+            >
+              Cadastrar Perfil
+            </Button>
+          )}
+          {canAssociarPerfil && (
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => navigate("/associarPerfil")}
+            >
+              Associar Perfil aos Usuários
+            </Button>
+          )}
         </Box>
       </Box>
 
@@ -111,43 +127,47 @@ function ListaPerfis() {
           <Grid item key={profile.id} xs={12} sm={6} md={4}>
             <ProfileCard
               profile={profile}
-              onEdit={() => handleOpenEditDialog(profile.id)}
-              onDelete={() => handleOpenDeleteDialog(profile)}
+              onEdit={canEditProfiles ? () => handleOpenEditDialog(profile.id) : null}
+              onDelete={canDeleteProfiles ? () => handleOpenDeleteDialog(profile) : null}
               formatDate={formatDate}
             />
           </Grid>
         ))}
       </Grid>
 
-      {/* Diálogo de Exclusão */}
-      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
-        <DialogTitle>Confirmar Exclusão</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Tem certeza de que deseja excluir o perfil{" "}
-            <strong>
-              {dbProfiles.find((profile) => profile.id === selectedProfileId)?.type}
-            </strong>
-            ?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="primary">
-            Cancelar
-          </Button>
-          <Button onClick={handleDeleteProfile} color="secondary">
-            Excluir
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Diálogo de Exclusão (aparece somente para quem tem permissão) */}
+      {canDeleteProfiles && (
+        <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
+          <DialogTitle>Confirmar Exclusão</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Tem certeza de que deseja excluir o perfil{" "}
+              <strong>
+                {dbProfiles.find((profile) => profile.id === selectedProfileId)?.type}
+              </strong>
+              ?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDeleteDialog} color="primary">
+              Cancelar
+            </Button>
+            <Button onClick={handleDeleteProfile} color="secondary">
+              Excluir
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
 
-      {/* Modal de Edição do Perfil */}
-      <EditProfileDialog
-        open={editDialogOpen}
-        onClose={handleCloseEditDialog}
-        profile={dbProfiles.find((profile) => profile.id === selectedProfileId)}
-        setProfiles={setDbProfiles}
-      />
+      {/* Modal de Edição do Perfil (aparece somente se houver permissão) */}
+      {canEditProfiles && (
+        <EditProfileDialog
+          open={editDialogOpen}
+          onClose={handleCloseEditDialog}
+          profile={dbProfiles.find((profile) => profile.id === selectedProfileId)}
+          setProfiles={setDbProfiles}
+        />
+      )}
     </Container>
   );
 }

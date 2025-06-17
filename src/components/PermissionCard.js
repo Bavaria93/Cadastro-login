@@ -4,8 +4,11 @@ import GenericCard from "./GenericCard";
 import axios from "axios";
 
 const PermissionCard = ({ permission, onEdit, onDelete, formatDate }) => {
-  
-  // Função de exclusão específica para a permissão
+  // Se a propriedade onDelete não for passada, significa que o usuário não tem permissão para excluir,
+  // assim, definimos deleteEnabled como false.
+  const deleteEnabled = Boolean(onDelete);
+
+  // Função de exclusão específica para a permissão (será passada somente se deleteEnabled for true)
   const handleDeletePermission = async (permissionData) => {
     try {
       await axios.delete(`http://localhost:8000/permissions/${permissionData.id}`);
@@ -21,7 +24,7 @@ const PermissionCard = ({ permission, onEdit, onDelete, formatDate }) => {
     <GenericCard
       data={permission}
       onEdit={onEdit}
-      onDelete={handleDeletePermission}
+      {...(deleteEnabled && { onDelete: handleDeletePermission })}
     >
       <Typography
         variant="h6"

@@ -4,7 +4,10 @@ import GenericCard from "./GenericCard";
 import axios from "axios";
 
 const CourseCard = ({ course, onEdit, onDelete, formatDate }) => {
-  // Função de exclusão específica para curso
+  // Define se a ação de exclusão está habilitada
+  const deleteEnabled = Boolean(onDelete);
+
+  // Função de exclusão específica para curso, executada apenas se houver permissão
   const handleDeleteCourse = async (courseData) => {
     try {
       await axios.delete(`http://localhost:8000/courses/${courseData.id}`);
@@ -17,7 +20,11 @@ const CourseCard = ({ course, onEdit, onDelete, formatDate }) => {
   };
 
   return (
-    <GenericCard data={course} onEdit={onEdit} onDelete={handleDeleteCourse}>
+    <GenericCard
+      data={course}
+      onEdit={onEdit}
+      {...(deleteEnabled && { onDelete: handleDeleteCourse })}
+    >
       <Typography
         variant="h6"
         style={{

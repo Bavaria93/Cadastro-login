@@ -14,6 +14,7 @@ import PermissionCard from "../components/PermissionCard";
 import EditPermissionDialog from "../components/EditPermissionDialog";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { usePermission } from "../hooks/usePermission";
 
 function ListaPermissoes() {
   // Estado local para as permissões obtidas diretamente da API
@@ -23,6 +24,12 @@ function ListaPermissoes() {
   const [selectedPermissionId, setSelectedPermissionId] = useState(null);
 
   const navigate = useNavigate();
+
+  // Permissões
+  const canCreatePermissions = usePermission("Cadastrar Permissão");
+  const canAssociatePermissions = usePermission("Atualizar Perfil");
+  const canEditPermissions = usePermission("Atualizar Permissão");
+  const canDeletePermissions = usePermission("Excluir Permissão");
 
   // Busca as permissões salvas no banco via API
   useEffect(() => {
@@ -87,20 +94,24 @@ function ListaPermissoes() {
           Lista de Permissões
         </Typography>
         <Box display="flex" gap={2}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate("/cadastroPermissao")}
-          >
-            Cadastrar Permissão
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => navigate("/associarPermissao")}
-          >
-            Associar Permissão aos Perfis
-          </Button>
+          {canCreatePermissions && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate("/cadastroPermissao")}
+            >
+              Cadastrar Permissão
+            </Button>
+          )}
+          {canAssociatePermissions && (
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => navigate("/associarPermissao")}
+            >
+              Associar Permissão aos Perfis
+            </Button>
+          )}
         </Box>
       </Box>
 
@@ -109,43 +120,47 @@ function ListaPermissoes() {
           <Grid item key={permission.id} xs={12} sm={6} md={4}>
             <PermissionCard
               permission={permission}
-              onEdit={() => handleOpenEditDialog(permission.id)}
-              onDelete={() => handleOpenDeleteDialog(permission)}
+              onEdit={canEditPermissions ? () => handleOpenEditDialog(permission.id) : null}
+              onDelete={canDeletePermissions ? () => handleOpenDeleteDialog(permission) : null}
               formatDate={formatDate}
             />
           </Grid>
         ))}
       </Grid>
 
-      {/* Diálogo de Exclusão */}
-      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
-        <DialogTitle>Confirmar Exclusão</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Tem certeza de que deseja excluir a permissão{" "}
-            <strong>
-              {dbPermissions.find((permission) => permission.id === selectedPermissionId)?.type}
-            </strong>
-            ?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="primary">
-            Cancelar
-          </Button>
-          <Button onClick={handleDeletePermission} color="secondary">
-            Excluir
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Diálogo de Exclusão (só aparece se houver permissão) */}
+      {canDeletePermissions && (
+        <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
+          <DialogTitle>Confirmar Exclusão</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Tem certeza de que deseja excluir a permissão{" "}
+              <strong>
+                {dbPermissions.find((permission) => permission.id === selectedPermissionId)?.type}
+              </strong>
+              ?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDeleteDialog} color="primary">
+              Cancelar
+            </Button>
+            <Button onClick={handleDeletePermission} color="secondary">
+              Excluir
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
 
-      {/* Modal de Edição da Permissão */}
-      <EditPermissionDialog
-        open={editDialogOpen}
-        onClose={handleCloseEditDialog}
-        permission={dbPermissions.find((permission) => permission.id === selectedPermissionId)}
-        setPermissions={setDbPermissions}
-      />
+      {/* Modal de Edição (só aparece se houver permissão) */}
+      {canEditPermissions && (
+        <EditPermissionDialog
+          open={editDialogOpen}
+          onClose={handleCloseEditDialog}
+          permission={dbPermissions.find((permission) => permission.id === selectedPermissionId)}
+          setPermissions={setDbPermissions}
+        />
+      )}
     </Container>
   );
 }
