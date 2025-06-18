@@ -12,39 +12,46 @@ import {
 } from "@mui/material";
 import CourseCard from "../components/CourseCard";
 import EditCourseDialog from "../components/EditCourseDialog";
+import PaginationControls from "../components/PaginationControls";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { usePermission } from "../hooks/usePermission";
 
 function ListaCursos() {
-  // Estado local para os cursos obtidos diretamente da API
   const [dbCourses, setDbCourses] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 9;
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
 
   const navigate = useNavigate();
-
-  // Permissões
   const canCreateCourses = usePermission("Cadastrar Curso");
   const canEditCourses = usePermission("Atualizar Curso");
   const canDeleteCourses = usePermission("Excluir Curso");
 
-  // Busca os cursos salvos no banco (via API) e armazena em dbCourses
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        // Endpoint para cursos
-        const response = await axios.get("http://localhost:8000/courses/");
+        const response = await axios.get("http://localhost:8000/courses/", {
+          params: { page: currentPage + 1, limit: itemsPerPage },
+        });
         console.log("Dados retornados da API:", response.data);
-        setDbCourses(response.data);
+        if (response.data && Array.isArray(response.data.items)) {
+          setDbCourses(response.data.items);
+          setTotalItems(response.data.total);
+        } else {
+          setDbCourses([]);
+          setTotalItems(0);
+        }
       } catch (error) {
         console.error("Erro ao buscar cursos:", error);
       }
     };
-
     fetchCourses();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   const handleOpenEditDialog = (courseId) => {
     setSelectedCourseId(courseId);
@@ -66,7 +73,6 @@ function ListaCursos() {
     setDeleteDialogOpen(false);
   };
 
-  // Função para excluir o curso no backend e atualizar a listagem
   const handleDeleteCourse = async () => {
     if (selectedCourseId) {
       try {
@@ -87,19 +93,17 @@ function ListaCursos() {
     return date.toLocaleDateString();
   };
 
+  const handlePageChange = (pageIndex) => {
+    setCurrentPage(pageIndex);
+  };
+
   return (
     <Container maxWidth="md" style={{ padding: "20px" }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" component="h1">
-          Lista de Cursos
-        </Typography>
+        <Typography variant="h4" component="h1">Lista de Cursos</Typography>
         <Box display="flex" gap={2}>
           {canCreateCourses && (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate("/cadastroCurso")}
-            >
+            <Button variant="contained" color="primary" onClick={() => navigate("/cadastroCurso")}>
               Cadastrar Curso
             </Button>
           )}
@@ -119,31 +123,31 @@ function ListaCursos() {
         ))}
       </Grid>
 
-      {/* Diálogo de Exclusão */}
+      <Box mt={3}>
+        <PaginationControls
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={handlePageChange}
+          lazyLoad={false}
+        />
+      </Box>
+
       {canDeleteCourses && (
         <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
           <DialogTitle>Confirmar Exclusão</DialogTitle>
           <DialogContent>
             <Typography>
               Tem certeza de que deseja excluir o curso{" "}
-              <strong>
-                {dbCourses.find((course) => course.id === selectedCourseId)?.name}
-              </strong>
-              ?
+              <strong>{dbCourses.find((course) => course.id === selectedCourseId)?.name}</strong>?
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDeleteDialog} color="primary">
-              Cancelar
-            </Button>
-            <Button onClick={handleDeleteCourse} color="secondary">
-              Excluir
-            </Button>
+            <Button onClick={handleCloseDeleteDialog} color="primary">Cancelar</Button>
+            <Button onClick={handleDeleteCourse} color="secondary">Excluir</Button>
           </DialogActions>
         </Dialog>
       )}
 
-      {/* Modal de Edição do Curso */}
       {canEditCourses && (
         <EditCourseDialog
           open={editDialogOpen}
