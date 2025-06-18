@@ -12,31 +12,46 @@ import {
 } from "@mui/material";
 import SolicitacaoCard from "../components/SolicitacaoCard";
 import EditSolicitacaoDialog from "../components/EditSolicitacaoDialog";
+import PaginationControls from "../components/PaginationControls";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function ListaSolicitacoes() {
-  // Estados para as solicitações e diálogos.
+  // Estados para as solicitações e para a paginação.
   const [dbSolicitacoes, setDbSolicitacoes] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);  // 0-indexado no frontend
+  const itemsPerPage = 9;
+
+  // Estados para os diálogos.
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedSolicitacaoId, setSelectedSolicitacaoId] = useState(null);
 
   const navigate = useNavigate();
 
-  // Busca as solicitações salvas no backend e armazena em dbSolicitacoes
+  // Busca as solicitações salvas no backend com paginação
   useEffect(() => {
     const fetchSolicitacoes = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/requests/");
+        const response = await axios.get("http://localhost:8000/requests/", {
+          // Se o backend trabalha com páginas 1-indexadas, envie currentPage+1
+          params: { page: currentPage + 1, limit: itemsPerPage },
+        });
         console.log("Dados retornados da API:", response.data);
-        setDbSolicitacoes(response.data);
+        if (response.data && Array.isArray(response.data.items)) {
+          setDbSolicitacoes(response.data.items);
+          setTotalItems(response.data.total);
+        } else {
+          setDbSolicitacoes([]);
+          setTotalItems(0);
+        }
       } catch (error) {
         console.error("Erro ao buscar solicitações:", error);
       }
     };
     fetchSolicitacoes();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   const handleOpenEditDialog = (id) => {
     setSelectedSolicitacaoId(id);
@@ -80,14 +95,13 @@ function ListaSolicitacoes() {
     return date.toLocaleDateString();
   };
 
+  const handlePageChange = (pageIndex) => {
+    setCurrentPage(pageIndex);
+  };
+
   return (
     <Container maxWidth="md" style={{ padding: "20px" }}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-      >
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h1">
           Lista de Solicitações
         </Typography>
@@ -114,6 +128,16 @@ function ListaSolicitacoes() {
           </Grid>
         ))}
       </Grid>
+
+      {/* Controles de Paginação */}
+      <Box mt={3}>
+        <PaginationControls
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={handlePageChange}
+          lazyLoad={false}
+        />
+      </Box>
 
       {/* Diálogo de Exclusão */}
       <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
