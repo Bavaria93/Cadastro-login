@@ -12,39 +12,59 @@ import {
 } from "@mui/material";
 import UserCard from "../components/UserCard";
 import EditUserDialog from "../components/EditUserDialog";
+import PaginationControls from "../components/PaginationControls";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { usePermission } from "../hooks/usePermission";
 
 function ListaUsuarios() {
-  // Estado local exclusivo para os usuários vindos do backend
+  // Estados para os dados vindos da API (apenas a página atual) e para paginar
   const [dbUsers, setDbUsers] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);  // 0-indexado
+  const itemsPerPage = 9;
+
+  // Estados para controle dos diálogos
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
 
   const navigate = useNavigate();
 
-  // Verifica as permissões necessárias para exibir cada item.
+  // Permissões do usuário
   const canEditUsers = usePermission("Atualizar Usuário");
   const canDeleteUsers = usePermission("Excluir Usuário");
   const canCreateUsers = usePermission("Cadastrar Usuário");
 
-  // Busca os usuários salvos no banco usando o endpoint "/users/"
+  // Busca os usuários via backend para a página atual
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/users/");
+        // Enviamos page como currentPage+1 (se o backend trabalhar com páginas 1-indexadas)
+        const response = await axios.get("http://localhost:8000/users/", {
+          params: {
+            page: currentPage + 1,
+            limit: itemsPerPage,
+          },
+        });
         console.log("Dados retornados da API:", response.data);
-        setDbUsers(response.data);
+        // Espera-se o formato: { items: [...], total: total_de_registros }
+        if (response.data && Array.isArray(response.data.items)) {
+          setDbUsers(response.data.items);
+          setTotalItems(response.data.total);
+        } else {
+          setDbUsers([]);
+          setTotalItems(0);
+        }
       } catch (error) {
         console.error("Erro ao buscar usuários:", error);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
+  // Funções para abertura/fechamento dos diálogos
   const handleOpenEditDialog = (userId) => {
     setSelectedUserId(userId);
     setEditDialogOpen(true);
@@ -65,11 +85,12 @@ function ListaUsuarios() {
     setDeleteDialogOpen(false);
   };
 
-  // Função para excluir usuário no backend e atualizar a listagem
+  // Função para excluir usuário via backend e atualizar o estado
   const handleDeleteUser = async () => {
     if (selectedUserId) {
       try {
         await axios.delete(`http://localhost:8000/users/${selectedUserId}`);
+        // Atualiza a listagem removendo o usuário deletado
         setDbUsers((prevUsers) =>
           prevUsers.filter((user) => user.id !== selectedUserId)
         );
@@ -80,11 +101,16 @@ function ListaUsuarios() {
     }
   };
 
-  // Função para formatação da data, para exibição
+  // Função para formatação de datas
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
     return date.toLocaleDateString();
+  };
+
+  // Atualiza a página atual quando o PaginationControls informa a mudança
+  const handlePageChange = (pageIndex) => {
+    setCurrentPage(pageIndex);
   };
 
   return (
@@ -117,7 +143,17 @@ function ListaUsuarios() {
         ))}
       </Grid>
 
-      {/* Diálogo para confirmação de exclusão (aparece só se houver permissão) */}
+      {/* Controles de Paginação */}
+      <Box mt={3}>
+        <PaginationControls
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={handlePageChange}
+          lazyLoad={false} // Modo tradicional
+        />
+      </Box>
+
+      {/* Diálogo de Exclusão */}
       {canDeleteUsers && (
         <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
           <DialogTitle>Confirmar Exclusão</DialogTitle>
@@ -141,7 +177,7 @@ function ListaUsuarios() {
         </Dialog>
       )}
 
-      {/* Modal para edição do usuário (aparece só se houver permissão) */}
+      {/* Modal de Edição */}
       {canEditUsers && (
         <EditUserDialog
           open={editDialogOpen}
