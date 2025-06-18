@@ -12,13 +12,19 @@ import {
 } from "@mui/material";
 import ProfileCard from "../components/ProfileCard";
 import EditProfileDialog from "../components/EditProfileDialog";
+import PaginationControls from "../components/PaginationControls";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { usePermission } from "../hooks/usePermission";
 
 function ListaPerfis() {
-  // Estado local para os perfis obtidos diretamente da API
+  // Estados para os dados e paginação
   const [dbProfiles, setDbProfiles] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0); // 0-indexado
+  const itemsPerPage = 9;
+
+  // Estados para diálogos
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState(null);
@@ -31,21 +37,29 @@ function ListaPerfis() {
   const canEditProfiles = usePermission("Atualizar Perfil");
   const canDeleteProfiles = usePermission("Excluir Perfil");
 
-  // Busca os perfis salvos no banco (via API) e armazena em dbProfiles
+  // Busca os perfis para a página atual – endpoint deve retornar { items: [...], total: X }
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        // Atualize o endpoint conforme o nome usado no backend ("/profiles/" neste exemplo)
-        const response = await axios.get("http://localhost:8000/profiles/");
+        // Se o backend espera a página como 1-indexada, enviamos currentPage+1
+        const response = await axios.get("http://localhost:8000/profiles/", {
+          params: { page: currentPage + 1, limit: itemsPerPage },
+        });
         console.log("Dados retornados da API:", response.data);
-        setDbProfiles(response.data);
+        if (response.data && Array.isArray(response.data.items)) {
+          setDbProfiles(response.data.items);
+          setTotalItems(response.data.total);
+        } else {
+          setDbProfiles([]);
+          setTotalItems(0);
+        }
       } catch (error) {
         console.error("Erro ao buscar perfis:", error);
       }
     };
 
     fetchProfiles();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   const handleOpenEditDialog = (profileId) => {
     setSelectedProfileId(profileId);
@@ -71,8 +85,8 @@ function ListaPerfis() {
   const handleDeleteProfile = async () => {
     if (selectedProfileId) {
       try {
-        // Utilize o endpoint correto para perfis, conforme o backend
         await axios.delete(`http://localhost:8000/profiles/${selectedProfileId}`);
+        // Atualiza o estado removendo o perfil excluído
         setDbProfiles((prevProfiles) =>
           prevProfiles.filter((profile) => profile.id !== selectedProfileId)
         );
@@ -89,14 +103,14 @@ function ListaPerfis() {
     return date.toLocaleDateString();
   };
 
+  // Atualiza a página atual conforme o controle de paginação
+  const handlePageChange = (pageIndex) => {
+    setCurrentPage(pageIndex);
+  };
+
   return (
     <Container maxWidth="md" style={{ padding: "20px" }}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-      >
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h1">
           Lista de Perfis
         </Typography>
@@ -135,7 +149,17 @@ function ListaPerfis() {
         ))}
       </Grid>
 
-      {/* Diálogo de Exclusão (aparece somente para quem tem permissão) */}
+      {/* Controles de Paginação */}
+      <Box mt={3}>
+        <PaginationControls
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={handlePageChange}
+          lazyLoad={false} // Modo tradicional
+        />
+      </Box>
+
+      {/* Diálogo de Exclusão */}
       {canDeleteProfiles && (
         <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
           <DialogTitle>Confirmar Exclusão</DialogTitle>
@@ -159,7 +183,7 @@ function ListaPerfis() {
         </Dialog>
       )}
 
-      {/* Modal de Edição do Perfil (aparece somente se houver permissão) */}
+      {/* Modal de Edição */}
       {canEditProfiles && (
         <EditProfileDialog
           open={editDialogOpen}
