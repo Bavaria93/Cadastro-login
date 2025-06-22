@@ -4,7 +4,7 @@ import ProfileList from "./ProfileList";
 import SelectableProfileList from "./SelectableProfileList";
 
 const ProfileSection = ({
-  profiles,
+  profiles = [],
   selectedProfiles,    // usado para seleção múltipla
   selectedProfile,     // usado para seleção única
   onToggleProfile,     // função para seleção múltipla
@@ -15,13 +15,15 @@ const ProfileSection = ({
   const [searchTerm, setSearchTerm] = useState("");
 
   // Filtra os perfis com base na pesquisa
-  const filteredProfiles = profiles.filter((profile) => {
+  const filteredProfiles = Array.isArray(profiles)
+  ? profiles.filter((profile) => {
     const search = searchTerm.toLowerCase().trim();
     return (
       (profile.type || "").toLowerCase().includes(search) ||
       (profile.description || "").toLowerCase().includes(search)
     );
-  });
+  })
+   : [];
 
   return (
     <Box>

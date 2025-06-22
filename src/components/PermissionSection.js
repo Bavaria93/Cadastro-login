@@ -2,7 +2,15 @@ import React, { useState } from "react";
 import { Box, TextField, Typography } from "@mui/material";
 import PermissionList from "./PermissionList";
 
-const PermissionSection = ({ permissions, selectedPermissions, onTogglePermission, itemsPerPage = 5 }) => {
+const PermissionSection = ({
+  permissions,
+  selectedPermissions,
+  onTogglePermission,
+  itemsPerPage = 5,
+  currentPage,      // Nova prop
+  totalItems,       // Nova prop
+  onPageChange,     // Nova prop
+}) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Filtra as permissões com base na pesquisa pelo tipo ou descrição
@@ -30,6 +38,9 @@ const PermissionSection = ({ permissions, selectedPermissions, onTogglePermissio
         selectedPermissions={selectedPermissions}
         onTogglePermission={onTogglePermission}
         itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        totalItems={totalItems}
+        onPageChange={onPageChange}
       />
     </Box>
   );

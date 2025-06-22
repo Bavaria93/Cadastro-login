@@ -23,16 +23,22 @@ function AssociarPermissao() {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [selectedPermissions, setSelectedPermissions] = useState([]);
 
+  // Estados para paginação (server side)
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 5; // Exibir 5 itens por página
+  const [totalItems, setTotalItems] = useState(0);
+
   // Estados para notificações via Dialog do Material UI
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [dialogType, setDialogType] = useState("success"); // 'success' ou 'error'
 
-  // Busca perfis e permissões do backend ao montar o componente
+  // Busca perfis e permissões do backend ao montar o componente e ao trocar de página
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
         const response = await axios.get("http://localhost:8000/profiles/");
+        console.log("Dados retornados da API:", response.data);
         setProfiles(response.data);
       } catch (error) {
         console.error("Erro ao buscar perfis:", error);
@@ -41,16 +47,31 @@ function AssociarPermissao() {
 
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/permissions/");
-        setPermissions(response.data);
+        // Parâmetros da requisição para paginação
+        const params = {
+          page: currentPage + 1, // backend espera página 1-indexada
+          limit: itemsPerPage,
+        };
+        const response = await axios.get("http://localhost:8000/permissions/", { params });
+        console.log("Dados retornados da API:", response.data);
+        // Verifica se a resposta está no formato { items: [...], total: number }
+        if (response.data && Array.isArray(response.data.items)) {
+          setPermissions(response.data.items);
+          setTotalItems(response.data.total);
+        } else {
+          setPermissions([]);
+          setTotalItems(0);
+        }
       } catch (error) {
         console.error("Erro ao buscar permissões:", error);
+        setPermissions([]);
+        setTotalItems(0);
       }
     };
 
     fetchProfiles();
     fetchPermissions();
-  }, [setProfiles]);
+  }, [setProfiles, currentPage, itemsPerPage]);
 
   // Seleciona um perfil (único)
   const handleSelectProfile = (profile) => {
@@ -98,6 +119,11 @@ function AssociarPermissao() {
     setDialogOpen(false);
   };
 
+  // Handler para mudança de página (usado pelo componente de paginação)
+  const handlePageChange = (pageIndex) => {
+    setCurrentPage(pageIndex);
+  };
+
   return (
     <Container maxWidth="md" style={{ padding: "20px" }}>
       <Box mb={3}>
@@ -113,12 +139,15 @@ function AssociarPermissao() {
         itemsPerPage={5}
       />
 
-      {/* Seção de Permissões */}
+      {/* Seção de Permissões – repassando os dados de paginação */}
       <PermissionSection
         permissions={permissions}
         selectedPermissions={selectedPermissions}
         onTogglePermission={handleTogglePermission}
-        itemsPerPage={5}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        totalItems={totalItems}
+        onPageChange={handlePageChange}
       />
 
       {/* Botões de ação */}
