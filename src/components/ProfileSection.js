@@ -4,26 +4,27 @@ import ProfileList from "./ProfileList";
 import SelectableProfileList from "./SelectableProfileList";
 
 const ProfileSection = ({
-  profiles = [],
+  profiles,
   selectedProfiles,    // usado para seleção múltipla
   selectedProfile,     // usado para seleção única
   onToggleProfile,     // função para seleção múltipla
   onSelectProfile,     // função para seleção única
   selectionMode = "multiple", // "multiple" para seleção múltipla ou "single" para seleção única
   itemsPerPage = 5,
+  currentPage,         // prop para paginação (0-indexada)
+  totalItems,          // total de perfis disponíveis (ex: 7, vinda do backend)
+  onPageChange,        // callback para mudança de página
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Filtra os perfis com base na pesquisa
-  const filteredProfiles = Array.isArray(profiles)
-  ? profiles.filter((profile) => {
+  // Filtra os perfis com base no termo de pesquisa pelo tipo ou descrição.
+  const filteredProfiles = profiles.filter((profile) => {
     const search = searchTerm.toLowerCase().trim();
     return (
       (profile.type || "").toLowerCase().includes(search) ||
       (profile.description || "").toLowerCase().includes(search)
     );
-  })
-   : [];
+  });
 
   return (
     <Box>
@@ -36,7 +37,9 @@ const ProfileSection = ({
         style={{ marginBottom: "20px", marginTop: "20px" }}
       />
       <Typography variant="h6">
-        {selectionMode === "multiple" ? "Selecione os Perfis:" : "Selecione um Perfil:"}
+        {selectionMode === "multiple"
+          ? "Selecione os Perfis:"
+          : "Selecione um Perfil:"}
       </Typography>
       
       {selectionMode === "multiple" ? (
@@ -45,6 +48,9 @@ const ProfileSection = ({
           selectedProfiles={selectedProfiles}
           onToggleProfile={onToggleProfile}
           itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          totalItems={totalItems}
+          onPageChange={onPageChange}
         />
       ) : (
         <SelectableProfileList
@@ -52,6 +58,9 @@ const ProfileSection = ({
           selectedProfile={selectedProfile}
           onSelectProfile={onSelectProfile}
           itemsPerPage={itemsPerPage}
+          totalItems={totalItems}
+          currentPage={currentPage}
+          onPageChange={onPageChange}
         />
       )}
     </Box>

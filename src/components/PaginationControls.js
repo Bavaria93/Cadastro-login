@@ -9,16 +9,14 @@ const PaginationControls = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const observerRef = useRef();
 
-  // Notifica o pai quando a página muda (convertendo de 1-index para 0-index, se necessário)
   useEffect(() => {
     if (onPageChange) {
       onPageChange(currentPage - 1);
     }
-  }, [currentPage, onPageChange]);
+  }, [currentPage, onPageChange, totalPages]);
 
-  // Se lazyLoad estiver ativo, usamos IntersectionObserver para atualizar a página
+  const observerRef = useRef();
   useEffect(() => {
     if (lazyLoad && observerRef.current && currentPage < totalPages) {
       const observer = new IntersectionObserver(
@@ -30,7 +28,7 @@ const PaginationControls = ({
           });
         },
         {
-          threshold: 0.5, // ativa quando 50% do elemento estiver visível
+          threshold: 0.5,
         }
       );
       observer.observe(observerRef.current);
@@ -38,7 +36,6 @@ const PaginationControls = ({
     }
   }, [lazyLoad, currentPage, totalPages]);
 
-  // Handler padrão (para modo não lazy)
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
@@ -46,8 +43,6 @@ const PaginationControls = ({
   return (
     <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
       {lazyLoad ? (
-        // Quando lazyLoad está ativo, não exibimos o controle de paginação,
-        // apenas um spinner que, ao ficar visível, dispara a próxima página.
         currentPage < totalPages && (
           <div ref={observerRef} style={{ marginTop: 20 }}>
             <CircularProgress />

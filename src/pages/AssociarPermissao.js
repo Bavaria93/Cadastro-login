@@ -18,68 +18,87 @@ import PermissionSection from "../components/PermissionSection";
 function AssociarPermissao() {
   const navigate = useNavigate();
   const { profiles, setProfiles } = useContext(UserContext);
+const [permissions, setPermissions] = useState([]);
 
-  const [permissions, setPermissions] = useState([]);
+  // Estados para perfis (server-side pagination)
+  const [profileCurrentPage, setProfileCurrentPage] = useState(0);
+  const constProfileItemsPerPage = 5; // 5 perfis por página
+  const [totalProfiles, setTotalProfiles] = useState(0);
+
+  // Estados para permissões (server-side pagination)
+  const [permissionsCurrentPage, setPermissionsCurrentPage] = useState(0); // para permissões
+  const constPermissionsItemsPerPage = 5; // 5 permissões por página
+  const [totalPermissions, setTotalPermissions] = useState(0);
+
+  // Estados para seleção
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [selectedPermissions, setSelectedPermissions] = useState([]);
 
-  // Estados para paginação (server side)
-  const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 5; // Exibir 5 itens por página
-  const [totalItems, setTotalItems] = useState(0);
-
-  // Estados para notificações via Dialog do Material UI
+  // Estados para notificações via Dialog
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
-  const [dialogType, setDialogType] = useState("success"); // 'success' ou 'error'
+  const [dialogType, setDialogType] = useState("success"); // "success" ou "error"
 
-  // Busca perfis e permissões do backend ao montar o componente e ao trocar de página
+  // Requisição de perfis com paginação
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/profiles/");
-        console.log("Dados retornados da API:", response.data);
-        setProfiles(response.data);
-      } catch (error) {
-        console.error("Erro ao buscar perfis:", error);
-      }
-    };
-
-    const fetchPermissions = async () => {
-      try {
-        // Parâmetros da requisição para paginação
         const params = {
-          page: currentPage + 1, // backend espera página 1-indexada
-          limit: itemsPerPage,
+          page: profileCurrentPage + 1, // backend espera página iniciada em 1
+          limit: constProfileItemsPerPage,
         };
-        const response = await axios.get("http://localhost:8000/permissions/", { params });
+        const response = await axios.get("http://localhost:8000/profiles/", { params });
         console.log("Dados retornados da API:", response.data);
-        // Verifica se a resposta está no formato { items: [...], total: number }
+        // Supondo que o backend retorne { items: [...], total: <número> }
         if (response.data && Array.isArray(response.data.items)) {
-          setPermissions(response.data.items);
-          setTotalItems(response.data.total);
+          setProfiles(response.data.items);
+          setTotalProfiles(response.data.total);
         } else {
-          setPermissions([]);
-          setTotalItems(0);
+          setProfiles([]);
+          setTotalProfiles(0);
         }
       } catch (error) {
-        console.error("Erro ao buscar permissões:", error);
-        setPermissions([]);
-        setTotalItems(0);
+        console.error("Erro ao buscar perfis:", error);
+        setProfiles([]);
+        setTotalProfiles(0);
       }
     };
 
     fetchProfiles();
-    fetchPermissions();
-  }, [setProfiles, currentPage, itemsPerPage]);
+  }, [setProfiles, profileCurrentPage, constProfileItemsPerPage]);
 
-  // Seleciona um perfil (único)
+  // Requisição de permissões com paginação
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const params = {
+          page: permissionsCurrentPage + 1,
+          limit: constPermissionsItemsPerPage,
+        };
+        const response = await axios.get("http://localhost:8000/permissions/", { params });
+        console.log("Dados retornados da API:", response.data);
+        if (response.data && Array.isArray(response.data.items)) {
+          setPermissions(response.data.items);
+          setTotalPermissions(response.data.total);
+        } else {
+          setPermissions([]);
+          setTotalPermissions(0);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar permissões:", error);
+        setPermissions([]);
+        setTotalPermissions(0);
+      }
+    };
+
+    fetchPermissions();
+  }, [permissionsCurrentPage, constPermissionsItemsPerPage]);
+
+  // Seleciona um perfil (modo seleção única)
   const handleSelectProfile = (profile) => {
     setSelectedProfile(profile);
-    // Converte o array de permissões (se houver) para um array de IDs
-    setSelectedPermissions(
-      profile.permissions ? profile.permissions.map((perm) => perm.id) : []
-    );
+    // Converte o array de permissões do perfil (se houver) para um array de IDs
+    setSelectedPermissions(profile.permissions ? profile.permissions.map((p) => p.id) : []);
   };
 
   // Alterna a seleção de uma permissão
@@ -119,35 +138,43 @@ function AssociarPermissao() {
     setDialogOpen(false);
   };
 
-  // Handler para mudança de página (usado pelo componente de paginação)
-  const handlePageChange = (pageIndex) => {
-    setCurrentPage(pageIndex);
+  // Tratadores para mudança de página
+  const handleProfilePageChange = (pageIndex) => {
+    setProfileCurrentPage(pageIndex);
   };
 
+  const handlePermissionPageChange = (pageIndex) => {
+    setPermissionsCurrentPage(pageIndex);
+  };
+  
   return (
     <Container maxWidth="md" style={{ padding: "20px" }}>
       <Box mb={3}>
         <Typography variant="h4">Associação de Permissões ao Perfil</Typography>
       </Box>
 
-      {/* Seção de Perfis */}
+      {/* Seção de Perfis com paginação server-side */}
       <ProfileSection
-        profiles={profiles}
+        profiles={profiles} // perfis da página atual
+        selectedProfiles={[]} // não utilizado aqui, pois é seleção única
         selectedProfile={selectedProfile}
         onSelectProfile={handleSelectProfile}
-        selectionMode="single" // Força seleção única para associar permissões
-        itemsPerPage={5}
+        selectionMode="single" // seleção única para associação
+        itemsPerPage={constProfileItemsPerPage}
+        currentPage={profileCurrentPage}
+        totalItems={totalProfiles}
+        onPageChange={handleProfilePageChange}
       />
 
-      {/* Seção de Permissões – repassando os dados de paginação */}
+      {/* Seção de Permissões com paginação server-side */}
       <PermissionSection
-        permissions={permissions}
+        permissions={permissions} // permissões da página atual
         selectedPermissions={selectedPermissions}
         onTogglePermission={handleTogglePermission}
-        itemsPerPage={itemsPerPage}
-        currentPage={currentPage}
-        totalItems={totalItems}
-        onPageChange={handlePageChange}
+        itemsPerPage={constPermissionsItemsPerPage}
+        currentPage={permissionsCurrentPage}
+        totalItems={totalPermissions}
+        onPageChange={handlePermissionPageChange}
       />
 
       {/* Botões de ação */}
@@ -165,7 +192,7 @@ function AssociarPermissao() {
         </Button>
       </Box>
 
-      {/* Notificação via Dialog */}
+      {/* Dialog para feedback */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>{dialogType === "success" ? "Sucesso!" : "Erro!"}</DialogTitle>
         <DialogContent>

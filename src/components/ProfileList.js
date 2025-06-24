@@ -1,39 +1,56 @@
-import React, { useState } from "react";
+import React from "react";
 import { List, ListItem, ListItemText, Checkbox } from "@mui/material";
 import PaginationControls from "./PaginationControls";
 
-const ProfileList = ({ profiles, selectedProfiles, onToggleProfile, itemsPerPage = 5 }) => {
-  const [currentPage, setCurrentPage] = useState(0);
+const ProfileList = ({
+  profiles,         // Itens já correspondentes à página atual (servidor)
+  selectedProfiles,
+  onToggleProfile,
+  itemsPerPage = 5,
+  currentPage,      // Se definido, assume que estamos em paginação server side
+  totalItems,       // Total de itens (para exibir o número de páginas)
+  onPageChange,     // Callback para mudança de página
+}) => {
+  // Se estivermos em modo server side (currentPage definido), usamos o array recebido diretamente.
+  // Caso contrário (client-side), faríamos o slice.
+  const displayProfiles =
+    currentPage !== undefined
+      ? profiles
+      : profiles.slice(
+          currentPage * itemsPerPage,
+          (currentPage + 1) * itemsPerPage
+        );
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+  // Parâmetros para exibição (opcional, caso o PaginationControls os use)
+  const paginationParams = {
+    page: currentPage !== undefined ? currentPage + 1 : 1,
+    limit: itemsPerPage,
   };
 
   return (
     <>
       <List>
-        {profiles
-          .slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)
-          .map((profile) => (
-            <ListItem
-              key={profile.id}
-              button
-              onClick={() => onToggleProfile(profile.id)}
-            >
-              <Checkbox checked={selectedProfiles.includes(profile.id)} />
-              <ListItemText
-                primary={profile.type}
-                secondary={profile.description}
-              />
-            </ListItem>
-          ))}
+        {displayProfiles.map((profile) => (
+          <ListItem
+            key={profile.id}
+            button
+            onClick={() => onToggleProfile(profile.id)}
+          >
+            <Checkbox checked={selectedProfiles.includes(profile.id)} />
+            <ListItemText
+              primary={profile.type}
+              secondary={profile.description}
+            />
+          </ListItem>
+        ))}
       </List>
-      
-      {/* Componente de Paginação para perfis */}
+
       <PaginationControls
-        totalItems={profiles.length}
+        totalItems={totalItems || profiles.length}
         itemsPerPage={itemsPerPage}
-        onPageChange={handlePageChange}
+        currentPage={currentPage}
+        onPageChange={onPageChange}
+        params={paginationParams}
       />
     </>
   );

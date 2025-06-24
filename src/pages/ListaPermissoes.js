@@ -175,13 +175,13 @@ function ListaPermissoes() {
         ))}
       </Grid>
 
-      {/* Pagination Controls (servidor) */}
+      {/* Controles de Paginação */}
       <Box mt={3}>
         <PaginationControls
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
           onPageChange={handlePageChange}
-          lazyLoad={false} // usando o modo tradicional
+          lazyLoad={false}
         />
       </Box>
 

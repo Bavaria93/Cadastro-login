@@ -149,7 +149,7 @@ function ListaUsuarios() {
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
           onPageChange={handlePageChange}
-          lazyLoad={false} // Modo tradicional
+          lazyLoad={false}
         />
       </Box>
 

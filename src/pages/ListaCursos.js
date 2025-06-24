@@ -123,6 +123,7 @@ function ListaCursos() {
         ))}
       </Grid>
 
+      {/* Controles de Paginação */}
       <Box mt={3}>
         <PaginationControls
           totalItems={totalItems}
