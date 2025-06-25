@@ -23,6 +23,7 @@ function AssociarPerfil() {
   const [selectedProfiles, setSelectedProfiles] = useState([]);
 
   // Estados para usuários (server-side pagination)
+  const [searchTerm, setSearchTerm] = useState("");
   const [userCurrentPage, setUserCurrentPage] = useState(0);
   const constUserItemsPerPage = 5; // 5 usuários por página
   const [totalUsers, setTotalUsers] = useState(0);
@@ -51,12 +52,12 @@ function AssociarPerfil() {
     const fetchUsers = async () => {
       try {
         const params = {
-          page: userCurrentPage + 1, // o backend espera página iniciada em 1
+          page: userCurrentPage + 1,
           limit: constUserItemsPerPage,
+          search: searchTerm,  // Passa o termo para a API
         };
         const response = await axios.get("http://localhost:8000/users/", { params });
         console.log("Dados retornados da API:", response.data);
-        // Supondo que a resposta seja do tipo { items: [...], total: <número> }
         if (response.data && Array.isArray(response.data.items)) {
           setUsers(response.data.items);
           setTotalUsers(response.data.total);
@@ -72,7 +73,7 @@ function AssociarPerfil() {
     };
 
     fetchUsers();
-  }, [userCurrentPage, constUserItemsPerPage, setUsers]);
+  }, [userCurrentPage, constUserItemsPerPage, searchTerm, setUsers]);
 
   // Fetch de perfis com paginação
   useEffect(() => {
@@ -153,13 +154,15 @@ function AssociarPerfil() {
 
       {/* Seção de Usuários com paginação */}
       <UserSection
-        users={users}                    // Array de usuários referente à página atual
+        users={users}
         selectedUser={selectedUser}
         onSelectUser={handleSelectUser}
         itemsPerPage={constUserItemsPerPage}
         currentPage={userCurrentPage}
         totalItems={totalUsers}
         onPageChange={handleUserPageChange}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
       />
 
       {/* Seção de Perfis com paginação */}
