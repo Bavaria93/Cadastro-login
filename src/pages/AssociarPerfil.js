@@ -29,6 +29,7 @@ function AssociarPerfil() {
   const [totalUsers, setTotalUsers] = useState(0);
 
   // Estados para perfis (server-side pagination)
+  const [profileSearchTerm, setProfileSearchTerm] = useState("");
   const [profileCurrentPage, setProfileCurrentPage] = useState(0);
   const constProfileItemsPerPage = 5; // 5 perfis por página
   const [totalProfiles, setTotalProfiles] = useState(0);
@@ -80,28 +81,21 @@ function AssociarPerfil() {
     const fetchProfiles = async () => {
       try {
         const params = {
-          page: profileCurrentPage + 1, // o backend espera página iniciada em 1
+          page: profileCurrentPage + 1,
           limit: constProfileItemsPerPage,
+          search: profileSearchTerm    // envia o termo ao backend
         };
-        const response = await axios.get("http://localhost:8000/profiles/", { params });
-        console.log("Dados retornados da API:", response.data);
-        // Supondo que a resposta seja do tipo { items: [...], total: <número> }
-        if (response.data && Array.isArray(response.data.items)) {
-          setProfiles(response.data.items);
-          setTotalProfiles(response.data.total);
-        } else {
-          setProfiles([]);
-          setTotalProfiles(0);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar perfis:", error);
+        const { data } = await axios.get("http://localhost:8000/profiles/", { params });
+        setProfiles(data.items);
+        setTotalProfiles(data.total);
+      } catch (err) {
+        console.error("Erro ao buscar perfis:", err);
         setProfiles([]);
         setTotalProfiles(0);
       }
     };
-
     fetchProfiles();
-  }, [profileCurrentPage, constProfileItemsPerPage, setProfiles]);
+  }, [profileCurrentPage, constProfileItemsPerPage, profileSearchTerm, setProfiles]);
 
   const handleSelectUser = (user) => {
     setSelectedUser(user);
@@ -175,6 +169,8 @@ function AssociarPerfil() {
         currentPage={profileCurrentPage}
         totalItems={totalProfiles}
         onPageChange={handleProfilePageChange}
+        searchTerm={profileSearchTerm}
+        setSearchTerm={setProfileSearchTerm}
       />
 
       {/* Botões de ação */}

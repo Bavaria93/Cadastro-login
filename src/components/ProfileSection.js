@@ -1,30 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
 import { Box, TextField, Typography } from "@mui/material";
 import ProfileList from "./ProfileList";
-import SelectableProfileList from "./SelectableProfileList";
 
 const ProfileSection = ({
   profiles,
-  selectedProfiles,    // usado para seleção múltipla
-  selectedProfile,     // usado para seleção única
-  onToggleProfile,     // função para seleção múltipla
-  onSelectProfile,     // função para seleção única
-  selectionMode = "multiple", // "multiple" para seleção múltipla ou "single" para seleção única
+  currentPage,
+  totalItems,
   itemsPerPage = 5,
-  currentPage,         // prop para paginação (0-indexada)
-  totalItems,          // total de perfis disponíveis (ex: 7, vinda do backend)
-  onPageChange,        // callback para mudança de página
+  onPageChange,
+  // **recebidos via props**
+  searchTerm,
+  setSearchTerm,
+  selectedProfiles,
+  onToggleProfile
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // Filtra os perfis com base no termo de pesquisa pelo tipo ou descrição.
-  const filteredProfiles = profiles.filter((profile) => {
-    const search = searchTerm.toLowerCase().trim();
-    return (
-      (profile.type || "").toLowerCase().includes(search) ||
-      (profile.description || "").toLowerCase().includes(search)
-    );
-  });
 
   return (
     <Box>
@@ -33,36 +22,24 @@ const ProfileSection = ({
         label="Pesquisar Perfil"
         variant="outlined"
         value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={{ marginBottom: "20px", marginTop: "20px" }}
+        onChange={e => {
+          setSearchTerm(e.target.value);
+          onPageChange(0);    // reseta para 1ª página ao mudar search
+        }}
+        sx={{ mb: 2, mt: 2 }}
       />
-      <Typography variant="h6">
-        {selectionMode === "multiple"
-          ? "Selecione os Perfis:"
-          : "Selecione um Perfil:"}
-      </Typography>
-      
-      {selectionMode === "multiple" ? (
-        <ProfileList
-          profiles={filteredProfiles}
-          selectedProfiles={selectedProfiles}
-          onToggleProfile={onToggleProfile}
-          itemsPerPage={itemsPerPage}
-          currentPage={currentPage}
-          totalItems={totalItems}
-          onPageChange={onPageChange}
-        />
-      ) : (
-        <SelectableProfileList
-          profiles={filteredProfiles}
-          selectedProfile={selectedProfile}
-          onSelectProfile={onSelectProfile}
-          itemsPerPage={itemsPerPage}
-          totalItems={totalItems}
-          currentPage={currentPage}
-          onPageChange={onPageChange}
-        />
-      )}
+
+      <Typography variant="h6">Selecione os Perfis:</Typography>
+
+      <ProfileList
+        profiles={profiles}         // já filtrados pelo backend
+        selectedProfiles={selectedProfiles}
+        onToggleProfile={onToggleProfile}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        totalItems={totalItems}
+        onPageChange={onPageChange}
+      />
     </Box>
   );
 };
