@@ -22,38 +22,89 @@ function AssociarPerfil() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedProfiles, setSelectedProfiles] = useState([]);
 
-  // Estados para notificações usando Dialog do Material UI
+  // Estados para usuários (server-side pagination)
+  const [userCurrentPage, setUserCurrentPage] = useState(0);
+  const constUserItemsPerPage = 5; // 5 usuários por página
+  const [totalUsers, setTotalUsers] = useState(0);
+
+  // Estados para perfis (server-side pagination)
+  const [profileCurrentPage, setProfileCurrentPage] = useState(0);
+  const constProfileItemsPerPage = 5; // 5 perfis por página
+  const [totalProfiles, setTotalProfiles] = useState(0);
+
+  // Estados para notificações via Dialog do Material UI
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
-  const [dialogType, setDialogType] = useState("success"); // 'success' ou 'error'
+  const [dialogType, setDialogType] = useState("success"); // "success" ou "error"
 
-  // Busca usuários e perfis do backend ao montar o componente
+  // Funções para atualizar a página de usuários e perfis (server-side)
+  const handleUserPageChange = (page) => {
+    setUserCurrentPage(page);
+  };
+
+  const handleProfilePageChange = (page) => {
+    setProfileCurrentPage(page);
+  };
+
+  // Fetch de usuários com paginação
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/users/");
-        setUsers(response.data);
+        const params = {
+          page: userCurrentPage + 1, // o backend espera página iniciada em 1
+          limit: constUserItemsPerPage,
+        };
+        const response = await axios.get("http://localhost:8000/users/", { params });
+        console.log("Dados retornados da API:", response.data);
+        // Supondo que a resposta seja do tipo { items: [...], total: <número> }
+        if (response.data && Array.isArray(response.data.items)) {
+          setUsers(response.data.items);
+          setTotalUsers(response.data.total);
+        } else {
+          setUsers([]);
+          setTotalUsers(0);
+        }
       } catch (error) {
         console.error("Erro ao buscar usuários:", error);
-      }
-    };
-
-    const fetchProfiles = async () => {
-      try {
-        const response = await axios.get("http://localhost:8000/profiles/");
-        setProfiles(response.data);
-      } catch (error) {
-        console.error("Erro ao buscar perfis:", error);
+        setUsers([]);
+        setTotalUsers(0);
       }
     };
 
     fetchUsers();
+  }, [userCurrentPage, constUserItemsPerPage, setUsers]);
+
+  // Fetch de perfis com paginação
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      try {
+        const params = {
+          page: profileCurrentPage + 1, // o backend espera página iniciada em 1
+          limit: constProfileItemsPerPage,
+        };
+        const response = await axios.get("http://localhost:8000/profiles/", { params });
+        console.log("Dados retornados da API:", response.data);
+        // Supondo que a resposta seja do tipo { items: [...], total: <número> }
+        if (response.data && Array.isArray(response.data.items)) {
+          setProfiles(response.data.items);
+          setTotalProfiles(response.data.total);
+        } else {
+          setProfiles([]);
+          setTotalProfiles(0);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar perfis:", error);
+        setProfiles([]);
+        setTotalProfiles(0);
+      }
+    };
+
     fetchProfiles();
-  }, [setUsers, setProfiles]);
+  }, [profileCurrentPage, constProfileItemsPerPage, setProfiles]);
 
   const handleSelectUser = (user) => {
     setSelectedUser(user);
-    // Converte o array de perfis (objetos) para um array de IDs
+    // Converte o array de perfis (objetos) em um array de IDs
     setSelectedProfiles(user.profiles ? user.profiles.map((perfil) => perfil.id) : []);
   };
 
@@ -95,23 +146,32 @@ function AssociarPerfil() {
   return (
     <Container maxWidth="md" style={{ padding: "20px" }}>
       <Box mb={3}>
-        <Typography variant="h4">Associação de Perfis ao Usuário</Typography>
+        <Typography variant="h4">
+          Associação de Perfis ao Usuário
+        </Typography>
       </Box>
 
-      {/* Seção de Usuários */}
+      {/* Seção de Usuários com paginação */}
       <UserSection
-        users={users}
+        users={users}                    // Array de usuários referente à página atual
         selectedUser={selectedUser}
         onSelectUser={handleSelectUser}
+        itemsPerPage={constUserItemsPerPage}
+        currentPage={userCurrentPage}
+        totalItems={totalUsers}
+        onPageChange={handleUserPageChange}
       />
 
-      {/* Seção de Perfis */}
+      {/* Seção de Perfis com paginação */}
       <ProfileSection
-        profiles={profiles}
+        profiles={profiles}              // Array de perfis referente à página atual
         selectedProfiles={selectedProfiles || []}
         onToggleProfile={handleToggleProfile}
         selectionMode="multiple"
-        itemsPerPage={5}
+        itemsPerPage={constProfileItemsPerPage}
+        currentPage={profileCurrentPage}
+        totalItems={totalProfiles}
+        onPageChange={handleProfilePageChange}
       />
 
       {/* Botões de ação */}
@@ -131,7 +191,9 @@ function AssociarPerfil() {
 
       {/* Notificação via Dialog */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
-        <DialogTitle>{dialogType === "success" ? "Sucesso!" : "Erro!"}</DialogTitle>
+        <DialogTitle>
+          {dialogType === "success" ? "Sucesso!" : "Erro!"}
+        </DialogTitle>
         <DialogContent>
           <Typography>{dialogMessage}</Typography>
         </DialogContent>

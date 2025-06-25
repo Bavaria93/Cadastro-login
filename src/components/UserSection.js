@@ -1,8 +1,17 @@
+// UserSection.js
 import React, { useState } from "react";
 import { Box, TextField, Typography } from "@mui/material";
 import UserList from "./UserList";
 
-const UserSection = ({ users, selectedUser, onSelectUser, itemsPerPage = 5 }) => {
+const UserSection = ({
+  users,
+  selectedUser,
+  onSelectUser,
+  itemsPerPage = 5,
+  currentPage,      // Adicionado
+  totalItems,       // Adicionado
+  onPageChange,     // Adicionado
+}) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Filtra os usuários com base na barra de pesquisa
@@ -30,6 +39,9 @@ const UserSection = ({ users, selectedUser, onSelectUser, itemsPerPage = 5 }) =>
         selectedUser={selectedUser}
         onSelectUser={onSelectUser}
         itemsPerPage={itemsPerPage}
+        currentPage={currentPage}    // Encaminhado
+        totalItems={totalItems}      // Encaminhado
+        onPageChange={onPageChange}  // Encaminhado
       />
     </Box>
   );
