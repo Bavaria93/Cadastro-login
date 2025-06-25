@@ -1,40 +1,35 @@
-import React, { useState } from "react";
+import React from "react";
 import { Box, TextField, Typography } from "@mui/material";
 import PermissionList from "./PermissionList";
 
-const PermissionSection = ({
-  permissions,
+export default function PermissionSection({
+  permissions,           // itens da página atual (já filtrados no servidor)
   selectedPermissions,
   onTogglePermission,
   itemsPerPage = 5,
-  currentPage,      // Nova prop
-  totalItems,       // Nova prop
-  onPageChange,     // Nova prop
-}) => {
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // Filtra as permissões com base na pesquisa pelo tipo ou descrição
-  const filteredPermissions = permissions.filter((permission) => {
-    const search = searchTerm.toLowerCase().trim();
-    return (
-      (permission.type || "").toLowerCase().includes(search) ||
-      (permission.description || "").toLowerCase().includes(search)
-    );
-  });
-
+  currentPage,           // índice da página (0-based)
+  totalItems,            // total global (vindo do backend)
+  onPageChange,          // para trocar de página
+  searchTerm,            // termo de busca vindo do pai
+  setSearchTerm          // setter vindo do pai
+}) {
   return (
-    <Box>
+    <Box sx={{ mt: 4 }}>
       <TextField
         fullWidth
         label="Pesquisar Permissão"
         variant="outlined"
         value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={{ marginBottom: "20px", marginTop: "20px" }}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          onPageChange(0);   // sempre volta à página 1 ao digitar
+        }}
+        sx={{ mb: 2 }}
       />
+
       <Typography variant="h6">Selecione as Permissões:</Typography>
       <PermissionList
-        permissions={filteredPermissions}
+        permissions={permissions}
         selectedPermissions={selectedPermissions}
         onTogglePermission={onTogglePermission}
         itemsPerPage={itemsPerPage}
@@ -44,6 +39,4 @@ const PermissionSection = ({
       />
     </Box>
   );
-};
-
-export default PermissionSection;
+}

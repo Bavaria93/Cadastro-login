@@ -26,7 +26,8 @@ const [permissions, setPermissions] = useState([]);
   const constProfileItemsPerPage = 5; // 5 perfis por página
   const [totalProfiles, setTotalProfiles] = useState(0);
 
-  // Estados para permissões (server-side pagination)
+  // Estados para permissões (server-side pagination
+  const [permissionSearchTerm, setPermissionSearchTerm] = useState("");
   const [permissionsCurrentPage, setPermissionsCurrentPage] = useState(0); // para permissões
   const constPermissionsItemsPerPage = 5; // 5 permissões por página
   const [totalPermissions, setTotalPermissions] = useState(0);
@@ -76,6 +77,7 @@ const [permissions, setPermissions] = useState([]);
         const params = {
           page: permissionsCurrentPage + 1,
           limit: constPermissionsItemsPerPage,
+          search: permissionSearchTerm,  // envia termo de busca
         };
         const response = await axios.get("http://localhost:8000/permissions/", { params });
         console.log("Dados retornados da API:", response.data);
@@ -94,7 +96,7 @@ const [permissions, setPermissions] = useState([]);
     };
 
     fetchPermissions();
-  }, [permissionsCurrentPage, constPermissionsItemsPerPage]);
+  }, [permissionsCurrentPage, constPermissionsItemsPerPage, permissionSearchTerm]);
 
   // Seleciona um perfil (modo seleção única)
   const handleSelectProfile = (profile) => {
@@ -179,6 +181,8 @@ const [permissions, setPermissions] = useState([]);
         currentPage={permissionsCurrentPage}
         totalItems={totalPermissions}
         onPageChange={handlePermissionPageChange}
+        searchTerm={permissionSearchTerm}
+        setSearchTerm={setPermissionSearchTerm}
       />
 
       {/* Botões de ação */}
