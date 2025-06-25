@@ -20,7 +20,8 @@ function AssociarPermissao() {
   const { profiles, setProfiles } = useContext(UserContext);
 const [permissions, setPermissions] = useState([]);
 
-  // Estados para perfis (server-side pagination)
+  // Estados para perfis (server-side pagination
+  const [profileSearchTerm, setProfileSearchTerm] = useState("");
   const [profileCurrentPage, setProfileCurrentPage] = useState(0);
   const constProfileItemsPerPage = 5; // 5 perfis por página
   const [totalProfiles, setTotalProfiles] = useState(0);
@@ -46,6 +47,7 @@ const [permissions, setPermissions] = useState([]);
         const params = {
           page: profileCurrentPage + 1, // backend espera página iniciada em 1
           limit: constProfileItemsPerPage,
+          search: profileSearchTerm,    // envia o termo de busca
         };
         const response = await axios.get("http://localhost:8000/profiles/", { params });
         console.log("Dados retornados da API:", response.data);
@@ -65,7 +67,7 @@ const [permissions, setPermissions] = useState([]);
     };
 
     fetchProfiles();
-  }, [setProfiles, profileCurrentPage, constProfileItemsPerPage]);
+  }, [setProfiles, profileCurrentPage, constProfileItemsPerPage, profileSearchTerm]);
 
   // Requisição de permissões com paginação
   useEffect(() => {
@@ -164,6 +166,8 @@ const [permissions, setPermissions] = useState([]);
         currentPage={profileCurrentPage}
         totalItems={totalProfiles}
         onPageChange={handleProfilePageChange}
+        searchTerm={profileSearchTerm}
+        setSearchTerm={setProfileSearchTerm}
       />
 
       {/* Seção de Permissões com paginação server-side */}
