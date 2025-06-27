@@ -23,6 +23,7 @@ function AssociarPerfil() {
   const [selectedProfiles, setSelectedProfiles] = useState([]);
 
   // Estados de loading
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingProfiles, setLoadingProfiles] = useState(false);
 
   // Estados para usuários (server-side pagination)
@@ -54,6 +55,7 @@ function AssociarPerfil() {
   // Fetch de usuários com paginação
   useEffect(() => {
     const fetchUsers = async () => {
+      setLoadingUsers(true);
       try {
         const params = {
           page: userCurrentPage + 1,
@@ -73,6 +75,8 @@ function AssociarPerfil() {
         console.error("Erro ao buscar usuários:", error);
         setUsers([]);
         setTotalUsers(0);
+      } finally {
+        setLoadingUsers(false);
       }
     };
 
@@ -162,6 +166,7 @@ function AssociarPerfil() {
       {/* Seção de Usuários com paginação */}
       <UserSection
         users={users}
+        loading={loadingUsers}
         selectedUser={selectedUser}
         onSelectUser={handleSelectUser}
         itemsPerPage={constUserItemsPerPage}

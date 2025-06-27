@@ -46,35 +46,35 @@ function AssociarPermissao() {
   const [dialogType, setDialogType] = useState("success");
 
   // Requisição de perfis com paginação
-useEffect(() => {
-  const fetchProfiles = async () => {
-    setLoadingProfiles(true);
-    try {
-      const params = {
-        page: profileCurrentPage + 1, // backend espera página iniciada em 1
-        limit: constProfileItemsPerPage,
-        search: profileSearchTerm,    // envia o termo de busca
-      };
-      const response = await axios.get("http://localhost:8000/profiles/", { params });
-      console.log("Dados retornados da API (perfis):", response.data);
-      // Supondo que o backend retorne { items: [...], total: <número> }
-      if (response.data && Array.isArray(response.data.items)) {
-        setProfiles(response.data.items);
-        setTotalProfiles(response.data.total);
-      } else {
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      setLoadingProfiles(true);
+      try {
+        const params = {
+          page: profileCurrentPage + 1, // backend espera página iniciada em 1
+          limit: constProfileItemsPerPage,
+          search: profileSearchTerm,    // envia o termo de busca
+        };
+        const response = await axios.get("http://localhost:8000/profiles/", { params });
+        console.log("Dados retornados da API (perfis):", response.data);
+        // Supondo que o backend retorne { items: [...], total: <número> }
+        if (response.data && Array.isArray(response.data.items)) {
+          setProfiles(response.data.items);
+          setTotalProfiles(response.data.total);
+        } else {
+          setProfiles([]);
+          setTotalProfiles(0);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar perfis:", error);
         setProfiles([]);
         setTotalProfiles(0);
+      } finally {
+        setLoadingProfiles(false);
       }
-    } catch (error) {
-      console.error("Erro ao buscar perfis:", error);
-      setProfiles([]);
-      setTotalProfiles(0);
-    } finally {
-      setLoadingProfiles(false);
-    }
-  };
+    };
 
-  fetchProfiles();
+    fetchProfiles();
   }, [setProfiles, profileCurrentPage, constProfileItemsPerPage, profileSearchTerm]);
 
   // Requisição de permissões com paginação
@@ -87,7 +87,7 @@ useEffect(() => {
           limit: constPermissionsItemsPerPage,
           search: permissionSearchTerm,
         };
-        const response = await axios.get( "http://localhost:8000/permissions/", { params });
+        const response = await axios.get("http://localhost:8000/permissions/", { params });
         console.log("Dados retornados da API (permissões):", response.data);
         if (response.data && Array.isArray(response.data.items)) {
           setPermissions(response.data.items);
