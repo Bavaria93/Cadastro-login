@@ -1,14 +1,12 @@
-// src/components/PaginationControls.js
-
 import React, { useEffect, useRef } from "react";
 import { Box, CircularProgress, Pagination } from "@mui/material";
 
 const PaginationControls = ({
   totalItems,
   itemsPerPage,
-  currentPage = 0,    // agora vem do pai
-  onPageChange,       // espera (newPageIndex: number)
-  lazyLoad = false,   // continua suportando infinite-scroll
+  currentPage = 0,
+  onPageChange,
+  lazyLoad = false,
 }) => {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const loaderRef = useRef();
@@ -33,17 +31,15 @@ const PaginationControls = ({
   return (
     <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
       {lazyLoad ? (
-        // infinite‐scroll spinner
         currentPage + 1 < totalPages && (
           <div ref={loaderRef} style={{ marginTop: 20 }}>
             <CircularProgress />
           </div>
         )
       ) : (
-        // paginação tradicional
         <Pagination
           count={totalPages}
-          page={currentPage + 1}                     // MUI é 1‐based
+          page={currentPage + 1}                     // MUI é 1-based
           onChange={(_e, newPage) => onPageChange(newPage - 1)}
           color="primary"
           variant="outlined"
