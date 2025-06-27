@@ -3,15 +3,16 @@ import { Box, TextField, Typography } from "@mui/material";
 import PermissionList from "./PermissionList";
 
 export default function PermissionSection({
-  permissions,           // itens da página atual (já filtrados no servidor)
+  permissions,
   selectedPermissions,
   onTogglePermission,
-  itemsPerPage = 5,
-  currentPage,           // índice da página (0-based)
-  totalItems,            // total global (vindo do backend)
-  onPageChange,          // para trocar de página
-  searchTerm,            // termo de busca vindo do pai
-  setSearchTerm          // setter vindo do pai
+  itemsPerPage,
+  currentPage,
+  totalItems,
+  onPageChange,
+  loading,
+  searchTerm,
+  setSearchTerm,
 }) {
   return (
     <Box sx={{ mt: 4 }}>
@@ -20,9 +21,9 @@ export default function PermissionSection({
         label="Pesquisar Permissão"
         variant="outlined"
         value={searchTerm}
-        onChange={(e) => {
+        onChange={e => {
           setSearchTerm(e.target.value);
-          onPageChange(0);   // sempre volta à página 1 ao digitar
+          onPageChange(0);
         }}
         sx={{ mb: 2 }}
       />
@@ -36,6 +37,7 @@ export default function PermissionSection({
         currentPage={currentPage}
         totalItems={totalItems}
         onPageChange={onPageChange}
+        loading={loading}
       />
     </Box>
   );

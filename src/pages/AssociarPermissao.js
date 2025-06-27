@@ -18,18 +18,21 @@ import PermissionSection from "../components/PermissionSection";
 function AssociarPermissao() {
   const navigate = useNavigate();
   const { profiles, setProfiles } = useContext(UserContext);
-const [permissions, setPermissions] = useState([]);
+  const [permissions, setPermissions] = useState([]);
 
-  // Estados para perfis (server-side pagination
+  // Estados de loading
+  const [loadingPermissions, setLoadingPermissions] = useState(false);
+
+  // Paginação e busca de perfis
   const [profileSearchTerm, setProfileSearchTerm] = useState("");
   const [profileCurrentPage, setProfileCurrentPage] = useState(0);
-  const constProfileItemsPerPage = 5; // 5 perfis por página
+  const constProfileItemsPerPage = 5;
   const [totalProfiles, setTotalProfiles] = useState(0);
 
-  // Estados para permissões (server-side pagination
+  // Paginação e busca de permissões
   const [permissionSearchTerm, setPermissionSearchTerm] = useState("");
-  const [permissionsCurrentPage, setPermissionsCurrentPage] = useState(0); // para permissões
-  const constPermissionsItemsPerPage = 5; // 5 permissões por página
+  const [permissionsCurrentPage, setPermissionsCurrentPage] = useState(0);
+  const constPermissionsItemsPerPage = 5;
   const [totalPermissions, setTotalPermissions] = useState(0);
 
   // Estados para seleção
@@ -39,7 +42,7 @@ const [permissions, setPermissions] = useState([]);
   // Estados para notificações via Dialog
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
-  const [dialogType, setDialogType] = useState("success"); // "success" ou "error"
+  const [dialogType, setDialogType] = useState("success");
 
   // Requisição de perfis com paginação
   useEffect(() => {
@@ -73,13 +76,17 @@ const [permissions, setPermissions] = useState([]);
   // Requisição de permissões com paginação
   useEffect(() => {
     const fetchPermissions = async () => {
+      setLoadingPermissions(true);
       try {
         const params = {
           page: permissionsCurrentPage + 1,
           limit: constPermissionsItemsPerPage,
           search: permissionSearchTerm,  // envia termo de busca
         };
-        const response = await axios.get("http://localhost:8000/permissions/", { params });
+        const response = await axios.get(
+          "http://localhost:8000/permissions/",
+          { params }
+        );
         console.log("Dados retornados da API:", response.data);
         if (response.data && Array.isArray(response.data.items)) {
           setPermissions(response.data.items);
@@ -92,6 +99,8 @@ const [permissions, setPermissions] = useState([]);
         console.error("Erro ao buscar permissões:", error);
         setPermissions([]);
         setTotalPermissions(0);
+      } finally {
+        setLoadingPermissions(false);
       }
     };
 
@@ -122,7 +131,6 @@ const [permissions, setPermissions] = useState([]);
       setDialogOpen(true);
       return;
     }
-
     try {
       await axios.put(`http://localhost:8000/profiles/${selectedProfile.id}/permissions`, {
         permissions: selectedPermissions,
@@ -142,7 +150,7 @@ const [permissions, setPermissions] = useState([]);
     setDialogOpen(false);
   };
 
-  // Tratadores para mudança de página
+  // Mudança de página
   const handleProfilePageChange = (pageIndex) => {
     setProfileCurrentPage(pageIndex);
   };
@@ -150,7 +158,7 @@ const [permissions, setPermissions] = useState([]);
   const handlePermissionPageChange = (pageIndex) => {
     setPermissionsCurrentPage(pageIndex);
   };
-  
+
   return (
     <Container maxWidth="md" style={{ padding: "20px" }}>
       <Box mb={3}>
@@ -159,11 +167,11 @@ const [permissions, setPermissions] = useState([]);
 
       {/* Seção de Perfis com paginação server-side */}
       <ProfileSection
-        profiles={profiles} // perfis da página atual
-        selectedProfiles={[]} // não utilizado aqui, pois é seleção única
+        profiles={profiles}
+        selectedProfiles={[]}
         selectedProfile={selectedProfile}
         onSelectProfile={handleSelectProfile}
-        selectionMode="single" // seleção única para associação
+        selectionMode="single"
         itemsPerPage={constProfileItemsPerPage}
         currentPage={profileCurrentPage}
         totalItems={totalProfiles}
@@ -174,13 +182,14 @@ const [permissions, setPermissions] = useState([]);
 
       {/* Seção de Permissões com paginação server-side */}
       <PermissionSection
-        permissions={permissions} // permissões da página atual
+        permissions={permissions}
         selectedPermissions={selectedPermissions}
         onTogglePermission={handleTogglePermission}
         itemsPerPage={constPermissionsItemsPerPage}
         currentPage={permissionsCurrentPage}
         totalItems={totalPermissions}
         onPageChange={handlePermissionPageChange}
+        loading={loadingPermissions}
         searchTerm={permissionSearchTerm}
         setSearchTerm={setPermissionSearchTerm}
       />

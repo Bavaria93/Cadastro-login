@@ -1,57 +1,58 @@
 import React from "react";
-import { List, ListItem, ListItemText, Checkbox } from "@mui/material";
+import { Box, List, ListItem, Checkbox, ListItemText, CircularProgress } from "@mui/material";
 import PaginationControls from "./PaginationControls";
 
-const PermissionList = ({
-  permissions, // Itens já correspondentes à página atual (servidor)
-  selectedPermissions,
+export default function PermissionList({
+  permissions = [],
+  selectedPermissions = [],
   onTogglePermission,
   itemsPerPage = 5,
-  currentPage,    // Se definido, assume que estamos em paginação server side
-  totalItems,     // Total de itens (para exibir o número de páginas)
-  onPageChange,   // Callback para mudança de página
-}) => {
-  // Se estivermos em modo server side (currentPage for definido), usamos o array recebido diretamente.
-  // Caso contrário (client-side), faríamos o slice.
-  const displayPermissions =
-    currentPage !== undefined ? permissions : permissions.slice(
-      currentPage * itemsPerPage,
-      (currentPage + 1) * itemsPerPage
-    );
-
-  // Parâmetros para exibição (opcional, caso o PaginationControls os use)
-  const paginationParams = {
-    page: currentPage !== undefined ? currentPage + 1 : 1,
-    limit: itemsPerPage,
-  };
+  currentPage = 0,
+  totalItems = 0,
+  onPageChange,
+  loading = false,
+}) {
+  // reserva o espaço equivalente a N itens (64px de altura aproximada cada)
+  const listHeight = itemsPerPage * 64;
 
   return (
     <>
-      <List>
-        {displayPermissions.map((permission) => (
-          <ListItem
-            key={permission.id}
-            button
-            onClick={() => onTogglePermission(permission.id)}
-          >
-            <Checkbox checked={selectedPermissions.includes(permission.id)} />
-            <ListItemText
-              primary={permission.type}
-              secondary={permission.description}
-            />
-          </ListItem>
-        ))}
-      </List>
+      {loading ? (
+        // spinner ocupando todo o espaço e centralizado verticalmente
+        <Box
+          sx={{
+            height: listHeight,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <List>
+          {permissions.map((perm) => (
+            <ListItem
+              key={perm.id}
+              button
+              onClick={() => onTogglePermission(perm.id)}
+            >
+              <Checkbox checked={selectedPermissions.includes(perm.id)} />
+              <ListItemText
+                primary={perm.type}
+                secondary={perm.description}
+              />
+            </ListItem>
+          ))}
+        </List>
+      )}
 
       <PaginationControls
-        totalItems={totalItems || permissions.length}
+        totalItems={totalItems}
         itemsPerPage={itemsPerPage}
         currentPage={currentPage}
         onPageChange={onPageChange}
-        params={paginationParams}
       />
     </>
   );
-};
-
-export default PermissionList;
+}
