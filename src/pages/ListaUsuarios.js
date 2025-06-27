@@ -9,6 +9,7 @@ import {
   Button,
   Typography,
   Box,
+  CircularProgress,
 } from "@mui/material";
 import UserCard from "../components/UserCard";
 import EditUserDialog from "../components/EditUserDialog";
@@ -21,10 +22,13 @@ function ListaUsuarios() {
   // Estados para os dados vindos da API (apenas a página atual) e para paginar
   const [dbUsers, setDbUsers] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);  // 0-indexado
+  const [currentPage, setCurrentPage] = useState(0); // 0-indexado
   const itemsPerPage = 9;
 
-  // Estados para controle dos diálogos
+  // loading
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
+  // diálogos
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -39,8 +43,8 @@ function ListaUsuarios() {
   // Busca os usuários via backend para a página atual
   useEffect(() => {
     const fetchUsers = async () => {
+      setLoadingUsers(true);
       try {
-        // Enviamos page como currentPage+1 (se o backend trabalhar com páginas 1-indexadas)
         const response = await axios.get("http://localhost:8000/users/", {
           params: {
             page: currentPage + 1,
@@ -58,6 +62,10 @@ function ListaUsuarios() {
         }
       } catch (error) {
         console.error("Erro ao buscar usuários:", error);
+        setDbUsers([]);
+        setTotalItems(0);
+      } finally {
+        setLoadingUsers(false);
       }
     };
 
@@ -87,26 +95,20 @@ function ListaUsuarios() {
 
   // Função para excluir usuário via backend e atualizar o estado
   const handleDeleteUser = async () => {
-    if (selectedUserId) {
-      try {
-        await axios.delete(`http://localhost:8000/users/${selectedUserId}`);
-        // Atualiza a listagem removendo o usuário deletado
-        setDbUsers((prevUsers) =>
-          prevUsers.filter((user) => user.id !== selectedUserId)
-        );
-        handleCloseDeleteDialog();
-      } catch (error) {
-        console.error("Erro ao excluir usuário:", error);
-      }
+    if (!selectedUserId) return;
+    try {
+      await axios.delete(`http://localhost:8000/users/${selectedUserId}`);
+      setDbUsers((prev) =>
+        prev.filter((user) => user.id !== selectedUserId)
+      );
+      handleCloseDeleteDialog();
+    } catch (error) {
+      console.error("Erro ao excluir usuário:", error);
     }
   };
 
-  // Função para formatação de datas
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
-  };
+  const formatDate = (dateString) =>
+    dateString ? new Date(dateString).toLocaleDateString() : "N/A";
 
   // Atualiza a página atual quando o PaginationControls informa a mudança
   const handlePageChange = (pageIndex) => {
@@ -130,24 +132,36 @@ function ListaUsuarios() {
         )}
       </Box>
 
-      <Grid container spacing={3} justifyContent="center">
-        {dbUsers.map((user) => (
-          <Grid item key={user.id} xs={12} sm={6} md={4}>
-            <UserCard
-              user={user}
-              onEdit={canEditUsers ? () => handleOpenEditDialog(user.id) : null}
+      {loadingUsers ? (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="200px"
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Grid container spacing={3} justifyContent="center">
+          {dbUsers.map((user) => (
+            <Grid item key={user.id} xs={12} sm={6} md={4}>
+              <UserCard
+                user={user}
+                onEdit={canEditUsers ? () => handleOpenEditDialog(user.id) : null}
               onDelete={canDeleteUsers ? () => handleOpenDeleteDialog(user) : null}
-              formatDate={formatDate}
-            />
-          </Grid>
-        ))}
-      </Grid>
+                formatDate={formatDate}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      )}
 
       {/* Controles de Paginação */}
       <Box mt={3}>
         <PaginationControls
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
           onPageChange={handlePageChange}
           lazyLoad={false}
         />
@@ -161,7 +175,7 @@ function ListaUsuarios() {
             <Typography>
               Tem certeza de que deseja excluir o usuário{" "}
               <strong>
-                {dbUsers.find((user) => user.id === selectedUserId)?.name}
+                {dbUsers.find((u) => u.id === selectedUserId)?.name}
               </strong>
               ?
             </Typography>
@@ -182,14 +196,12 @@ function ListaUsuarios() {
         <EditUserDialog
           open={editDialogOpen}
           onClose={handleCloseEditDialog}
-          user={dbUsers.find((user) => user.id === selectedUserId)}
-          setLoggedUser={(updatedUser) => {
-            setDbUsers((prevUsers) =>
-              prevUsers.map((user) =>
-                user.id === updatedUser.id ? updatedUser : user
-              )
-            );
-          }}
+          user={dbUsers.find((u) => u.id === selectedUserId)}
+          setLoggedUser={(updated) =>
+            setDbUsers((prev) =>
+              prev.map((u) => (u.id === updated.id ? updated : u))
+            )
+          }
         />
       )}
     </Container>
