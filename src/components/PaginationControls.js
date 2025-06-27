@@ -1,58 +1,50 @@
-import React, { useEffect, useState, useRef } from "react";
+// src/components/PaginationControls.js
+
+import React, { useEffect, useRef } from "react";
 import { Box, CircularProgress, Pagination } from "@mui/material";
 
 const PaginationControls = ({
   totalItems,
   itemsPerPage,
-  onPageChange,
-  lazyLoad = false,
+  currentPage = 0,    // agora vem do pai
+  onPageChange,       // espera (newPageIndex: number)
+  lazyLoad = false,   // continua suportando infinite-scroll
 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const loaderRef = useRef();
 
+  // infinite‐scroll
   useEffect(() => {
-    if (onPageChange) {
-      onPageChange(currentPage - 1);
-    }
-  }, [currentPage, onPageChange, totalPages]);
+    if (!lazyLoad || currentPage + 1 >= totalPages) return;
 
-  const observerRef = useRef();
-  useEffect(() => {
-    if (lazyLoad && observerRef.current && currentPage < totalPages) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-            }
-          });
-        },
-        {
-          threshold: 0.5,
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          onPageChange(currentPage + 1);
         }
-      );
-      observer.observe(observerRef.current);
-      return () => observer.disconnect();
-    }
-  }, [lazyLoad, currentPage, totalPages]);
+      },
+      { threshold: 0.5 }
+    );
 
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-  };
+    obs.observe(loaderRef.current);
+    return () => obs.disconnect();
+  }, [lazyLoad, currentPage, totalPages, onPageChange]);
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
       {lazyLoad ? (
-        currentPage < totalPages && (
-          <div ref={observerRef} style={{ marginTop: 20 }}>
+        // infinite‐scroll spinner
+        currentPage + 1 < totalPages && (
+          <div ref={loaderRef} style={{ marginTop: 20 }}>
             <CircularProgress />
           </div>
         )
       ) : (
+        // paginação tradicional
         <Pagination
           count={totalPages}
-          page={currentPage}
-          onChange={handlePageChange}
+          page={currentPage + 1}                     // MUI é 1‐based
+          onChange={(_e, newPage) => onPageChange(newPage - 1)}
           color="primary"
           variant="outlined"
           shape="rounded"
