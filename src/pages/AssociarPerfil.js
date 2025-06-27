@@ -22,22 +22,25 @@ function AssociarPerfil() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedProfiles, setSelectedProfiles] = useState([]);
 
+  // Estados de loading
+  const [loadingProfiles, setLoadingProfiles] = useState(false);
+
   // Estados para usuários (server-side pagination)
   const [searchTerm, setSearchTerm] = useState("");
   const [userCurrentPage, setUserCurrentPage] = useState(0);
-  const constUserItemsPerPage = 5; // 5 usuários por página
+  const constUserItemsPerPage = 5;
   const [totalUsers, setTotalUsers] = useState(0);
 
   // Estados para perfis (server-side pagination)
   const [profileSearchTerm, setProfileSearchTerm] = useState("");
   const [profileCurrentPage, setProfileCurrentPage] = useState(0);
-  const constProfileItemsPerPage = 5; // 5 perfis por página
+  const constProfileItemsPerPage = 5;
   const [totalProfiles, setTotalProfiles] = useState(0);
 
-  // Estados para notificações via Dialog do Material UI
+  // Estados para notificações via Dialog
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
-  const [dialogType, setDialogType] = useState("success"); // "success" ou "error"
+  const [dialogType, setDialogType] = useState("success");
 
   // Funções para atualizar a página de usuários e perfis (server-side)
   const handleUserPageChange = (page) => {
@@ -55,10 +58,10 @@ function AssociarPerfil() {
         const params = {
           page: userCurrentPage + 1,
           limit: constUserItemsPerPage,
-          search: searchTerm,  // Passa o termo para a API
+          search: searchTerm,
         };
         const response = await axios.get("http://localhost:8000/users/", { params });
-        console.log("Dados retornados da API:", response.data);
+        console.log("Dados retornados da API (usuários):", response.data);
         if (response.data && Array.isArray(response.data.items)) {
           setUsers(response.data.items);
           setTotalUsers(response.data.total);
@@ -79,21 +82,31 @@ function AssociarPerfil() {
   // Fetch de perfis com paginação
   useEffect(() => {
     const fetchProfiles = async () => {
+      setLoadingProfiles(true);
       try {
         const params = {
           page: profileCurrentPage + 1,
           limit: constProfileItemsPerPage,
-          search: profileSearchTerm    // envia o termo ao backend
+          search: profileSearchTerm,
         };
-        const { data } = await axios.get("http://localhost:8000/profiles/", { params });
-        setProfiles(data.items);
-        setTotalProfiles(data.total);
+        const response = await axios.get("http://localhost:8000/profiles/", { params });
+        console.log("Dados retornados da API (perfis):", response.data);
+        if (response.data && Array.isArray(response.data.items)) {
+          setProfiles(response.data.items);
+          setTotalProfiles(response.data.total);
+        } else {
+          setProfiles([]);
+          setTotalProfiles(0);
+        }
       } catch (err) {
         console.error("Erro ao buscar perfis:", err);
         setProfiles([]);
         setTotalProfiles(0);
+      } finally {
+        setLoadingProfiles(false);
       }
     };
+
     fetchProfiles();
   }, [profileCurrentPage, constProfileItemsPerPage, profileSearchTerm, setProfiles]);
 
@@ -161,8 +174,9 @@ function AssociarPerfil() {
 
       {/* Seção de Perfis com paginação */}
       <ProfileSection
-        profiles={profiles}              // Array de perfis referente à página atual
-        selectedProfiles={selectedProfiles || []}
+        profiles={profiles}
+        loading={loadingProfiles}
+        selectedProfiles={selectedProfiles}
         onToggleProfile={handleToggleProfile}
         selectionMode="multiple"
         itemsPerPage={constProfileItemsPerPage}
@@ -173,7 +187,6 @@ function AssociarPerfil() {
         setSearchTerm={setProfileSearchTerm}
       />
 
-      {/* Botões de ação */}
       <Box mt={4}>
         <Button variant="contained" color="primary" onClick={handleAssociarProfile}>
           Associar Perfis

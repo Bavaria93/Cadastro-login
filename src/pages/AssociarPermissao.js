@@ -56,7 +56,7 @@ useEffect(() => {
         search: profileSearchTerm,    // envia o termo de busca
       };
       const response = await axios.get("http://localhost:8000/profiles/", { params });
-      console.log("Dados retornados da API:", response.data);
+      console.log("Dados retornados da API (perfis):", response.data);
       // Supondo que o backend retorne { items: [...], total: <número> }
       if (response.data && Array.isArray(response.data.items)) {
         setProfiles(response.data.items);
@@ -88,7 +88,7 @@ useEffect(() => {
           search: permissionSearchTerm,
         };
         const response = await axios.get( "http://localhost:8000/permissions/", { params });
-        console.log("Dados retornados da API:", response.data);
+        console.log("Dados retornados da API (permissões):", response.data);
         if (response.data && Array.isArray(response.data.items)) {
           setPermissions(response.data.items);
           setTotalPermissions(response.data.total);

@@ -1,4 +1,3 @@
-// src/components/ProfileList.js
 import React from "react";
 import { List, ListItem, ListItemText, Checkbox } from "@mui/material";
 import PaginationControls from "./PaginationControls";
@@ -6,24 +5,13 @@ import PaginationControls from "./PaginationControls";
 const ProfileList = ({
   profiles,
   selectedProfiles,
-  onToggleProfile,    // recebe um objeto Profile
+  onToggleProfile,
   itemsPerPage = 5,
   currentPage,
   totalItems,
   onPageChange,
 }) => {
-  const displayProfiles =
-    currentPage !== undefined
-      ? profiles
-      : profiles.slice(
-          currentPage * itemsPerPage,
-          (currentPage + 1) * itemsPerPage
-        );
-
-  const paginationParams = {
-    page: currentPage !== undefined ? currentPage + 1 : 1,
-    limit: itemsPerPage,
-  };
+  const displayProfiles = profiles;
 
   return (
     <>
@@ -32,11 +20,9 @@ const ProfileList = ({
           <ListItem
             key={profile.id}
             button
-            onClick={() => onToggleProfile(profile)}
+            onClick={() => onToggleProfile(profile.id)}
           >
-            <Checkbox
-              checked={selectedProfiles.includes(profile.id)}
-            />
+            <Checkbox checked={selectedProfiles.includes(profile.id)} />
             <ListItemText
               primary={profile.type}
               secondary={profile.description}
@@ -50,7 +36,6 @@ const ProfileList = ({
         itemsPerPage={itemsPerPage}
         currentPage={currentPage}
         onPageChange={onPageChange}
-        params={paginationParams}
       />
     </>
   );
