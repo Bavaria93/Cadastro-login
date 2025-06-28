@@ -1,5 +1,3 @@
-// src/pages/ListaPermissoes.js
-
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -11,6 +9,7 @@ import {
   Button,
   Typography,
   Box,
+  TextField,
   CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -21,32 +20,40 @@ import EditPermissionDialog from "../components/EditPermissionDialog";
 import PaginationControls from "../components/PaginationControls";
 
 function ListaPermissoes() {
-  // dados da API
+  // Estado para os dados retornados do backend (apenas a página atual)
   const [dbPermissions, setDbPermissions] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 9;
+  const [searchTerm, setSearchTerm] = useState("");
+
   // loading
   const [loadingPermissions, setLoadingPermissions] = useState(false);
-  // dialogs
+  
+  // Estados para dialogs
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedPermissionId, setSelectedPermissionId] = useState(null);
-  // paginação
-  const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 9;
 
   const navigate = useNavigate();
+
+  // Permissões do usuário para ações na tela
   const canCreatePermissions = usePermission("Cadastrar Permissão");
   const canAssociatePermissions = usePermission("Atualizar Perfil");
   const canEditPermissions = usePermission("Atualizar Permissão");
   const canDeletePermissions = usePermission("Excluir Permissão");
 
-  // fetch com loading
+  // Busca os dados do backend para a página atual
   useEffect(() => {
     const fetchPermissions = async () => {
       setLoadingPermissions(true);
       try {
         const response = await axios.get("http://localhost:8000/permissions/", {
-          params: { page: currentPage + 1, limit: itemsPerPage },
+          params: {
+            page: currentPage + 1,
+            limit: itemsPerPage,
+            search: searchTerm,
+          },
         });
         console.log("Dados retornados da API (permissões):", response.data);
         if (response.data && Array.isArray(response.data.items)) {
@@ -66,7 +73,7 @@ function ListaPermissoes() {
     };
 
     fetchPermissions();
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, searchTerm]);
 
   const handleOpenEditDialog = (permissionId) => {
     setSelectedPermissionId(permissionId);
@@ -135,6 +142,18 @@ function ListaPermissoes() {
           )}
         </Box>
       </Box>
+
+      <TextField
+        fullWidth
+        label="Pesquisar Permissão"
+        variant="outlined"
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          setCurrentPage(0);
+        }}
+        sx={{ mb: 2 }}
+      />
 
       {loadingPermissions ? (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
