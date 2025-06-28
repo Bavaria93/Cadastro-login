@@ -27,7 +27,7 @@ function ListaPerfis() {
   const itemsPerPage = 9;
   const [searchTerm, setSearchTerm] = useState("");
 
-    // loading
+  // loading
   const [loadingProfiles, setLoadingProfiles] = useState(false);
 
   // Estados para diálogos
