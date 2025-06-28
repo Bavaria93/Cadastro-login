@@ -9,6 +9,7 @@ import {
   Button,
   Typography,
   Box,
+  TextField,
   CircularProgress,
 } from "@mui/material";
 import UserCard from "../components/UserCard";
@@ -22,13 +23,14 @@ function ListaUsuarios() {
   // Estados para os dados vindos da API (apenas a página atual) e para paginar
   const [dbUsers, setDbUsers] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0); // 0-indexado
+  const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 9;
+  const [searchTerm, setSearchTerm] = useState("");
 
   // loading
   const [loadingUsers, setLoadingUsers] = useState(false);
 
-  // diálogos
+  // Estados para diálogos
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -49,9 +51,10 @@ function ListaUsuarios() {
           params: {
             page: currentPage + 1,
             limit: itemsPerPage,
+            search: searchTerm,
           },
         });
-        console.log("Dados retornados da API:", response.data);
+        console.log("Dados retornados da API (usuários):", response.data);
         // Espera-se o formato: { items: [...], total: total_de_registros }
         if (response.data && Array.isArray(response.data.items)) {
           setDbUsers(response.data.items);
@@ -70,7 +73,7 @@ function ListaUsuarios() {
     };
 
     fetchUsers();
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, searchTerm]);
 
   // Funções para abertura/fechamento dos diálogos
   const handleOpenEditDialog = (userId) => {
@@ -132,6 +135,19 @@ function ListaUsuarios() {
         )}
       </Box>
 
+      {/* Barra de pesquisa */}
+      <TextField
+        fullWidth
+        label="Pesquisar Usuário"
+        variant="outlined"
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          setCurrentPage(0); // reseta a paginação ao alterar o termo
+        }}
+        sx={{ mb: 2 }}
+      />
+
       {loadingUsers ? (
         <Box
           display="flex"
@@ -148,7 +164,7 @@ function ListaUsuarios() {
               <UserCard
                 user={user}
                 onEdit={canEditUsers ? () => handleOpenEditDialog(user.id) : null}
-              onDelete={canDeleteUsers ? () => handleOpenDeleteDialog(user) : null}
+                onDelete={canDeleteUsers ? () => handleOpenDeleteDialog(user) : null}
                 formatDate={formatDate}
               />
             </Grid>
@@ -175,7 +191,7 @@ function ListaUsuarios() {
             <Typography>
               Tem certeza de que deseja excluir o usuário{" "}
               <strong>
-                {dbUsers.find((u) => u.id === selectedUserId)?.name}
+                {dbUsers.find((user) => user.id === selectedUserId)?.name}
               </strong>
               ?
             </Typography>
@@ -196,7 +212,7 @@ function ListaUsuarios() {
         <EditUserDialog
           open={editDialogOpen}
           onClose={handleCloseEditDialog}
-          user={dbUsers.find((u) => u.id === selectedUserId)}
+          user={dbUsers.find((user) => user.id === selectedUserId)}
           setLoggedUser={(updated) =>
             setDbUsers((prev) =>
               prev.map((u) => (u.id === updated.id ? updated : u))
