@@ -9,6 +9,7 @@ import {
   Button,
   Typography,
   Box,
+  TextField,
   CircularProgress,
 } from "@mui/material";
 import ProfileCard from "../components/ProfileCard";
@@ -22,10 +23,11 @@ function ListaPerfis() {
   // Estados para os dados e paginação
   const [dbProfiles, setDbProfiles] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0); // 0-indexado
+  const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 9;
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // loading
+    // loading
   const [loadingProfiles, setLoadingProfiles] = useState(false);
 
   // Estados para diálogos
@@ -47,7 +49,7 @@ function ListaPerfis() {
       setLoadingProfiles(true);
       try {
         const response = await axios.get("http://localhost:8000/profiles/", {
-          params: { page: currentPage + 1, limit: itemsPerPage },
+          params: { page: currentPage + 1, limit: itemsPerPage, search: searchTerm },
         });
         console.log("Dados retornados da API (perfis):", response.data);
         if (response.data && Array.isArray(response.data.items)) {
@@ -67,7 +69,7 @@ function ListaPerfis() {
     };
 
     fetchProfiles();
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, searchTerm]);
 
   const handleOpenEditDialog = (profileId) => {
     setSelectedProfileId(profileId);
@@ -138,6 +140,18 @@ function ListaPerfis() {
         </Box>
       </Box>
 
+      <TextField
+        fullWidth
+        label="Pesquisar Perfil"
+        variant="outlined"
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          setCurrentPage(0);
+        }}
+        sx={{ mb: 2 }}
+      />
+
       {loadingProfiles ? (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <CircularProgress />
@@ -148,8 +162,8 @@ function ListaPerfis() {
             <Grid item key={profile.id} xs={12} sm={6} md={4}>
               <ProfileCard
                 profile={profile}
-              onEdit={canEditProfiles ? () => handleOpenEditDialog(profile.id) : null}
-              onDelete={canDeleteProfiles ? () => handleOpenDeleteDialog(profile) : null}
+                onEdit={canEditProfiles ? () => handleOpenEditDialog(profile.id) : null}
+                onDelete={canDeleteProfiles ? () => handleOpenDeleteDialog(profile) : null}
                 formatDate={formatDate}
               />
             </Grid>
