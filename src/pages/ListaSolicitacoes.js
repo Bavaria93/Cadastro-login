@@ -47,7 +47,7 @@ function ListaSolicitacoes() {
             search: searchTerm,
           },
         });
-        console.log("Dados retornados da API:", response.data);
+        console.log("Dados retornados da API (solicitações):", response.data);
         if (response.data && Array.isArray(response.data.items)) {
           setDbSolicitacoes(response.data.items);
           setTotalItems(response.data.total);
@@ -89,17 +89,17 @@ function ListaSolicitacoes() {
 
   const handleDeleteSolicitacao = async () => {
     if (!selectedSolicitacaoId) return;
-      try {
-        await axios.delete(`http://localhost:8000/requests/${selectedSolicitacaoId}`);
-        setDbSolicitacoes((prevSolicitacoes) =>
-          prevSolicitacoes.filter(
-            (solicitacao) => solicitacao.id !== selectedSolicitacaoId
-          )
-        );
-        handleCloseDeleteDialog();
-      } catch (error) {
-        console.error("Erro ao excluir solicitação:", error);
-      }
+    try {
+      await axios.delete(`http://localhost:8000/requests/${selectedSolicitacaoId}`);
+      setDbSolicitacoes((prevSolicitacoes) =>
+        prevSolicitacoes.filter(
+          (solicitacao) => solicitacao.id !== selectedSolicitacaoId
+        )
+      );
+      handleCloseDeleteDialog();
+    } catch (error) {
+      console.error("Erro ao excluir solicitação:", error);
+    }
   };
 
   const formatDate = (dateString) =>
@@ -141,7 +141,9 @@ function ListaSolicitacoes() {
       ) : dbSolicitacoes.length === 0 ? (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <Typography variant="body1">
-            O usuário ainda não cadastrou nenhuma solicitação.
+            {searchTerm
+              ? "Nenhuma solicitação encontrada."
+              : "O usuário ainda não cadastrou nenhuma solicitação."}
           </Typography>
         </Box>
       ) : (

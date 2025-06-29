@@ -140,7 +140,9 @@ function ListaCursos() {
       ) : dbCourses.length === 0 ? (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <Typography variant="body1">
-            Nenhum curso cadastrado.
+            {searchTerm
+              ? "Nenhum curso encontrado."
+              : "Nenhum curso cadastrado."}
           </Typography>
         </Box>
       ) : (

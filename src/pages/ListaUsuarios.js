@@ -155,7 +155,9 @@ function ListaUsuarios() {
       ) : dbUsers.length === 0 ? (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <Typography variant="body1">
-            Nenhum curso cadastrado.
+            {searchTerm
+              ? "Nenhum usuário encontrado."
+              : "Nenhum usuário cadastrado."}
           </Typography>
         </Box>
       ) : (

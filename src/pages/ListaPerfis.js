@@ -159,7 +159,9 @@ function ListaPerfis() {
       ) : dbProfiles.length === 0 ? (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <Typography variant="body1">
-            Nenhum perfil cadastrado.
+            {searchTerm
+              ? "Nenhum perfil encontrado."
+              : "Nenhum perfil cadastrado."}
           </Typography>
         </Box>
       ) : (

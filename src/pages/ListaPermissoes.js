@@ -164,7 +164,9 @@ function ListaPermissoes() {
       ) : dbPermissions.length === 0 ? (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <Typography variant="body1">
-            Nenhuma permissão cadastrada.
+            {searchTerm
+              ? "Nenhuma permissão encontrada."
+              : "Nenhuma permissão cadastrada."}
           </Typography>
         </Box>
       ) : (
