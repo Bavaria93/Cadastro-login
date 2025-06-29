@@ -101,8 +101,10 @@ function ListaPermissoes() {
       await axios.delete(
         `http://localhost:8000/permissions/${selectedPermissionId}`
       );
-      setDbPermissions((prev) =>
-        prev.filter((p) => p.id !== selectedPermissionId)
+      setDbPermissions((prevPermissions) =>
+          prevPermissions.filter(
+            (permission) => permission.id !== selectedPermissionId
+          )
       );
       handleCloseDeleteDialog();
     } catch (error) {

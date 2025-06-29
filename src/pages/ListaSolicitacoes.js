@@ -9,6 +9,8 @@ import {
   Button,
   Typography,
   Box,
+  TextField,
+  CircularProgress,
 } from "@mui/material";
 import SolicitacaoCard from "../components/SolicitacaoCard";
 import EditSolicitacaoDialog from "../components/EditSolicitacaoDialog";
@@ -20,7 +22,10 @@ function ListaSolicitacoes() {
   // Estados para as solicitações e para a paginação.
   const [dbSolicitacoes, setDbSolicitacoes] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);  // 0-indexado no frontend
+  const [currentPage, setCurrentPage] = useState(0);
+  const [loadingSolicitacoes, setLoadingSolicitacoes] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
   const itemsPerPage = 9;
 
   // Estados para os diálogos.
@@ -33,10 +38,14 @@ function ListaSolicitacoes() {
   // Busca as solicitações salvas no backend com paginação
   useEffect(() => {
     const fetchSolicitacoes = async () => {
+      setLoadingSolicitacoes(true);
       try {
         const response = await axios.get("http://localhost:8000/requests/", {
-          // Se o backend trabalha com páginas 1-indexadas, envie currentPage+1
-          params: { page: currentPage + 1, limit: itemsPerPage },
+          params: {
+            page: currentPage + 1,
+            limit: itemsPerPage,
+            search: searchTerm,
+          },
         });
         console.log("Dados retornados da API:", response.data);
         if (response.data && Array.isArray(response.data.items)) {
@@ -48,10 +57,15 @@ function ListaSolicitacoes() {
         }
       } catch (error) {
         console.error("Erro ao buscar solicitações:", error);
+        setDbSolicitacoes([]);
+        setTotalItems(0);
+      } finally {
+        setLoadingSolicitacoes(false);
       }
     };
+
     fetchSolicitacoes();
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, searchTerm]);
 
   const handleOpenEditDialog = (id) => {
     setSelectedSolicitacaoId(id);
@@ -74,7 +88,7 @@ function ListaSolicitacoes() {
   };
 
   const handleDeleteSolicitacao = async () => {
-    if (selectedSolicitacaoId) {
+    if (!selectedSolicitacaoId) return;
       try {
         await axios.delete(`http://localhost:8000/requests/${selectedSolicitacaoId}`);
         setDbSolicitacoes((prevSolicitacoes) =>
@@ -86,54 +100,71 @@ function ListaSolicitacoes() {
       } catch (error) {
         console.error("Erro ao excluir solicitação:", error);
       }
-    }
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
-  };
+  const formatDate = (dateString) =>
+    dateString ? new Date(dateString).toLocaleDateString() : "N/A";
 
   const handlePageChange = (pageIndex) => {
     setCurrentPage(pageIndex);
   };
 
   return (
-    <Container maxWidth="md" style={{ padding: "20px" }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" component="h1">
-          Lista de Solicitações
-        </Typography>
-        <Box display="flex" gap={2}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate("/cadastroSolicitacao")}
-          >
-            Cadastrar Solicitação
-          </Button>
-        </Box>
+    <Container maxWidth="md" sx={{ p: 2 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h4">Lista de Solicitações</Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/cadastroSolicitacao")}
+        >
+          Cadastrar Solicitação
+        </Button>
       </Box>
 
-      <Grid container spacing={3} justifyContent="center">
-        {dbSolicitacoes.map((solicitacao) => (
-          <Grid item key={solicitacao.id} xs={12} sm={6} md={4}>
-            <SolicitacaoCard
-              solicitacao={solicitacao}
-              onEdit={() => handleOpenEditDialog(solicitacao.id)}
-              onDelete={() => handleOpenDeleteDialog(solicitacao)}
-              formatDate={formatDate}
-            />
-          </Grid>
-        ))}
-      </Grid>
+      <TextField
+        fullWidth
+        label="Pesquisar Solicitação"
+        variant="outlined"
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          setCurrentPage(0);
+        }}
+        sx={{ mb: 2 }}
+      />
+
+      {loadingSolicitacoes ? (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+          <CircularProgress />
+        </Box>
+      ) : dbSolicitacoes.length === 0 ? (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+          <Typography variant="body1">
+            O usuário ainda não cadastrou nenhuma solicitação.
+          </Typography>
+        </Box>
+      ) : (
+        <Grid container spacing={3} justifyContent="center">
+          {dbSolicitacoes.map((solicitacao) => (
+            <Grid item key={solicitacao.id} xs={12} sm={6} md={4}>
+              <SolicitacaoCard
+                solicitacao={solicitacao}
+                onEdit={() => handleOpenEditDialog(solicitacao.id)}
+                onDelete={() => handleOpenDeleteDialog(solicitacao)}
+                formatDate={formatDate}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      )}
 
       {/* Controles de Paginação */}
       <Box mt={3}>
         <PaginationControls
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
           onPageChange={handlePageChange}
           lazyLoad={false}
         />
