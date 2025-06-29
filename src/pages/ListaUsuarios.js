@@ -101,8 +101,8 @@ function ListaUsuarios() {
     if (!selectedUserId) return;
     try {
       await axios.delete(`http://localhost:8000/users/${selectedUserId}`);
-      setDbUsers((prev) =>
-        prev.filter((user) => user.id !== selectedUserId)
+      setDbUsers((prevUsers) =>
+        prevUsers.filter((user) => user.id !== selectedUserId)
       );
       handleCloseDeleteDialog();
     } catch (error) {
@@ -149,13 +149,14 @@ function ListaUsuarios() {
       />
 
       {loadingUsers ? (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="200px"
-        >
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <CircularProgress />
+        </Box>
+      ) : dbUsers.length === 0 ? (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+          <Typography variant="body1">
+            Nenhum curso cadastrado.
+          </Typography>
         </Box>
       ) : (
         <Grid container spacing={3} justifyContent="center">
@@ -213,9 +214,11 @@ function ListaUsuarios() {
           open={editDialogOpen}
           onClose={handleCloseEditDialog}
           user={dbUsers.find((user) => user.id === selectedUserId)}
-          setLoggedUser={(updated) =>
-            setDbUsers((prev) =>
-              prev.map((u) => (u.id === updated.id ? updated : u))
+          setLoggedUser={(updatedUser) =>
+            setDbUsers((prevUsers) =>
+              prevUsers.map((user) =>
+                user.id === updatedUser.id ? updatedUser : user
+              )
             )
           }
         />

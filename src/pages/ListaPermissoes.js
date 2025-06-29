@@ -29,7 +29,7 @@ function ListaPermissoes() {
 
   // loading
   const [loadingPermissions, setLoadingPermissions] = useState(false);
-  
+
   // Estados para dialogs
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -102,9 +102,9 @@ function ListaPermissoes() {
         `http://localhost:8000/permissions/${selectedPermissionId}`
       );
       setDbPermissions((prevPermissions) =>
-          prevPermissions.filter(
-            (permission) => permission.id !== selectedPermissionId
-          )
+        prevPermissions.filter(
+          (permission) => permission.id !== selectedPermissionId
+        )
       );
       handleCloseDeleteDialog();
     } catch (error) {
@@ -160,6 +160,12 @@ function ListaPermissoes() {
       {loadingPermissions ? (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <CircularProgress />
+        </Box>
+      ) : dbPermissions.length === 0 ? (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+          <Typography variant="body1">
+            Nenhuma permissão cadastrada.
+          </Typography>
         </Box>
       ) : (
         <Grid container spacing={3} justifyContent="center">

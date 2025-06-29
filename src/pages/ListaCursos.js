@@ -134,21 +134,11 @@ function ListaCursos() {
       />
 
       {loadingCourses ? (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="200px"
-        >
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <CircularProgress />
         </Box>
       ) : dbCourses.length === 0 ? (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="200px"
-        >
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <Typography variant="body1">
             Nenhum curso cadastrado.
           </Typography>

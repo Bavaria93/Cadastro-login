@@ -156,6 +156,12 @@ function ListaPerfis() {
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <CircularProgress />
         </Box>
+      ) : dbProfiles.length === 0 ? (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+          <Typography variant="body1">
+            Nenhum perfil cadastrado.
+          </Typography>
+        </Box>
       ) : (
         <Grid container spacing={3} justifyContent="center">
           {dbProfiles.map((profile) => (
