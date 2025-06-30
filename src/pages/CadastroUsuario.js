@@ -18,7 +18,7 @@ import ProfileSection from "../components/ProfileSection";
 
 function CadastroUsuario() {
   // Recupera usuários, função para atualizar usuários e o token do contexto.
-  const { users, setUsers, userToken } = useContext(UserContext);
+  const { users, setUsers, profiles, setProfiles, userToken } = useContext(UserContext);
 
   // Estados dos campos do formulário
   const [name, setName] = useState("");
@@ -30,6 +30,14 @@ function CadastroUsuario() {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [previewPhoto, setPreviewPhoto] = useState("");
 
+  const [loadingProfiles, setLoadingProfiles] = useState(false);
+
+  const [profileCurrentPage, setProfileCurrentPage] = useState(0);
+  const constProfileItemsPerPage = 5;
+  const [totalProfiles, setTotalProfiles] = useState(0);
+
+  const [profileSearchTerm, setProfileSearchTerm] = useState("");
+
   // Estados para Dialog de feedback
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
@@ -37,7 +45,6 @@ function CadastroUsuario() {
 
   // Estados para fluxo de associação
   const [draftUser, setDraftUser] = useState(null); // Rascunho do usuário
-  const [fetchedProfiles, setFetchedProfiles] = useState([]); // Perfis carregados do backend
   const [selectedProfiles, setSelectedProfiles] = useState([]); // IDs dos perfis selecionados
   const [isProfileAssociated, setIsProfileAssociated] = useState(false);
 
@@ -104,19 +111,45 @@ function CadastroUsuario() {
 
   // Busca os perfis do backend ao salvar os dados
   useEffect(() => {
+    if (!draftUser) return;
+
     const fetchProfiles = async () => {
+      setLoadingProfiles(true);
       try {
-        const response = await axios.get("http://localhost:8000/profiles/");
-        setFetchedProfiles(response.data);
+        const params = {
+          page: profileCurrentPage + 1,
+          limit: constProfileItemsPerPage,
+          search: profileSearchTerm,
+        };
+        const response = await axios.get("http://localhost:8000/profiles/", { params });
+        console.log("Dados retornados da API (perfis):", response.data);
+
+        const data = response.data;
+
+        if (Array.isArray(data)) {
+          // Formato: [ {...}, {...}, ... ]
+          setProfiles(data);
+          setTotalProfiles(data.length);
+        } else if (data.items && Array.isArray(data.items)) {
+          // Formato paginado: { items: [...], total: N }
+          setProfiles(data.items);
+          setTotalProfiles(data.total ?? data.items.length);
+        } else {
+          // Qualquer outro caso inesperado
+          setProfiles([]);
+          setTotalProfiles(0);
+        }
       } catch (error) {
         console.error("Erro ao buscar perfis:", error);
+        setProfiles([]);
+        setTotalProfiles(0);
+      } finally {
+        setLoadingProfiles(false);
       }
     };
 
-    if (draftUser) {
-      fetchProfiles();
-    }
-  }, [draftUser]);
+    fetchProfiles();
+  }, [setProfiles, draftUser, profileCurrentPage, constProfileItemsPerPage, profileSearchTerm]);
 
   // Lida com a seleção/desseleção de perfis
   const handleToggleProfile = (profileId) => {
@@ -170,7 +203,7 @@ function CadastroUsuario() {
       setDialogOpen(true);
       return;
     }
-    if (fetchedProfiles.length > 0 && !isProfileAssociated) {
+    if (profiles.length > 0 && !isProfileAssociated) {
       setDialogMessage("Você precisa associar um perfil antes de cadastrar o usuário.");
       setDialogType("error");
       setDialogOpen(true);
@@ -181,7 +214,7 @@ function CadastroUsuario() {
       name: draftUser.name,
       email: draftUser.email,
       password: draftUser.password,
-      profiles: fetchedProfiles.length > 0 ? selectedProfiles : []
+      profiles: profiles.length > 0 ? selectedProfiles : []
     };
 
     try {
@@ -285,16 +318,25 @@ function CadastroUsuario() {
       </Paper>
 
       {/* Se os dados foram salvos e houver perfis cadastrados, exibe a associação de perfis */}
-      {draftUser && fetchedProfiles.length > 0 && (
+      {draftUser && profiles.length > 0 && (
         <Paper
           elevation={4}
           sx={{ p: 3, borderRadius: 2, mt: 3, backgroundColor: "#fff" }}
         >
           <ProfileSection
-            profiles={fetchedProfiles}
+            profiles={profiles}
+            loading={loadingProfiles}
             selectedProfiles={selectedProfiles}
             onToggleProfile={handleToggleProfile}
+            selectionMode="multiple"
+            currentPage={profileCurrentPage}
+            onPageChange={setProfileCurrentPage}
+            itemsPerPage={constProfileItemsPerPage}
+            totalItems={totalProfiles}
+            searchTerm={profileSearchTerm}
+            setSearchTerm={setProfileSearchTerm}
           />
+
           <Box display="flex" justifyContent="center" mt={2}>
             <Button variant="contained" color="secondary" onClick={handleAssociarPerfil}>
               Associar Perfil
@@ -304,7 +346,7 @@ function CadastroUsuario() {
       )}
 
       {/* Exibe o botão final para cadastrar o usuário se houver associação ou se nenhum perfil estiver cadastrado */}
-      {draftUser && (isProfileAssociated || fetchedProfiles.length === 0) && (
+      {draftUser && (isProfileAssociated || profiles.length === 0) && (
         <Box display="flex" justifyContent="center" mt={3} mb={4}>
           <Button variant="contained" color="primary" onClick={handleCadastrarUsuario}>
             Cadastrar Usuário

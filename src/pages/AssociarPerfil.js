@@ -102,8 +102,8 @@ function AssociarPerfil() {
           setProfiles([]);
           setTotalProfiles(0);
         }
-      } catch (err) {
-        console.error("Erro ao buscar perfis:", err);
+      } catch (error) {
+        console.error("Erro ao buscar perfis:", error);
         setProfiles([]);
         setTotalProfiles(0);
       } finally {
@@ -112,7 +112,7 @@ function AssociarPerfil() {
     };
 
     fetchProfiles();
-  }, [profileCurrentPage, constProfileItemsPerPage, profileSearchTerm, setProfiles]);
+  }, [setProfiles, profileCurrentPage, constProfileItemsPerPage, profileSearchTerm]);
 
   const handleSelectUser = (user) => {
     setSelectedUser(user);
