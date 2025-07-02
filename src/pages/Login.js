@@ -5,12 +5,11 @@ import {
   Button,
   Box,
   Typography,
-  Link,
   IconButton,
   InputAdornment,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 
 const Login = () => {
@@ -48,18 +47,6 @@ const Login = () => {
         borderRadius={8}
         position="relative"
       >
-        {/* Link para cadastro */}
-        <Box position="absolute" top={10} right={10}>
-          <Link
-            component={RouterLink}
-            to="/cadastroUsuario"
-            variant="body2"
-            color="primary"
-            underline="hover"
-          >
-            Não tem uma conta?
-          </Link>
-        </Box>
         <Typography variant="h4" gutterBottom>
           Login
         </Typography>
