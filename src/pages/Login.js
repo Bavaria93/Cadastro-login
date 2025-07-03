@@ -1,104 +1,86 @@
-import React, { useState, useContext } from 'react';
-import {
-  Container,
-  TextField,
-  Button,
-  Box,
-  Typography,
-  IconButton,
-  InputAdornment,
-} from '@mui/material';
+import React from 'react';
+import { InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../contexts/AuthContext';
+
+// Hook customizado que encapsula toda a lógica de estado e submissão do formulário de login
+import useLoginForm from '../hooks/useLoginForm';
+
+// Componentes estilizados (via MUI styled) para separar a lógica de marcação das regras de estilo
+import {
+  LoginContainer,           // Container centralizado com margem e espaçamentos
+  FormBox,                  // Box que envolve o formulário, aplica padding, sombra e borda arredondada
+  Title,                    // Typography para títulos e textos, com espaçamento padronizado
+  StyledTextField,          // TextField estilizado para inputs
+  PasswordAdornmentButton,  // IconButton estilizado para alternar visibilidade da senha
+  SubmitButton             // Button estilizado para o botão de submit
+} from '../components/Login/Login.styles';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [erro, setErro] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
-  const { signIn } = useContext(AuthContext);
-
-  const handleTogglePasswordVisibility = () => {
-    setShowPassword((prev) => !prev);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErro('');
-    try {
-      await signIn(email, password);
-      navigate('/');
-    } catch (error) {
-      console.error('Erro no login:', error);
-      setErro('Email ou senha inválidos!');
-    }
-  };
+  // Obtemos todos os estados e handlers necessários do hook
+  const {
+    email,                    // valor atual do campo de email
+    setEmail,                 // função para atualizar o email
+    password,                 // valor atual do campo de senha
+    setPassword,              // função para atualizar a senha
+    error,                    // mensagem de erro de login (string vazia se não houver)
+    showPassword,             // booleano que controla se a senha está visível
+    togglePasswordVisibility, // alterna o valor de showPassword
+    handleSubmit              // função que trata o envio do formulário
+  } = useLoginForm();
 
   return (
-    <Container maxWidth="sm" style={{ marginTop: '50px' }}>
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        padding={4}
-        boxShadow={3}
-        borderRadius={8}
-        position="relative"
-      >
-        <Typography variant="h4" gutterBottom>
-          Login
-        </Typography>
-        <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-          <TextField
-            label="Email"
-            type="email"
-            fullWidth
-            variant="outlined"
-            margin="normal"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <TextField
-            label="Senha"
-            type={showPassword ? 'text' : 'password'}
-            fullWidth
-            variant="outlined"
-            margin="normal"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={handleTogglePasswordVisibility}
-                    edge="end"
-                    aria-label="toggle password visibility"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-          {erro && (
-            <Typography color="error" style={{ marginTop: '10px' }}>
-              {erro}
-            </Typography>
-          )}
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            style={{ marginTop: '20px' }}
-          >
-            Entrar
-          </Button>
-        </form>
-      </Box>
-    </Container>
+    // Container principal centralizado, largura máxima 'sm'
+    <LoginContainer maxWidth="sm">
+      {/* FormBox usa 'component="form"' para tornar esse Box um <form> semanticamente */}
+      <FormBox component="form" onSubmit={handleSubmit}>
+        {/* Título do formulário */}
+        <Title variant="h4">Login</Title>
+
+        {/* Campo de email */}
+        <StyledTextField
+          label="Email"
+          type="email"
+          variant="outlined"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        {/* Campo de senha com botão para alternar visibilidade */}
+        <StyledTextField
+          label="Senha"
+          type={showPassword ? 'text' : 'password'}
+          variant="outlined"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <PasswordAdornmentButton
+                  onClick={togglePasswordVisibility}
+                  edge="end"
+                  aria-label="toggle password visibility"
+                >
+                  {/* Ícone muda conforme o estado showPassword */}
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </PasswordAdornmentButton>
+              </InputAdornment>
+            )
+          }}
+        />
+
+        {/* Exibe mensagem de erro caso exista */}
+        {error && (
+          <Title variant="body2" color="error">
+            {error}
+          </Title>
+        )}
+
+        {/* Botão de envio do formulário */}
+        <SubmitButton type="submit" variant="contained" fullWidth>
+          Entrar
+        </SubmitButton>
+      </FormBox>
+    </LoginContainer>
   );
 };
 
