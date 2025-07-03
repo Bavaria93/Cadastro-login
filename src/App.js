@@ -1,9 +1,10 @@
+// src/App.js
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 import { BrowserRouter as Router, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './contexts/AuthContext';
 import { UserProvider } from "./contexts/UserContext";
-import VerticalMenu from './components/VerticalMenu';
+import VerticalMenu from './components/VerticalMenu/VerticalMenu';
 import HorizontalMenu from './components/HorizontalMenu';
 import MainRoutes from './routes/MainRoutes';
 import EditUserDialog from './components/EditUserDialog';
@@ -13,29 +14,20 @@ import { jwtDecode } from "jwt-decode";
 
 // Configuração de interceptors do axios permanece igual...
 axios.interceptors.request.use(
-  (config) => {
+  config => {
     const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
+    if (token) config.headers['Authorization'] = `Bearer ${token}`;
     return config;
   },
-  (error) => Promise.reject(error)
+  error => Promise.reject(error)
 );
-
 axios.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response) {
-      console.log('Erro interceptado:', error.response.status, error.response.data);
-      if (error.response.status === 401) {
-        console.log('Token expirado ou inválido, efetuando logout...');
-        localStorage.removeItem('token');
-        localStorage.removeItem('loggedUser');
-        window.location.href = '/login';
-      }
-    } else {
-      console.log('Erro sem resposta do servidor:', error);
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('loggedUser');
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }
@@ -66,9 +58,16 @@ function App() {
   const hideMenus = normalizedPath === '/login';
   const drawerWidthExpanded = 200;
   const drawerWidthCollapsed = 0;
-  const mainMarginLeft = !hideMenus && menuAberto ? `${drawerWidthExpanded}px` : '0px';
-  const appBarLeft = !hideMenus && menuAberto ? `${drawerWidthExpanded}px` : '0px';
-  const appBarWidth = !hideMenus && menuAberto ? `calc(100% - ${drawerWidthExpanded}px)` : '100%';
+
+  // Configurações do grid: menu ocupa primeira coluna, header e main segunda coluna
+  const gridTemplateColumns = hideMenus
+    ? '1fr'
+    : `${menuAberto ? drawerWidthExpanded : drawerWidthCollapsed}px auto`;
+  const gridTemplateRows = hideMenus ? '1fr' : '64px auto';
+  const gridTemplateAreas = hideMenus
+    ? `"main"`
+    : `"menu header"
+       "menu main"`;
 
   const handleLogout = useCallback(() => {
     signOut();
@@ -76,6 +75,7 @@ function App() {
     navigate('/login');
   }, [navigate, signOut]);
 
+  // Verifica expiração do token e abre diálogo quando expirar
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -102,42 +102,57 @@ function App() {
   }, [handleLogout]);
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh' }}>
+    <Box
+      sx={{
+        display: 'grid',
+        height: '100vh',
+        gridTemplateColumns,
+        gridTemplateRows,
+        gridTemplateAreas,
+        transition: theme =>
+          theme.transitions.create('grid-template-columns', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.standard
+          })
+      }}
+    >
       {!hideMenus && (
-        <>
+        <Box sx={{ gridArea: 'menu' }}>
           <VerticalMenu
             menuAberto={menuAberto}
             drawerWidthExpanded={drawerWidthExpanded}
             drawerWidthCollapsed={drawerWidthCollapsed}
           />
+        </Box>
+      )}
+
+      {!hideMenus && (
+        <Box sx={{ gridArea: 'header' }}>
           <HorizontalMenu
             menuAberto={menuAberto}
-            appBarLeft={appBarLeft}
-            appBarWidth={appBarWidth}
-            alternarMenu={() => setMenuAberto(!menuAberto)}
-            handleMenuOpen={(event) => setAnchorEl(event.currentTarget)}
+            alternarMenu={() => setMenuAberto(v => !v)}
+            handleMenuOpen={e => setAnchorEl(e.currentTarget)}
             anchorEl={anchorEl}
             handleMenuClose={() => setAnchorEl(null)}
             handleLogout={handleLogout}
             handleEditUser={() => setEditDialogOpen(true)}
           />
-        </>
+        </Box>
       )}
+
       <Box
         component="main"
         sx={{
-          flexGrow: 1,
-          marginLeft: hideMenus ? '0px' : mainMarginLeft,
-          marginTop: hideMenus ? '0px' : '64px',
-          transition: hideMenus ? 'none' : 'margin-left none, margin-top 0.3s',
-          backgroundColor: '#ECF0F1',
-          width: '100%',
-          position: 'relative',
+          gridArea: 'main',
+          p: 3,
+          bgcolor: '#ECF0F1',
+          overflow: 'auto'
         }}
       >
         {!hideMenus && <Breadcrumb />}
         <MainRoutes />
       </Box>
+
       {user && (
         <EditUserDialog
           open={editDialogOpen}
@@ -145,16 +160,19 @@ function App() {
           user={user}
         />
       )}
+
       <Dialog
         open={sessionExpired}
         disableEscapeKeyDown
         aria-labelledby="session-expired-dialog-title"
         aria-describedby="session-expired-dialog-description"
       >
-        <DialogTitle id="session-expired-dialog-title">Acesso Expirado</DialogTitle>
+        <DialogTitle id="session-expired-dialog-title">
+          Acesso Expirado
+        </DialogTitle>
         <DialogContent>
           <DialogContentText id="session-expired-dialog-description">
-            Acesso ao portal expirado. É necessário fazer o Login novamente.
+            Sua sessão expirou. Faça login novamente.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -163,7 +181,6 @@ function App() {
               setSessionExpired(false);
               handleLogout();
             }}
-            color="primary"
             autoFocus
           >
             Fechar

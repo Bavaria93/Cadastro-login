@@ -14,17 +14,17 @@ import InputAdornment from "@mui/material/InputAdornment";
 import { Menu as MenuIcon, Search as SearchIcon } from "@mui/icons-material";
 import { AuthContext } from "../contexts/AuthContext";
 
-// Função auxiliar para garantir que a URL da foto esteja limpa e completa
+// Garante URL completa ou placeholder
 const getFullImageUrl = (photoPath) => {
   if (!photoPath) return "https://via.placeholder.com/40";
   const trimmed = photoPath.trim();
-  return trimmed.startsWith("http") ? trimmed : `http://localhost:8000${trimmed}`;
+  return trimmed.startsWith("http")
+    ? trimmed
+    : `http://localhost:8000${trimmed}`;
 };
 
 const HorizontalMenu = ({
   menuAberto,
-  appBarLeft,
-  appBarWidth,
   alternarMenu,
   handleMenuOpen,
   anchorEl,
@@ -36,21 +36,16 @@ const HorizontalMenu = ({
 
   return (
     <AppBar
-      position="fixed"
+      position="static"
       sx={{
-        backgroundColor: "#3498DB",
-        zIndex: 1300,
-        left: appBarLeft,
-        width: appBarWidth,
-        transition: "left 0.3s, width 0.3s",
+        gridArea: "header",           // assume que o pai já definiu grid-area
+        bgcolor: "#3498DB",
+        boxShadow: 1
       }}
     >
-      <Toolbar>
-        <IconButton
-          onClick={alternarMenu}
-          edge="start"
-          sx={{ mr: 2, color: "white" }}
-        >
+      <Toolbar sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {/* Botão de toggle do drawer */}
+        <IconButton onClick={alternarMenu} edge="start" sx={{ color: "#fff" }}>
           <MenuIcon />
         </IconButton>
         <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
@@ -63,52 +58,46 @@ const HorizontalMenu = ({
                 <InputAdornment position="start">
                   <SearchIcon sx={{ color: "grey" }} />
                 </InputAdornment>
-              ),
+              )
             }}
             sx={{
-              backgroundColor: "white",
-              borderRadius: 1,
-              width: "300px",
+              bgcolor: "#fff",
+              borderRadius: 1
             }}
           />
         </Box>
+
+        {/* Avatar + nome do usuário */}
         <Box
-          sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            color: "#fff",
+            cursor: "pointer"
+          }}
           onClick={handleMenuOpen}
         >
           <Avatar
-            alt="Foto de Perfil"
-            src={
-              user && user.photo
-                ? getFullImageUrl(user.photo)
-                : "https://via.placeholder.com/40"
-            }
+            src={getFullImageUrl(user?.photo)}
+            alt={user?.name || "Usuário"}
             sx={{ marginRight: 1 }}
           />
-          <Typography variant="body1" sx={{ color: "white" }}>
-            {user && user.name ? user.name : "Usuário"}
-          </Typography>
+          <Typography variant="body1">{user?.name || "Usuário"}</Typography>
         </Box>
+
+        {/* Menu de dropdown do avatar */}
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
-          sx={{ mt: 1.5 }}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "right",
-          }}
-          transformOrigin={{
-            vertical: "top",
-            horizontal: "right",
-          }}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
+          sx={{ mt: 1 }}
         >
           <MenuItem
             onClick={() => {
               handleMenuClose();
-              if (handleEditUser) {
-                handleEditUser();
-              }
+              handleEditUser();
             }}
           >
             Editar Usuário
