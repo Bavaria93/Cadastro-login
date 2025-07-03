@@ -2,7 +2,6 @@ import axios from "axios";
 import React, { useState, useContext, useEffect } from "react";
 import {
   Container,
-  TextField,
   Button,
   Box,
   Typography,
@@ -11,14 +10,24 @@ import {
   DialogContent,
   DialogActions,
   Paper,
-  Avatar
+  Stepper,
+  Step,
+  StepLabel
 } from "@mui/material";
 import { UserContext } from "../contexts/UserContext";
-import ProfileSection from "../components/ProfileSection";
+import StepDadosUsuario from "../steps/StepDadosUsuario";
+import StepAssociarPerfis from "../steps/StepAssociarPerfis";
+import StepConfirmacao from "../steps/StepConfirmacao";
+import useWizardStepper from "../hooks/useWizardStepper";
+import { fetchProfiles } from "../services/profileService";
+import { createUser } from "../services/userService";
 
 function CadastroUsuario() {
   // Recupera usuários, função para atualizar usuários e o token do contexto.
-  const { users, setUsers, profiles, setProfiles, userToken } = useContext(UserContext);
+  const { setUsers, profiles, setProfiles, userToken } = useContext(UserContext);
+
+  const steps = ["Dados do Usuário", "Associação de Perfis", "Confirmação"];
+  const { activeStep, nextStep, prevStep, isLast, setStep } = useWizardStepper(0, steps);
 
   // Estados dos campos do formulário
   const [name, setName] = useState("");
@@ -37,48 +46,122 @@ function CadastroUsuario() {
   const [totalProfiles, setTotalProfiles] = useState(0);
 
   const [profileSearchTerm, setProfileSearchTerm] = useState("");
+  const [selectedProfiles, setSelectedProfiles] = useState([]);
 
-  // Estados para Dialog de feedback
+  const [draftUser, setDraftUser] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [dialogType, setDialogType] = useState("success");
 
-  // Estados para fluxo de associação
-  const [draftUser, setDraftUser] = useState(null); // Rascunho do usuário
-  const [selectedProfiles, setSelectedProfiles] = useState([]); // IDs dos perfis selecionados
-  const [isProfileAssociated, setIsProfileAssociated] = useState(false);
-
   // Atualiza a pré-visualização da foto quando o selectedPhoto mudar
   useEffect(() => {
-    if (selectedPhoto) {
-      const objectUrl = URL.createObjectURL(selectedPhoto);
-      setPreviewPhoto(objectUrl);
-      return () => URL.revokeObjectURL(objectUrl);
-    } else {
+    if (!selectedPhoto) {
       setPreviewPhoto("");
+      return;
     }
+    const url = URL.createObjectURL(selectedPhoto);
+    setPreviewPhoto(url);
+    return () => URL.revokeObjectURL(url);
   }, [selectedPhoto]);
 
-  // Valida os campos do usuário
+  useEffect(() => {
+    if (activeStep !== 1) return;
+
+    (async () => {
+      setLoadingProfiles(true);
+      try {
+        const params = {
+          page: profileCurrentPage + 1,
+          limit: constProfileItemsPerPage,
+          search: profileSearchTerm,
+        };
+        const response = await fetchProfiles(params);
+        console.log("Dados retornados da API (perfis):", response.data);
+        const data = response.data;
+        if (Array.isArray(data)) {
+          setProfiles(data);
+          setTotalProfiles(data.length);
+        } else if (data.items && Array.isArray(data.items)) {
+          // Formato paginado: { items: [...], total: N }
+          setProfiles(data.items);
+          setTotalProfiles(data.total ?? data.items.length);
+        } else {
+          setProfiles([]);
+          setTotalProfiles(0);
+        }
+      } catch {
+        setProfiles([]);
+        setTotalProfiles(0);
+      } finally {
+        setLoadingProfiles(false);
+      }
+    })();
+  }, [activeStep, profileCurrentPage, profileSearchTerm, setProfiles]);
+
   const validateUserFields = () => {
-    let tempErrors = {};
+    const temp = {};
+    temp.name = name ? (/\d/.test(name) ? "Nome não pode conter números" : "") : "Nome é obrigatório";
+    temp.email = email ? (/.+@.+\..+/.test(email) ? "" : "Email inválido") : "Email é obrigatório";
+    temp.password = password ? "" : "Senha é obrigatória";
+    setErrors(temp);
+    return Object.values(temp).every(x => !x);
+  };
 
-    tempErrors.name = name
-      ? /\d/.test(name)
-        ? "Nome não pode incluir números"
-        : ""
-      : "Nome é obrigatório";
+  const handleNext = async () => {
+    if (activeStep === 0) {
+      if (!validateUserFields()) return;
+      setDraftUser({ name, email, password });
+      setDialogMessage("Dados salvos com sucesso!");
+      setDialogType("success");
+      setDialogOpen(true);
+      nextStep();
+    } else if (activeStep === 1) {
+      if (profiles.length > 0 && selectedProfiles.length === 0) {
+        setDialogMessage("Selecione ao menos um perfil.");
+        setDialogType("error");
+        setDialogOpen(true);
+        return;
+      }
+      setDialogMessage("Perfis associados com sucesso!");
+      setDialogType("success");
+      setDialogOpen(true);
+      nextStep();
+    } else if (isLast) {
+      try {
+        const newUserData = {
+          name: draftUser.name,
+          email: draftUser.email,
+          password: draftUser.password,
+          profiles: profiles.length > 0 ? selectedProfiles : []
+        };
+        let response = await createUser(newUserData, userToken);
+        let createdUser = response.data;
 
-    tempErrors.email = email
-      ? /.+@.+\..+/.test(email)
-        ? ""
-        : "Email inválido"
-      : "Email é obrigatório";
+        if (selectedPhoto) {
+          const fd = new FormData();
+          fd.append("file", selectedPhoto);
+          const response = await axios.post(
+            `http://localhost:8000/users/${createdUser.id}/photo`,
+            fd,
+            { headers: { "Content-Type": "multipart/form-data" } }
+          );
+          createdUser = response.data;
+        }
 
-    tempErrors.password = password ? "" : "Senha é obrigatória";
-
-    setErrors(tempErrors);
-    return Object.values(tempErrors).every((x) => x === "");
+        setUsers(prev => [...prev, createdUser]);
+        setDialogMessage("Usuário cadastrado com sucesso!");
+        setDialogType("success");
+        setDialogOpen(true);
+        clearForm();
+        setStep(0);
+      } catch (error) {
+        setDialogMessage(
+          error.response?.data?.detail || "Erro ao cadastrar usuário"
+        );
+        setDialogType("error");
+        setDialogOpen(true);
+      }
+    }
   };
 
   // Limpa os campos do formulário e estados de associação
@@ -87,282 +170,97 @@ function CadastroUsuario() {
     setEmail("");
     setPassword("");
     setErrors({});
+    setSelectedPhoto(null);
     setDraftUser(null);
     setSelectedProfiles([]);
-    setIsProfileAssociated(false);
-    setSelectedPhoto(null);
   };
 
-  // Salva os dados inseridos em um rascunho
-  const handleSalvarDados = (e) => {
-    e.preventDefault();
-    if (!validateUserFields()) {
-      setDialogMessage("Erro: Verifique os campos do formulário.");
-      setDialogType("error");
-      setDialogOpen(true);
-      return;
-    }
-    const tempUser = { name, email, password };
-    setDraftUser(tempUser);
-    setDialogMessage("Dados salvos com sucesso!");
-    setDialogType("success");
-    setDialogOpen(true);
+  const handleBack = () => {
+    if (activeStep > 0) prevStep();
   };
 
-  // Busca os perfis do backend ao salvar os dados
-  useEffect(() => {
-    if (!draftUser) return;
-
-    const fetchProfiles = async () => {
-      setLoadingProfiles(true);
-      try {
-        const params = {
-          page: profileCurrentPage + 1,
-          limit: constProfileItemsPerPage,
-          search: profileSearchTerm,
-        };
-        const response = await axios.get("http://localhost:8000/profiles/", { params });
-        console.log("Dados retornados da API (perfis):", response.data);
-
-        const data = response.data;
-
-        if (Array.isArray(data)) {
-          // Formato: [ {...}, {...}, ... ]
-          setProfiles(data);
-          setTotalProfiles(data.length);
-        } else if (data.items && Array.isArray(data.items)) {
-          // Formato paginado: { items: [...], total: N }
-          setProfiles(data.items);
-          setTotalProfiles(data.total ?? data.items.length);
-        } else {
-          // Qualquer outro caso inesperado
-          setProfiles([]);
-          setTotalProfiles(0);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar perfis:", error);
-        setProfiles([]);
-        setTotalProfiles(0);
-      } finally {
-        setLoadingProfiles(false);
-      }
-    };
-
-    fetchProfiles();
-  }, [setProfiles, draftUser, profileCurrentPage, constProfileItemsPerPage, profileSearchTerm]);
-
-  // Lida com a seleção/desseleção de perfis
-  const handleToggleProfile = (profileId) => {
-    setSelectedProfiles((prev) =>
-      prev.includes(profileId)
-        ? prev.filter((id) => id !== profileId)
-        : [...prev, profileId]
+  const handleToggleProfile = id => {
+    setSelectedProfiles(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
   };
 
-  // Confirma a associação de perfis
-  const handleAssociarPerfil = () => {
-    if (selectedProfiles.length === 0) {
-      setDialogMessage("Selecione ao menos um perfil para associação.");
-      setDialogType("error");
-      setDialogOpen(true);
-      return;
-    }
-    setIsProfileAssociated(true);
-    setDialogMessage(
-      "Perfil(ns) associado(s)! Agora, clique em 'Cadastrar Usuário' para finalizar o cadastro."
-    );
-    setDialogType("success");
-    setDialogOpen(true);
-  };
-
-  // Funcionalidade de upload da foto após o cadastro
-  const handleUploadPhoto = async (userId) => {
-    const formData = new FormData();
-    formData.append("file", selectedPhoto);
-    try {
-      const response = await axios.post(
-        `http://localhost:8000/users/${userId}/photo`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" }
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Erro ao fazer upload da foto:", error);
-      return null;
-    }
-  };
-
-  // Efetua o cadastro final do usuário no backend
-  const handleCadastrarUsuario = async () => {
-    if (!draftUser) {
-      setDialogMessage("Você precisa salvar os dados do usuário primeiro.");
-      setDialogType("error");
-      setDialogOpen(true);
-      return;
-    }
-    if (profiles.length > 0 && !isProfileAssociated) {
-      setDialogMessage("Você precisa associar um perfil antes de cadastrar o usuário.");
-      setDialogType("error");
-      setDialogOpen(true);
-      return;
-    }
-
-    const newUserData = {
-      name: draftUser.name,
-      email: draftUser.email,
-      password: draftUser.password,
-      profiles: profiles.length > 0 ? selectedProfiles : []
-    };
-
-    try {
-      // Configuração para incluir o token de autenticação no header
-      const config = {
-        headers: { Authorization: `Bearer ${userToken}` }
-      };
-
-      const response = await axios.post("http://localhost:8000/users/", newUserData, config);
-      let createdUser = response.data;
-      if (selectedPhoto) {
-        const updatedUser = await handleUploadPhoto(createdUser.id);
-        if (updatedUser) {
-          createdUser = updatedUser;
-        }
-      }
-      setUsers([...users, createdUser]);
-      setDialogMessage("Usuário cadastrado com sucesso!");
-      setDialogType("success");
-      setDialogOpen(true);
-      clearForm();
-    } catch (error) {
-      console.error(error);
-      setDialogMessage(error.response?.data?.detail || "Erro ao cadastrar usuário");
-      setDialogType("error");
-      setDialogOpen(true);
-    }
-  };
-
-  // Lida com a seleção do arquivo de foto
-  const handlePhotoChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedPhoto(e.target.files[0]);
-    }
+  const handlePhotoChange = e => {
+    if (e.target.files?.[0]) setSelectedPhoto(e.target.files[0]);
   };
 
   // Fecha o Dialog de feedback
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-  };
+  const handleCloseDialog = () => setDialogOpen(false);
+
+  const stepComponents = [
+    <StepDadosUsuario
+      key="dados"
+      name={name}
+      setName={setName}
+      email={email}
+      setEmail={setEmail}
+      password={password}
+      setPassword={setPassword}
+      errors={errors}
+      selectedPhoto={selectedPhoto}
+      previewPhoto={previewPhoto}
+      onPhotoChange={handlePhotoChange}
+    />,
+    <StepAssociarPerfis
+      key="perfis"
+      profiles={profiles}
+      loadingProfiles={loadingProfiles}
+      selectedProfiles={selectedProfiles}
+      onToggleProfile={handleToggleProfile}
+      profileCurrentPage={profileCurrentPage}
+      setProfileCurrentPage={setProfileCurrentPage}
+      itemsPerPage={constProfileItemsPerPage}
+      totalProfiles={totalProfiles}
+      profileSearchTerm={profileSearchTerm}
+      setProfileSearchTerm={setProfileSearchTerm}
+    />,
+    <StepConfirmacao
+      key="confirma"
+      draftUser={draftUser}
+      selectedProfiles={selectedProfiles}
+      profiles={profiles}
+      previewPhoto={previewPhoto}
+    />
+  ];
 
   return (
-    <Container maxWidth="sm" sx={{ padding: 3, backgroundColor: "#f0f4f8" }}>
-      <Paper
-        component="form"
-        onSubmit={handleSalvarDados}
-        elevation={4}
-        sx={{ display: "flex", flexDirection: "column", gap: 2, p: 3, borderRadius: 2 }}
-      >
-        <Typography variant="h4" align="center" gutterBottom>
-          Cadastro de Usuário
-        </Typography>
-        {/* Seção para upload e visualização da foto (dentro do mesmo box) */}
-        <Box display="flex" flexDirection="column" alignItems="center" mb={2}>
-          <Avatar
-            src={selectedPhoto ? previewPhoto : "/default-avatar.png"}
-            sx={{ width: 120, height: 120, mb: 1 }}
-          />
-          <Button variant="outlined" component="label">
-            Atualizar Foto
-            <input type="file" accept="image/*" hidden onChange={handlePhotoChange} />
+    <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
+      <Paper sx={{ p: 3 }}>
+        <Stepper activeStep={activeStep} alternativeLabel>
+          {steps.map(label => (
+            <Step key={label}><StepLabel>{label}</StepLabel></Step>
+          ))}
+        </Stepper>
+
+        {stepComponents[activeStep]}
+
+        <Box display="flex" justifyContent="space-between" mt={4}>
+          <Button onClick={handleBack} disabled={activeStep === 0}>
+            Voltar
+          </Button>
+          <Button variant="contained" onClick={handleNext}>
+            {isLast ? "Concluir" : "Próximo"}
           </Button>
         </Box>
-        {/* Campos do formulário */}
-        <TextField
-          label="Nome Completo"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          fullWidth
-          error={!!errors.name}
-          helperText={errors.name}
-          disabled={!!draftUser}
-        />
-        <TextField
-          label="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          fullWidth
-          error={!!errors.email}
-          helperText={errors.email}
-          disabled={!!draftUser}
-        />
-        <TextField
-          label="Senha"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          fullWidth
-          error={!!errors.password}
-          helperText={errors.password}
-          disabled={!!draftUser}
-        />
-        {/* Botão para salvar os dados (fase de rascunho) */}
-        {!draftUser && (
-          <Box display="flex" justifyContent="center" mt={2}>
-            <Button type="submit" variant="contained" color="primary">
-              Salvar Dados
-            </Button>
-          </Box>
-        )}
       </Paper>
 
-      {/* Se os dados foram salvos e houver perfis cadastrados, exibe a associação de perfis */}
-      {draftUser && profiles.length > 0 && (
-        <Paper
-          elevation={4}
-          sx={{ p: 3, borderRadius: 2, mt: 3, backgroundColor: "#fff" }}
-        >
-          <ProfileSection
-            profiles={profiles}
-            loading={loadingProfiles}
-            selectedProfiles={selectedProfiles}
-            onToggleProfile={handleToggleProfile}
-            selectionMode="multiple"
-            currentPage={profileCurrentPage}
-            onPageChange={setProfileCurrentPage}
-            itemsPerPage={constProfileItemsPerPage}
-            totalItems={totalProfiles}
-            searchTerm={profileSearchTerm}
-            setSearchTerm={setProfileSearchTerm}
-          />
-
-          <Box display="flex" justifyContent="center" mt={2}>
-            <Button variant="contained" color="secondary" onClick={handleAssociarPerfil}>
-              Associar Perfil
-            </Button>
-          </Box>
-        </Paper>
-      )}
-
-      {/* Exibe o botão final para cadastrar o usuário se houver associação ou se nenhum perfil estiver cadastrado */}
-      {draftUser && (isProfileAssociated || profiles.length === 0) && (
-        <Box display="flex" justifyContent="center" mt={3} mb={4}>
-          <Button variant="contained" color="primary" onClick={handleCadastrarUsuario}>
-            Cadastrar Usuário
-          </Button>
-        </Box>
-      )}
-
-      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+      <Dialog
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+        disableRestoreFocus
+        disableEnforceFocus
+      >
         <DialogTitle>{dialogType === "success" ? "Sucesso!" : "Erro!"}</DialogTitle>
         <DialogContent>
           <Typography>{dialogMessage}</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} color="primary">
-            Fechar
-          </Button>
+          <Button autoFocus onClick={handleCloseDialog} color="primary">Fechar</Button>
         </DialogActions>
       </Dialog>
     </Container>
