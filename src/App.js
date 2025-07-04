@@ -5,7 +5,7 @@ import { BrowserRouter as Router, useNavigate, useLocation } from 'react-router-
 import { AuthProvider, AuthContext } from './contexts/AuthContext';
 import { UserProvider } from "./contexts/UserContext";
 import VerticalMenu from './components/VerticalMenu/VerticalMenu';
-import HorizontalMenu from './components/HorizontalMenu';
+import HorizontalMenu from './components/HorizontalMenu/HorizontalMenu';
 import MainRoutes from './routes/MainRoutes';
 import EditUserDialog from './components/EditUserDialog';
 import Breadcrumb from './components/Breadcrumb';
@@ -78,28 +78,35 @@ function App() {
   // Verifica expiração do token e abre diálogo quando expirar
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        const expTime = decoded.exp * 1000;
-        const timeRemaining = expTime - Date.now();
-        console.log(`Tempo restante do token (ms): ${timeRemaining}`);
-        if (timeRemaining <= 0) {
-          console.log('Token já expirado. Exibindo diálogo.');
-          setSessionExpired(true);
-        } else {
-          const timeoutId = setTimeout(() => {
-            console.log('Token expirou. Exibindo diálogo.');
-            setSessionExpired(true);
-          }, timeRemaining);
-          return () => clearTimeout(timeoutId);
-        }
-      } catch (error) {
-        console.error('Erro ao decodificar o token:', error);
+    if (!token) return;
+
+    try {
+      const decoded = jwtDecode(token);
+      const expTime = decoded.exp * 1000;
+      const timeRemaining = expTime - Date.now();
+
+      // converte milissegundos em minutos
+      const minutesRemaining = timeRemaining / (1000 * 60);
+      console.log(
+        `Tempo restante do token (min): ${minutesRemaining.toFixed(2)}`
+      );
+
+      if (timeRemaining <= 0) {
+        console.log('Token já expirado. Exibindo diálogo.');
         setSessionExpired(true);
+      } else {
+        const timeoutId = setTimeout(() => {
+          console.log('Token expirou. Exibindo diálogo.');
+          setSessionExpired(true);
+        }, timeRemaining);
+        return () => clearTimeout(timeoutId);
       }
+    } catch (error) {
+      console.error('Erro ao decodificar o token:', error);
+      setSessionExpired(true);
     }
   }, [handleLogout]);
+
 
   return (
     <Box
@@ -131,7 +138,7 @@ function App() {
           <HorizontalMenu
             menuAberto={menuAberto}
             alternarMenu={() => setMenuAberto(v => !v)}
-            handleMenuOpen={e => setAnchorEl(e.currentTarget)}
+            handleMenuOpen={(event) => setAnchorEl(event.currentTarget)}
             anchorEl={anchorEl}
             handleMenuClose={() => setAnchorEl(null)}
             handleLogout={handleLogout}
@@ -167,12 +174,10 @@ function App() {
         aria-labelledby="session-expired-dialog-title"
         aria-describedby="session-expired-dialog-description"
       >
-        <DialogTitle id="session-expired-dialog-title">
-          Acesso Expirado
-        </DialogTitle>
+        <DialogTitle id="session-expired-dialog-title">Acesso Expirado</DialogTitle>
         <DialogContent>
           <DialogContentText id="session-expired-dialog-description">
-            Sua sessão expirou. Faça login novamente.
+            Acesso ao portal expirado. É necessário fazer o Login novamente.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
