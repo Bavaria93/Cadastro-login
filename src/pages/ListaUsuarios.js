@@ -42,9 +42,9 @@ function ListaUsuarios() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  // extrai o último segmento ou "home" se for raiz
+  // extrai o último segmento ou "dashboard" se for raiz
   const segments = pathname.split("/").filter(Boolean);
-  const currentSegment = segments.pop() || "home";
+  const currentSegment = segments.pop() || "dashboard";
 
   // Permissões do usuário
   const canEditUsers = usePermission("Atualizar Usuário");

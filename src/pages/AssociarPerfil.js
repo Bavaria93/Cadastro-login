@@ -202,7 +202,7 @@ function AssociarPerfil() {
           style={{ marginLeft: "10px" }}
           onClick={() => navigate("/")}
         >
-          Voltar para a Home
+          Voltar para a Dashboard
         </Button>
       </Box>
 

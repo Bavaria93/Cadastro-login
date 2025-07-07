@@ -31,8 +31,8 @@ const Breadcrumb = () => {
   // separa a URL em segmentos não vazios
   const segments = pathname.split('/').filter(Boolean);
 
-  // rótulo raiz: usa mapeamento ou capitaliza 'home'
-  const rootTitle = pageTitles['/'] ?? capitalize('home');
+  // rótulo raiz: usa mapeamento ou capitaliza 'dashboard'
+  const rootTitle = pageTitles['/'] ?? capitalize('dashboard');
 
   // gera os crumbs para cada segmento
   const breadcrumbs = segments.map((seg, idx) => {

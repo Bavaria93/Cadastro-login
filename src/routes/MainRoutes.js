@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Box } from '@mui/material';
-import Home from '../pages/Home';
+import Dashboard from '../pages/Dashboard';
 import CadastroUsuario from '../pages/CadastroUsuario';
 import ListaUsuarios from '../pages/ListaUsuarios';
 import CadastroPerfil from '../pages/CadastroPerfil';
@@ -26,7 +26,7 @@ const MainRoutes = () => {
           path="/"
           element={
             <PrivateRoute>
-              <Home />
+              <Dashboard />
             </PrivateRoute>
           }
         />
