@@ -15,9 +15,13 @@ import {
 import ProfileCard from "../components/ProfileCard";
 import EditProfileDialog from "../components/EditProfileDialog";
 import PaginationControls from "../components/PaginationControls";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { usePermission } from "../hooks/usePermission";
+
+// helper para capitalizar
+const capitalize = str =>
+  str.charAt(0).toUpperCase() + str.slice(1);
 
 function ListaPerfis() {
   // Estados para os dados e paginação
@@ -35,13 +39,20 @@ function ListaPerfis() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState(null);
 
+  const { pathname } = useLocation();
   const navigate = useNavigate();
+
+  // extrai o último segmento ou "home" se for raiz
+  const segments = pathname.split("/").filter(Boolean);
+  const currentSegment = segments.pop() || "home";
 
   // Permissões
   const canCreateProfiles = usePermission("Cadastrar Perfil");
   const canAssociarPerfil = usePermission("Atualizar Usuário");
   const canEditProfiles = usePermission("Atualizar Perfil");
   const canDeleteProfiles = usePermission("Excluir Perfil");
+
+  const title = capitalize(currentSegment);
 
   // Busca os perfis com loading e paginação
   useEffect(() => {
@@ -116,14 +127,14 @@ function ListaPerfis() {
     <Container maxWidth="md" style={{ padding: "20px" }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h1">
-          Lista de Perfis
+          {title}
         </Typography>
         <Box display="flex" gap={2}>
           {canCreateProfiles && (
             <Button
               variant="contained"
               color="primary"
-              onClick={() => navigate("/cadastroPerfil")}
+              onClick={() => navigate("/perfis/cadastroPerfil")}
             >
               Cadastrar Perfil
             </Button>
@@ -132,7 +143,7 @@ function ListaPerfis() {
             <Button
               variant="contained"
               color="secondary"
-              onClick={() => navigate("/associarPerfil")}
+              onClick={() => navigate("/perfis/associarPerfil")}
             >
               Associar Perfil aos Usuários
             </Button>

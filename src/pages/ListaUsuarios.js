@@ -15,9 +15,13 @@ import {
 import UserCard from "../components/UserCard";
 import EditUserDialog from "../components/EditUserDialog";
 import PaginationControls from "../components/PaginationControls";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { usePermission } from "../hooks/usePermission";
+
+// helper para capitalizar
+const capitalize = str =>
+  str.charAt(0).toUpperCase() + str.slice(1);
 
 function ListaUsuarios() {
   // Estados para os dados vindos da API (apenas a página atual) e para paginar
@@ -35,12 +39,19 @@ function ListaUsuarios() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
 
+  const { pathname } = useLocation();
   const navigate = useNavigate();
+
+  // extrai o último segmento ou "home" se for raiz
+  const segments = pathname.split("/").filter(Boolean);
+  const currentSegment = segments.pop() || "home";
 
   // Permissões do usuário
   const canEditUsers = usePermission("Atualizar Usuário");
   const canDeleteUsers = usePermission("Excluir Usuário");
   const canCreateUsers = usePermission("Cadastrar Usuário");
+
+  const title = capitalize(currentSegment);
 
   // Busca os usuários via backend para a página atual
   useEffect(() => {
@@ -122,13 +133,13 @@ function ListaUsuarios() {
     <Container maxWidth="md" style={{ padding: "20px" }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h1">
-          Lista de Usuários
+          {title}
         </Typography>
         {canCreateUsers && (
           <Button
             variant="contained"
             color="primary"
-            onClick={() => navigate("/cadastroUsuario")}
+            onClick={() => navigate("/usuarios/cadastroUsuario")}
           >
             Cadastrar Usuário
           </Button>

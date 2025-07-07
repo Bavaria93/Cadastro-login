@@ -15,9 +15,13 @@ import {
 import CourseCard from "../components/CourseCard";
 import EditCourseDialog from "../components/EditCourseDialog";
 import PaginationControls from "../components/PaginationControls";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { usePermission } from "../hooks/usePermission";
+
+// helper para capitalizar
+const capitalize = str =>
+  str.charAt(0).toUpperCase() + str.slice(1);
 
 function ListaCursos() {
   const [dbCourses, setDbCourses] = useState([]);
@@ -32,10 +36,19 @@ function ListaCursos() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
 
+  const { pathname } = useLocation();
   const navigate = useNavigate();
+
+  // extrai o último segmento ou "home" se for raiz
+  const segments = pathname.split("/").filter(Boolean);
+  const currentSegment = segments.pop() || "home";
+
+  // Permissões
   const canCreateCourses = usePermission("Cadastrar Curso");
   const canEditCourses = usePermission("Atualizar Curso");
   const canDeleteCourses = usePermission("Excluir Curso");
+
+  const title = capitalize(currentSegment);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -111,10 +124,10 @@ function ListaCursos() {
   return (
     <Container maxWidth="md" style={{ padding: "20px" }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" component="h1">Lista de Cursos</Typography>
+        <Typography variant="h4" component="h1">{title}</Typography>
         <Box display="flex" gap={2}>
           {canCreateCourses && (
-            <Button variant="contained" color="primary" onClick={() => navigate("/cadastroCurso")}>
+            <Button variant="contained" color="primary" onClick={() => navigate("/cursos/cadastroCurso")}>
               Cadastrar Curso
             </Button>
           )}

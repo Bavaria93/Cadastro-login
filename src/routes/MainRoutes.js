@@ -22,7 +22,6 @@ const MainRoutes = () => {
     <Box sx={{ padding: '20px' }}>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/cadastroUsuario" element={<CadastroUsuario />} />
         <Route
           path="/"
           element={
@@ -41,6 +40,14 @@ const MainRoutes = () => {
           }
         />
         <Route
+          path="/usuarios/cadastroUsuario"
+          element={
+            <PrivateRoute>
+              <CadastroUsuario />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/perfis"
           element={
             <PrivateRoute>
@@ -49,7 +56,7 @@ const MainRoutes = () => {
           }
         />
         <Route
-          path="/cadastroPerfil"
+          path="/perfis/cadastroPerfil"
           element={
             <PrivateRoute>
               <CadastroPerfil />
@@ -57,7 +64,7 @@ const MainRoutes = () => {
           }
         />
         <Route
-          path="/associarPerfil"
+          path="/perfis/associarPerfil"
           element={
             <PrivateRoute>
               <AssociarPerfil />
@@ -73,7 +80,7 @@ const MainRoutes = () => {
           }
         />
         <Route
-          path="/cadastroPermissao"
+          path="/permissoes/cadastroPermissao"
           element={
             <PrivateRoute>
               <CadastroPermissao />
@@ -81,7 +88,7 @@ const MainRoutes = () => {
           }
         />
         <Route
-          path="/associarPermissao"
+          path="/permissoes/associarPermissao"
           element={
             <PrivateRoute>
               <AssociarPermissao />
@@ -97,7 +104,7 @@ const MainRoutes = () => {
           }
         />
         <Route
-          path="/cadastroCurso"
+          path="/cursos/cadastroCurso"
           element={
             <PrivateRoute>
               <CadastroCurso />
@@ -113,7 +120,7 @@ const MainRoutes = () => {
           }
         />
         <Route
-          path="/cadastroSolicitacao"
+          path="/solicitacoes/cadastroSolicitacao"
           element={
             <PrivateRoute>
               <CadastroSolicitacao />

@@ -15,8 +15,12 @@ import {
 import SolicitacaoCard from "../components/SolicitacaoCard";
 import EditSolicitacaoDialog from "../components/EditSolicitacaoDialog";
 import PaginationControls from "../components/PaginationControls";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+
+// helper para capitalizar
+const capitalize = str =>
+  str.charAt(0).toUpperCase() + str.slice(1);
 
 function ListaSolicitacoes() {
   // Estados para as solicitações e para a paginação.
@@ -33,7 +37,14 @@ function ListaSolicitacoes() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedSolicitacaoId, setSelectedSolicitacaoId] = useState(null);
 
+  const { pathname } = useLocation();
   const navigate = useNavigate();
+
+  // extrai o último segmento ou "home" se for raiz
+  const segments = pathname.split("/").filter(Boolean);
+  const currentSegment = segments.pop() || "home";
+
+  const title = capitalize(currentSegment);
 
   // Busca as solicitações salvas no backend com paginação
   useEffect(() => {
@@ -112,11 +123,11 @@ function ListaSolicitacoes() {
   return (
     <Container maxWidth="md" sx={{ p: 2 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h4">Lista de Solicitações</Typography>
+        <Typography variant="h4">{title}</Typography>
         <Button
           variant="contained"
           color="primary"
-          onClick={() => navigate("/cadastroSolicitacao")}
+          onClick={() => navigate("/solicitacoes/cadastroSolicitacao")}
         >
           Cadastrar Solicitação
         </Button>

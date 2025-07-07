@@ -12,12 +12,16 @@ import {
   TextField,
   CircularProgress,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { usePermission } from "../hooks/usePermission";
 import PermissionCard from "../components/PermissionCard";
 import EditPermissionDialog from "../components/EditPermissionDialog";
 import PaginationControls from "../components/PaginationControls";
+
+// helper para capitalizar
+const capitalize = str =>
+  str.charAt(0).toUpperCase() + str.slice(1);
 
 function ListaPermissoes() {
   // Estado para os dados retornados do backend (apenas a página atual)
@@ -35,13 +39,20 @@ function ListaPermissoes() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedPermissionId, setSelectedPermissionId] = useState(null);
 
+  const { pathname } = useLocation();
   const navigate = useNavigate();
+
+  // extrai o último segmento ou "home" se for raiz
+  const segments = pathname.split("/").filter(Boolean);
+  const currentSegment = segments.pop() || "home";
 
   // Permissões do usuário para ações na tela
   const canCreatePermissions = usePermission("Cadastrar Permissão");
   const canAssociatePermissions = usePermission("Atualizar Perfil");
   const canEditPermissions = usePermission("Atualizar Permissão");
   const canDeletePermissions = usePermission("Excluir Permissão");
+
+  const title = capitalize(currentSegment);
 
   // Busca os dados do backend para a página atual
   useEffect(() => {
@@ -122,13 +133,13 @@ function ListaPermissoes() {
   return (
     <Container maxWidth="md" sx={{ p: 2 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Lista de Permissões</Typography>
+        <Typography variant="h4">{title}</Typography>
         <Box display="flex" gap={2}>
           {canCreatePermissions && (
             <Button
               variant="contained"
               color="primary"
-              onClick={() => navigate("/cadastroPermissao")}
+              onClick={() => navigate("/permissoes/cadastroPermissao")}
             >
               Cadastrar Permissão
             </Button>
@@ -137,7 +148,7 @@ function ListaPermissoes() {
             <Button
               variant="contained"
               color="secondary"
-              onClick={() => navigate("/associarPermissao")}
+              onClick={() => navigate("/permissoes/associarPermissao")}
             >
               Associar Permissão aos Perfis
             </Button>
