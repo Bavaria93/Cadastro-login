@@ -11,6 +11,7 @@ import EditUserDialog from './components/EditUserDialog';
 import Breadcrumb from './components/Breadcrumb';
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
+import ErrorBoundary from "./components/ErrorBoundary";      // ← import do ErrorBoundary
 
 // Configuração de interceptors do axios permanece igual...
 axios.interceptors.request.use(
@@ -157,7 +158,9 @@ function App() {
         }}
       >
         {!hideMenus && <Breadcrumb />}
-        <MainRoutes />
+        <ErrorBoundary>
+          <MainRoutes />
+        </ErrorBoundary>
       </Box>
 
       {user && (
