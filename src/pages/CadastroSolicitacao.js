@@ -61,8 +61,11 @@ function CadastroSolicitacao() {
 
   // Atualiza o rótulo do edital em tempo real
   useEffect(() => {
-    const formattedData = dataEdital;
-    setNoticeLabel(`${numeroEdital} - ${formattedData}`);
+    const formattedDate = dataEdital
+      ? dataEdital.split("-").reverse().join("/")
+      : "";
+
+    setNoticeLabel(`${numeroEdital} - ${formattedDate}`);
   }, [numeroEdital, dataEdital]);
 
   // Carrega os cursos via API quando o componente é montado
@@ -70,7 +73,8 @@ function CadastroSolicitacao() {
     const fetchCourses = async () => {
       try {
         const response = await axios.get("http://localhost:8000/courses/");
-        setCourses(response.data);
+        console.log("Dados retornados da API (cursos):", response.data);
+        setCourses(response.data.items);
       } catch (error) {
         console.error("Erro ao carregar cursos:", error);
       }
@@ -378,7 +382,7 @@ function CadastroSolicitacao() {
             <CircularProgress />
           </Box>
         )}
-        
+
         {/* Exibe o resultado da análise, se houver */}
         {analysisResult && (
           <Box m={2} p={2} border="1px solid #ddd" borderRadius={2}>
