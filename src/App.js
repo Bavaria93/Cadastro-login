@@ -158,7 +158,7 @@ function App() {
         }}
       >
         {!hideMenus && <Breadcrumb />}
-        <ErrorBoundary>
+        <ErrorBoundary key={location.pathname}>
           <MainRoutes />
         </ErrorBoundary>
       </Box>

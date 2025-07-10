@@ -21,7 +21,6 @@ import StepConfirmacao from "../steps/StepConfirmacao";
 import useWizardStepper from "../hooks/useWizardStepper";
 import { fetchProfiles } from "../services/profileService";
 import { createUser } from "../services/userService";
-import ErrorBoundary from "../components/ErrorBoundary";
 
 function CadastroUsuario() {
   // Recupera usuários, função para atualizar usuários e o token do contexto.
@@ -230,8 +229,7 @@ function CadastroUsuario() {
   ];
 
   return (
-    <ErrorBoundary>
-      <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
       <Paper sx={{ p: 3 }}>
         <Stepper activeStep={activeStep} alternativeLabel>
           {steps.map(label => (
@@ -266,8 +264,6 @@ function CadastroUsuario() {
         </DialogActions>
       </Dialog>
     </Container>
-    </ErrorBoundary>
-    
   );
 }
 
