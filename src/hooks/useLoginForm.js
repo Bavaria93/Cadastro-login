@@ -1,76 +1,75 @@
-import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../contexts/AuthContext';
+// src/hooks/useLoginForm.js
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../contexts/AuthContext";
 
-/**
- * Hook customizado para encapsular a lógica de login:
- * - controla estados de email, senha e visibilidade da senha
- * - executa o fluxo de autenticação via AuthContext
- * - gerencia navegação após sucesso ou falha
- */
 export default function useLoginForm() {
-  // Valor e setter para o campo de email
-  const [email, setEmail] = useState('');
-  
-  // Valor e setter para o campo de senha
-  const [password, setPassword] = useState('');
-  
-  // Mensagem de erro (string vazia quando não há erro)
-  const [error, setError] = useState('');
-  
-  // Controla se a senha está visível (true) ou oculta (false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // Função de login provida pelo contexto de autenticação
-  const { signIn } = useContext(AuthContext);
+  // estados do Snackbar
+  const [snackOpen, setSnackOpen] = useState(false);
+  const [snackMsg, setSnackMsg] = useState("");
+  const [snackSeverity, setSnackSeverity] = useState("info");
 
-  // Hook do React Router para redirecionar após login
+  const { signIn } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  /**
-   * Alterna o estado de visibilidade da senha.
-   * Chamado quando o usuário clica no ícone de olho.
-   */
-  const togglePasswordVisibility = () => {
-    setShowPassword((prev) => !prev);
+  const validateEmailFormat = (value) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+  const openSnack = (message, severity = "info") => {
+    setSnackMsg(message);
+    setSnackSeverity(severity);
+    setSnackOpen(true);
+  };
+  const closeSnack = (_, reason) => {
+    if (reason === "clickaway") return;
+    setSnackOpen(false);
   };
 
-  /**
-   * Handler de envio do formulário de login.
-   * - previne o comportamento padrão do form
-   * - limpa mensagem de erro anterior
-   * - tenta autenticar via signIn
-   * - em caso de sucesso redireciona para '/'
-   * - em caso de erro, exibe mensagem apropriada
-   */
+  const togglePasswordVisibility = () =>
+    setShowPassword((s) => !s);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+
+    if (!email.trim()) {
+      openSnack("E-mail é obrigatório", "warning");
+      return;
+    }
+    if (!validateEmailFormat(email)) {
+      openSnack("Formato de e-mail inválido", "warning");
+      return;
+    }
+    if (!password) {
+      openSnack("Senha é obrigatória", "warning");
+      return;
+    }
 
     try {
-      // Tenta autenticar com as credenciais fornecidas
       await signIn(email, password);
-      
-      // Se der certo, navega para a página inicial
-      navigate('/');
-    } catch (err) {
-      // Log do erro para diagnóstico em dev
-      console.error('Erro no login:', err);
-      
-      // Atualiza estado de erro para feedback ao usuário
-      setError('Email ou senha inválidos!');
+      openSnack("Login realizado com sucesso!", "success");
+      navigate("/");
+    } catch {
+      openSnack("E-mail ou senha inválidos!", "error");
     }
   };
 
-  // Expõe todos os valores e handlers necessários ao componente de apresentação
   return {
     email,
     setEmail,
     password,
     setPassword,
-    error,
     showPassword,
     togglePasswordVisibility,
-    handleSubmit
+    handleSubmit,
+
+    // exposições do Snackbar
+    snackOpen,
+    snackMsg,
+    snackSeverity,
+    closeSnack,
   };
 }
