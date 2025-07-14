@@ -1,71 +1,74 @@
+import React from 'react';
 import { styled } from '@mui/material/styles';
-import { Container, Box, Typography, TextField, Button, IconButton } from '@mui/material';
+import {
+  Container,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  IconButton
+} from '@mui/material';
 
 /**
- * LoginContainer
- * Componente Container do MUI com margem superior maior em telas médias para cima,
- * e margem + padding reduzidos em dispositivos pequenos (breakpoint 'sm').
+ * BaseTextField
+ * Wrapper para injetar inline-styles em inputProps e InputProps
  */
-export const LoginContainer = styled(Container)(({ theme }) => ({
-  // Espaçamento top padrão
-  marginTop: theme.spacing(8),
+const BaseTextField = ({ inputProps, InputProps, ...rest }) => (
+  <TextField
+    {...rest}
+    inputProps={{
+      style: { color: '#000000' },    // cor do texto e placeholder
+      ...inputProps,
+    }}
+    InputProps={{
+      style: { backgroundColor: '#ffffff' }, // cor de fundo do input
+      ...InputProps,
+    }}
+  />
+);
 
-  // Em telas pequenas, reduz margem e adiciona padding lateral
-  [theme.breakpoints.down('sm')]: {
-    marginTop: theme.spacing(4),
-    padding: theme.spacing(1),
-  },
-}));
+export const LoginContainer = styled(Container)({
+  /* margin-top: 8 * 8px = 64px */
+  marginTop: '64px',
 
-/**
- * FormBox
- * Box que envolve o <form>, centraliza conteúdo em coluna,
- * aplica padding, sombra e borda arredondada, além de fundo padrão.
- */
-export const FormBox = styled(Box)(({ theme }) => ({
+  /* telas pequenas até 600px */
+  '@media (max-width:600px)': {
+    marginTop: '32px',
+    padding: '8px'
+  }
+});
+
+export const FormBox = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
 
-  // Espaçamento interno de 4 * 8px = 32px
-  padding: theme.spacing(4),
+  /* padding interno de 32px */
+  padding: '32px',
 
-  // Sombra moderada vinda do tema
-  boxShadow: theme.shadows[3],
+  /* sombra suave */
+  boxShadow: '0 3px 6px rgba(0,0,0,0.16)',
 
-  // Raio de borda padrão do tema
-  borderRadius: theme.shape.borderRadius,
+  /* cantos arredondados */
+  borderRadius: '4px',
 
-  // Fundo branco ou equivalente do theme
-  backgroundColor: theme.palette.background.paper,
-}));
+  /* fundo branco */
+  backgroundColor: '#fff'
+});
 
+export const Title = styled(Typography)({
+  marginBottom: '24px'
+});
 
-// Title
-export const Title = styled(Typography)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
-}));
-
-
-// StyledTextField
-export const StyledTextField = styled(TextField)(({ theme }) => ({
+export const StyledTextField = styled(BaseTextField)({
   width: '100%',
-  marginBottom: theme.spacing(2),
-}));
+  marginBottom: '16px'
+});
 
+export const PasswordAdornmentButton = styled(IconButton)({
+  padding: '4px'
+});
 
-/**
- * PasswordAdornmentButton
- * IconButton para o ícone “mostrar/ocultar senha”,
- * com padding reduzido para ajustar-se ao campo de input.
- */
-export const PasswordAdornmentButton = styled(IconButton)(
-  ({ theme }) => ({
-    padding: theme.spacing(0.5),
-  })
-);
-
-// SubmitButton
-export const SubmitButton = styled(Button)(({ theme }) => ({
-  marginTop: theme.spacing(3),
-}));
+export const SubmitButton = styled(Button)({
+  marginTop: '24px'
+});
