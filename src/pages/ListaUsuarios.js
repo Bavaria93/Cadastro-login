@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -16,7 +17,6 @@ import UserCard from "../components/UserCard";
 import EditUserDialog from "../components/EditUserDialog";
 import PaginationControls from "../components/PaginationControls";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { usePermission } from "../hooks/usePermission";
 
 // helper para capitalizar

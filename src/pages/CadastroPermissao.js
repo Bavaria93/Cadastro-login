@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useContext } from 'react';
 import {
   Container,
@@ -10,7 +11,6 @@ import {
   DialogActions
 } from '@mui/material';
 import { UserContext } from '../contexts/UserContext';
-import axios from 'axios';
 import TypeDescriptionFields from '../components/TypeDescriptionFields';
 
 function CadastroPermissao() {

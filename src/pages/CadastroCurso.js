@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useContext } from "react";
 import {
   Container,
@@ -14,7 +15,6 @@ import {
   IconButton,
 } from "@mui/material";
 import { UserContext } from "../contexts/UserContext";
-import axios from "axios";
 import DeleteIcon from '@mui/icons-material/Delete';
 
 function CadastroCurso() {

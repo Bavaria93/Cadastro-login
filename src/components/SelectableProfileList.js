@@ -1,5 +1,3 @@
-// src/components/SelectableProfileList.js
-
 import React from "react";
 import { List, ListItem, ListItemText } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";

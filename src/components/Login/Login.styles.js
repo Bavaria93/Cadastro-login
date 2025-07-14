@@ -1,12 +1,5 @@
 import { styled } from '@mui/material/styles';
-import {
-  Container,
-  Box,
-  Typography,
-  TextField,
-  Button,
-  IconButton
-} from '@mui/material';
+import { Container, Box, Typography, TextField, Button, IconButton } from '@mui/material';
 
 /**
  * LoginContainer

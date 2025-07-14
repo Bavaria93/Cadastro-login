@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -16,7 +17,6 @@ import SolicitacaoCard from "../components/SolicitacaoCard";
 import EditSolicitacaoDialog from "../components/EditSolicitacaoDialog";
 import PaginationControls from "../components/PaginationControls";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
 
 // helper para capitalizar
 const capitalize = str =>

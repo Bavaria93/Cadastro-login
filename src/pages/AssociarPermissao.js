@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useContext, useState, useEffect } from "react";
 import {
   Container,
@@ -10,7 +11,6 @@ import {
   DialogActions,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { UserContext } from "../contexts/UserContext";
 import ProfileSection from "../components/ProfileSection";
 import PermissionSection from "../components/PermissionSection";

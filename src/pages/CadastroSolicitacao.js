@@ -1,7 +1,5 @@
-// src/pages/CadastroSolicitacao.js
-
-import React, { useState } from "react";
 import axios from "axios";
+import React, { useState } from "react";
 import {
   Container,
   Box,
@@ -14,7 +12,6 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-
 import CourseSelect from "../components/CourseSelect";
 import CampusesSelect from "../components/CampusesSelect";
 import NoticeLabelField from "../components/NoticeLabelField";

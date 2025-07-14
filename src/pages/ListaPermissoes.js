@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -13,7 +14,6 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { usePermission } from "../hooks/usePermission";
 import PermissionCard from "../components/PermissionCard";
 import EditPermissionDialog from "../components/EditPermissionDialog";
