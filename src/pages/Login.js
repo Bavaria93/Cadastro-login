@@ -1,14 +1,7 @@
-// src/pages/Login.js
 import React from "react";
-import {
-  InputAdornment,
-  Snackbar,
-  Alert
-} from "@mui/material";
+import { InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-
 import useLoginForm from "../hooks/useLoginForm";
-
 import {
   LoginContainer,
   FormBox,
@@ -25,12 +18,8 @@ export default function Login() {
     password,
     setPassword,
     showPassword,
-    togglePasswordVisibility,
+    setShowPassword,
     handleSubmit,
-    snackOpen,
-    snackMsg,
-    snackSeverity,
-    closeSnack,
   } = useLoginForm();
 
   return (
@@ -41,22 +30,22 @@ export default function Login() {
         <StyledTextField
           label="Email"
           type="email"
+          autoComplete="username"
           value={email}
-          required
           onChange={(e) => setEmail(e.target.value)}
         />
 
         <StyledTextField
           label="Senha"
           type={showPassword ? "text" : "password"}
+          autoComplete="current-password"
           value={password}
-          required
           onChange={(e) => setPassword(e.target.value)}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
                 <PasswordAdornmentButton
-                  onClick={togglePasswordVisibility}
+                  onClick={() => setShowPassword((prev) => !prev)}
                   edge="end"
                   aria-label="toggle password visibility"
                 >
@@ -71,23 +60,6 @@ export default function Login() {
           Entrar
         </SubmitButton>
       </FormBox>
-
-      {/** Aqui fica o Snackbar **/}
-      <Snackbar
-        open={snackOpen}
-        autoHideDuration={3000}
-        onClose={closeSnack}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={closeSnack}
-          severity={snackSeverity}
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          {snackMsg}
-        </Alert>
-      </Snackbar>
     </LoginContainer>
   );
 }

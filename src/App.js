@@ -1,4 +1,4 @@
-// src/App.js
+import axios from 'axios';
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import {
   Box,
@@ -10,22 +10,18 @@ import {
   Button,
   CssBaseline
 } from '@mui/material';
-
 import { BrowserRouter as Router, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './contexts/AuthContext';
 import { UserProvider } from "./contexts/UserContext";
-
 import VerticalMenu from './components/VerticalMenu/VerticalMenu';
 import HorizontalMenu from './components/HorizontalMenu/HorizontalMenu';
 import MainRoutes from './routes/MainRoutes';
 import EditUserDialog from './components/EditUserDialog';
 import Breadcrumb from './components/Breadcrumb';
 import ErrorBoundary from "./components/ErrorBoundary";
-
-import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
-
 import { ThemeProvider } from '@mui/material/styles';
+import StyledSnackbarProvider from "./components/Providers/StyledSnackbarProvider";
 import snackbarTheme from './theme/snackbarTheme';
 
 // Configuração de interceptors do axios
@@ -116,93 +112,98 @@ function App() {
   return (
     <ThemeProvider theme={snackbarTheme}>
       <CssBaseline />
-
-      <Box
-        sx={{
-          display: 'grid',
-          height: '100vh',
-          gridTemplateColumns,
-          gridTemplateRows,
-          gridTemplateAreas,
-          transition: theme =>
-            theme.transitions.create('grid-template-columns', {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.standard
-            })
-        }}
+      <StyledSnackbarProvider
+        maxSnack={5}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        autoHideDuration={3000}
       >
-        {!hideMenus && (
-          <Box sx={{ gridArea: 'menu' }}>
-            <VerticalMenu
-              menuAberto={menuAberto}
-              drawerWidthExpanded={drawerWidthExpanded}
-              drawerWidthCollapsed={drawerWidthCollapsed}
-            />
-          </Box>
-        )}
-
-        {!hideMenus && (
-          <Box sx={{ gridArea: 'header' }}>
-            <HorizontalMenu
-              menuAberto={menuAberto}
-              alternarMenu={() => setMenuAberto(v => !v)}
-              handleMenuOpen={(event) => setAnchorEl(event.currentTarget)}
-              anchorEl={anchorEl}
-              handleMenuClose={() => setAnchorEl(null)}
-              handleLogout={handleLogout}
-              handleEditUser={() => setEditDialogOpen(true)}
-            />
-          </Box>
-        )}
-
         <Box
-          component="main"
           sx={{
-            gridArea: 'main',
-            p: 3,
-            bgcolor: '#ECF0F1',
-            overflow: 'auto'
+            display: 'grid',
+            height: '100vh',
+            gridTemplateColumns,
+            gridTemplateRows,
+            gridTemplateAreas,
+            transition: theme =>
+              theme.transitions.create('grid-template-columns', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.standard
+              })
           }}
         >
-          {!hideMenus && <Breadcrumb />}
-          <ErrorBoundary key={location.pathname}>
-            <MainRoutes />
-          </ErrorBoundary>
+          {!hideMenus && (
+            <Box sx={{ gridArea: 'menu' }}>
+              <VerticalMenu
+                menuAberto={menuAberto}
+                drawerWidthExpanded={drawerWidthExpanded}
+                drawerWidthCollapsed={drawerWidthCollapsed}
+              />
+            </Box>
+          )}
+
+          {!hideMenus && (
+            <Box sx={{ gridArea: 'header' }}>
+              <HorizontalMenu
+                menuAberto={menuAberto}
+                alternarMenu={() => setMenuAberto(v => !v)}
+                handleMenuOpen={(event) => setAnchorEl(event.currentTarget)}
+                anchorEl={anchorEl}
+                handleMenuClose={() => setAnchorEl(null)}
+                handleLogout={handleLogout}
+                handleEditUser={() => setEditDialogOpen(true)}
+              />
+            </Box>
+          )}
+
+          <Box
+            component="main"
+            sx={{
+              gridArea: 'main',
+              p: 3,
+              bgcolor: '#ECF0F1',
+              overflow: 'auto'
+            }}
+          >
+            {!hideMenus && <Breadcrumb />}
+            <ErrorBoundary key={location.pathname}>
+              <MainRoutes />
+            </ErrorBoundary>
+          </Box>
+
+          {user && (
+            <EditUserDialog
+              open={editDialogOpen}
+              onClose={() => setEditDialogOpen(false)}
+              user={user}
+            />
+          )}
+
+          <Dialog
+            open={sessionExpired}
+            disableEscapeKeyDown
+            aria-labelledby="session-expired-dialog-title"
+            aria-describedby="session-expired-dialog-description"
+          >
+            <DialogTitle id="session-expired-dialog-title">Acesso Expirado</DialogTitle>
+            <DialogContent>
+              <DialogContentText id="session-expired-dialog-description">
+                Acesso ao portal expirado. É necessário fazer o Login novamente.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => {
+                  setSessionExpired(false);
+                  handleLogout();
+                }}
+                autoFocus
+              >
+                Fechar
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Box>
-
-        {user && (
-          <EditUserDialog
-            open={editDialogOpen}
-            onClose={() => setEditDialogOpen(false)}
-            user={user}
-          />
-        )}
-
-        <Dialog
-          open={sessionExpired}
-          disableEscapeKeyDown
-          aria-labelledby="session-expired-dialog-title"
-          aria-describedby="session-expired-dialog-description"
-        >
-          <DialogTitle id="session-expired-dialog-title">Acesso Expirado</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="session-expired-dialog-description">
-              Acesso ao portal expirado. É necessário fazer o Login novamente.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => {
-                setSessionExpired(false);
-                handleLogout();
-              }}
-              autoFocus
-            >
-              Fechar
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
+      </StyledSnackbarProvider>
     </ThemeProvider>
   );
 }
