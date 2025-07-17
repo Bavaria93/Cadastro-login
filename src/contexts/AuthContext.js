@@ -1,62 +1,53 @@
+// src/contexts/AuthContext.js
 import React, { createContext, useState, useEffect } from 'react';
 import { jwtDecode } from "jwt-decode";
 import authService from '../services/authService';
 
 export const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
-  // Inicializa usuário e token a partir do localStorage
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem('loggedUser');
-    return storedUser ? JSON.parse(storedUser) : null;
+    const s = localStorage.getItem('loggedUser');
+    return s ? JSON.parse(s) : null;
   });
   const [token, setToken] = useState(() => localStorage.getItem('token'));
 
-  // Verifica a expiração do token e efetua logout se necessário
   useEffect(() => {
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        const expTime = decoded.exp * 1000;
-        if (expTime < Date.now()) {
-          signOut();
-        }
-      } catch (error) {
-        console.error('Erro ao decodificar o token:', error);
-        signOut();
-      }
+    if (!token) return;
+    try {
+      const { exp } = jwtDecode(token);
+      if (exp * 1000 < Date.now()) signOut();
+    } catch {
+      signOut();
     }
   }, [token]);
 
   const signIn = async (email, password) => {
-  try {
+    // SE der 401/403, authService.login já lança Error
     const data = await authService.login(email, password);
-    if (data) {
-      // Decodifica o token para extrair as informações adicionais, como as permissões
-      const decodedToken = jwtDecode(data.access_token);
 
-      // Cria o objeto de usuário incluindo as permissões extraídas do token.
-      const userData = { 
-        email, 
-        token: data.access_token, 
-        name: data.name, 
-        photo: data.photo,
-        permissions: decodedToken.permissions || []  // use o campo correto conforme o token
-      };
-
-      // Armazena os dados no localStorage
-      localStorage.setItem('token', data.access_token);
-      localStorage.setItem('loggedUser', JSON.stringify(userData));
-
-      // Atualiza os estados do contexto
-      setToken(data.access_token);
-      setUser(userData);
+    // Se a API retornar sem token, forçamos erro também
+    if (!data?.access_token) {
+      throw new Error('E-mail ou senha inválidos');
     }
+
+    // decodifica e popula o usuário
+    const decoded = jwtDecode(data.access_token);
+    const userData = {
+      email,
+      name: data.name,
+      photo: data.photo,
+      token: data.access_token,
+      permissions: decoded.permissions || []
+    };
+
+    localStorage.setItem('token', data.access_token);
+    localStorage.setItem('loggedUser', JSON.stringify(userData));
+    setToken(data.access_token);
+    setUser(userData);
+
     return data;
-  } catch (error) {
-    throw error;
-  }
-};
+  };
 
   const signOut = () => {
     localStorage.removeItem('token');
@@ -70,4 +61,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
+}
