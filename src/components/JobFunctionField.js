@@ -1,42 +1,31 @@
-import React from "react";
-import {
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  TextField,
-} from "@mui/material";
+import RadioSelectField from "./RadioSelectField";
+import TextField from "@mui/material/TextField";
 import { jobFunctionOptions } from "../constants/jobFunctionOptions";
 
 export default function JobFunctionField({
-  value,
-  onChange,
-  otherValue,
-  onOtherChange,
+  value, onChange,
+  otherValue, onOtherChange,
 }) {
   return (
-    <FormControl component="fieldset">
-      <FormLabel>Processo Seletivo para qual função?</FormLabel>
-      <RadioGroup row value={value} onChange={onChange}>
-        {jobFunctionOptions.map((opt) => (
-          <FormControlLabel
-            key={opt}
-            value={opt}
-            control={<Radio />}
-            label={opt}
-          />
-        ))}
-      </RadioGroup>
+    <>
+      <RadioSelectField
+        label="Função do Processo Seletivo"
+        name="jobFunction"
+        options={jobFunctionOptions}
+        value={value}
+        onChange={onChange}
+      />
+
       {value === "Outros" && (
         <TextField
-          label="Informe a função"
+          label="Descreva a função"
           value={otherValue}
           onChange={onOtherChange}
           fullWidth
           required
+          sx={{ mt: 2 }}
         />
       )}
-    </FormControl>
+    </>
   );
 }
