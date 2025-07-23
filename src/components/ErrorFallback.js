@@ -1,23 +1,29 @@
 import React from "react";
-import { Box, Typography, Button } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useNavigate } from "react-router-dom";
 
-const ErrorFallback = ({ onReset }) => {
-  // hook do React Router para navegação programática
+export default function ErrorFallback({ error, errorInfo, onReset }) {
   const navigate = useNavigate();
-
-  // leva o usuário de volta à rota principal do Dashboard
-  const handleBackToDashboard = () => {
-    navigate("/");
-  };
 
   return (
     <Box
       sx={{
+        maxWidth: 600,
+        mx: "auto",
+        mt: 8,
         p: 4,
         textAlign: "center",
         bgcolor: "background.paper",
         borderRadius: 1,
+        boxShadow: 3,
       }}
     >
       {/* Mensagem de erro amigável */}
@@ -25,23 +31,45 @@ const ErrorFallback = ({ onReset }) => {
         Ops! Algo deu errado.
       </Typography>
       <Typography variant="body1" mb={2}>
-        Estamos trabalhando para resolver isso. Tente novamente.
+        Estamos trabalhando para resolver isto. Você pode recarregar ou voltar à dashboard.
       </Typography>
 
-      {/* Botão para tentar recarregar o componente */}
-      <Button variant="contained" onClick={onReset}>
-        Recarregar
-      </Button>
+      <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mb: 3 }}>
+        <Button variant="contained" onClick={onReset}>
+          Recarregar
+        </Button>
+        <Button variant="outlined" onClick={() => navigate("/")}>
+          Voltar ao Dashboard
+        </Button>
+      </Box>
 
-      {/* Espaço entre botões */}
-      <Box component="span" sx={{ mx: 1 }} />
-
-      {/* Botão para voltar à dashboard */}
-      <Button variant="outlined" onClick={handleBackToDashboard}>
-        Voltar ao Dashboard
-      </Button>
+      {error && (
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1">Detalhes do erro</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography
+              component="pre"
+              variant="body2"
+              textAlign="initial"
+              sx={{ whiteSpace: "pre-wrap", fontFamily: "monospace" }}
+            >
+              {error.toString()}
+            </Typography>
+            {errorInfo?.componentStack && (
+              <Typography
+                component="pre"
+                variant="body2"
+                textAlign="initial"
+                sx={{ whiteSpace: "pre-wrap", fontFamily: "monospace", mt: 2 }}
+              >
+                {errorInfo.componentStack}
+              </Typography>
+            )}
+          </AccordionDetails>
+        </Accordion>
+      )}
     </Box>
   );
-};
-
-export default ErrorFallback;
+}

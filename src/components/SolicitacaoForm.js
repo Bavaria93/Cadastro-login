@@ -1,4 +1,5 @@
 import React from "react";
+import InputMask from "react-input-mask";
 import {
   Box,
   Typography,
@@ -43,13 +44,22 @@ export default function SolicitacaoForm({
       </Typography>
 
       <Box sx={{ display: "flex", gap: 2 }}>
-        <TextField
-          label="Número do Edital"
+        <InputMask
+          mask="999/9999"
           value={numero}
           onChange={(e) => setNumero(e.target.value)}
-          required
-          fullWidth
-        />
+          maskPlaceholder={null}
+        >
+          {(inputProps) => (
+            <TextField
+              {...inputProps}
+              label="Número do Edital"
+              required
+              fullWidth
+            />
+          )}
+        </InputMask>
+
         <TextField
           label="Data do Edital"
           type="date"
@@ -118,11 +128,7 @@ export default function SolicitacaoForm({
         type="submit"
         disabled={uploading}
       >
-        {uploading ? (
-          <CircularProgress size={24} />
-        ) : (
-          "Enviar Solicitação"
-        )}
+        {uploading ? <CircularProgress size={24} /> : "Enviar Solicitação"}
       </Button>
     </Box>
   );
