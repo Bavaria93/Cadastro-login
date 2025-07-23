@@ -12,6 +12,8 @@ export default function useLoginForm() {
   const { signIn } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const isDev = process.env.NODE_ENV === 'development';
+
   const validateEmailFormat = v =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
@@ -21,7 +23,7 @@ export default function useLoginForm() {
 
     const errors = [];
     if (!email.trim()) errors.push('E-mail é obrigatório');
-    else if (!validateEmailFormat(email))
+    else if (!isDev && !validateEmailFormat(email))
       errors.push('Formato de e-mail inválido');
 
     if (!password) errors.push('Senha é obrigatória');
