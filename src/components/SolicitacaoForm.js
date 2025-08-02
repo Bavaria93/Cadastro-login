@@ -1,5 +1,5 @@
 import React from "react";
-import InputMask from "react-input-mask";
+import { IMaskInput } from "react-imask";
 import {
   Box,
   Typography,
@@ -44,21 +44,24 @@ export default function SolicitacaoForm({
       </Typography>
 
       <Box sx={{ display: "flex", gap: 2 }}>
-        <InputMask
-          mask="999/9999"
+        <TextField
+          label="Número do Edital"
+          required
+          fullWidth
           value={numero}
           onChange={(e) => setNumero(e.target.value)}
-          maskPlaceholder={null}
-        >
-          {(inputProps) => (
-            <TextField
-              {...inputProps}
-              label="Número do Edital"
-              required
-              fullWidth
-            />
-          )}
-        </InputMask>
+          InputProps={{
+            inputComponent: IMaskInput,
+            inputProps: {
+              mask: "000/0000",
+              definitions: { "0": /\d/ },
+              // lazy: true faz a máscara ser aplicada somente quando o usuário digita
+              lazy: true,
+              // placeholderChar em vazio para não sobrepor label antes de digitar
+              placeholderChar: "",
+            },
+          }}
+        />
 
         <TextField
           label="Data do Edital"
