@@ -14,27 +14,20 @@ import {
 import { Edit } from "@mui/icons-material";
 import axios from "axios";
 
-// Função auxiliar para garantir que a URL da foto seja completa e limpa de espaços
 const getFullImageUrl = (photoPath) => {
   if (!photoPath) return "/default-avatar.png";
   const trimmed = photoPath.trim();
   return trimmed.startsWith("http") ? trimmed : `http://localhost:8000${trimmed}`;
 };
 
-const EditUserDialog = ({ open, onClose, user, setLoggedUser }) => {
-  // Estado local para armazenar os dados editados do usuário
+const EditUserDialog = ({ open, onClose, user, onSaved }) => {
   const [editedUser, setEditedUser] = useState(user);
-  // Estado para armazenar a nova foto selecionada (arquivo)
   const [newPhoto, setNewPhoto] = useState(null);
-  // Estado para armazenar a URL de pré-visualização da nova foto
   const [previewPhoto, setPreviewPhoto] = useState("");
-
-  // Dialog de feedback
   const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [feedbackType, setFeedbackType] = useState("success"); // 'success' | 'error'
+  const [feedbackType, setFeedbackType] = useState("success");
   const [feedbackMsg, setFeedbackMsg] = useState("");
 
-  // Quando o diálogo abrir, atualiza os dados do usuário e reseta a nova foto
   useEffect(() => {
     if (open) {
       setEditedUser(user);
@@ -43,7 +36,6 @@ const EditUserDialog = ({ open, onClose, user, setLoggedUser }) => {
     }
   }, [open, user]);
 
-  // Cria a URL de pré-visualização sempre que 'newPhoto' mudar e a revoga quando necessário
   useEffect(() => {
     if (newPhoto) {
       const objectUrl = URL.createObjectURL(newPhoto);
@@ -55,49 +47,37 @@ const EditUserDialog = ({ open, onClose, user, setLoggedUser }) => {
   }, [newPhoto]);
 
   const handleInputChange = (field, value) => {
-    setEditedUser((prevUser) => ({
-      ...prevUser,
-      [field]: value,
-    }));
+    setEditedUser((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Lida com a seleção do arquivo de nova foto
   const handlePhotoChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setNewPhoto(e.target.files[0]);
     }
   };
 
-  // Exibe diálogo de feedback (sucesso ou erro)
   const showFeedback = (type, message) => {
     setFeedbackType(type);
     setFeedbackMsg(message);
     setFeedbackOpen(true);
   };
 
-  // Ao salvar, atualiza os dados básicos via PUT e, se houver nova foto, realiza o upload
   const handleSave = async () => {
     try {
-      // Constrói o payload convertendo o array de perfis (objetos) para um array de IDs,
-      // conforme a API espera.
       const payload = {
         ...editedUser,
         ...(editedUser.profiles && {
-          profiles: editedUser.profiles.map((profile) => profile.id),
+          profiles: editedUser.profiles.map((p) => p.id),
         }),
       };
 
-      // Atualiza os dados básicos do usuário via PUT
       const response = await axios.put(
         `http://localhost:8000/users/${editedUser.id}`,
         payload,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
       let updatedUser = response.data;
 
-      // Se uma nova foto foi selecionada, efetua o upload
       if (newPhoto) {
         const formData = new FormData();
         formData.append("file", newPhoto);
@@ -105,9 +85,7 @@ const EditUserDialog = ({ open, onClose, user, setLoggedUser }) => {
           const photoResponse = await axios.post(
             `http://localhost:8000/users/${editedUser.id}/photo`,
             formData,
-            {
-              headers: { "Content-Type": "multipart/form-data" },
-            }
+            { headers: { "Content-Type": "multipart/form-data" } }
           );
           updatedUser = photoResponse.data;
         } catch (uploadError) {
@@ -116,10 +94,7 @@ const EditUserDialog = ({ open, onClose, user, setLoggedUser }) => {
         }
       }
 
-      // Atualiza o usuário no estado global e no localStorage para persistência
-      setLoggedUser(updatedUser);
-      localStorage.setItem("loggedUser", JSON.stringify(updatedUser));
-
+      onSaved && onSaved(updatedUser);
       showFeedback("success", "Usuário atualizado com sucesso!");
     } catch (error) {
       console.error("Erro ao atualizar usuário:", error);
@@ -136,23 +111,10 @@ const EditUserDialog = ({ open, onClose, user, setLoggedUser }) => {
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
         <DialogTitle>Editar Dados do Usuário</DialogTitle>
         <DialogContent>
-          <Box
-            component="form"
-            sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
-          >
-            {/* Seção de edição da foto posicionada no topo */}
-            <Box
-              sx={{
-                position: "relative",
-                width: 80,
-                height: 80,
-                mb: 2,
-              }}
-            >
+          <Box component="form" sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+            <Box sx={{ position: "relative", width: 80, height: 80, mb: 2 }}>
               <Avatar
-                src={
-                  newPhoto ? previewPhoto : getFullImageUrl(editedUser.photo)
-                }
+                src={newPhoto ? previewPhoto : getFullImageUrl(editedUser.photo)}
                 sx={{ width: 80, height: 80 }}
               />
               <IconButton
@@ -166,16 +128,11 @@ const EditUserDialog = ({ open, onClose, user, setLoggedUser }) => {
                 }}
                 component="label"
               >
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={handlePhotoChange}
-                />
+                <input type="file" accept="image/*" hidden onChange={handlePhotoChange} />
                 <Edit fontSize="small" />
               </IconButton>
             </Box>
-            {/* Campos de edição */}
+
             <TextField
               label="Nome"
               value={editedUser.name || ""}
@@ -207,11 +164,8 @@ const EditUserDialog = ({ open, onClose, user, setLoggedUser }) => {
         </DialogActions>
       </Dialog>
 
-      {/* Dialog de feedback */}
       <Dialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)}>
-        <DialogTitle>
-          {feedbackType === "success" ? "Sucesso" : "Erro"}
-        </DialogTitle>
+        <DialogTitle>{feedbackType === "success" ? "Sucesso" : "Erro"}</DialogTitle>
         <DialogContent>
           <Typography>{feedbackMsg}</Typography>
         </DialogContent>

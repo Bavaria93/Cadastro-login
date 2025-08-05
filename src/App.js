@@ -16,7 +16,7 @@ import { UserProvider } from "./contexts/UserContext";
 import VerticalMenu from './components/VerticalMenu/VerticalMenu';
 import HorizontalMenu from './components/HorizontalMenu/HorizontalMenu';
 import MainRoutes from './routes/MainRoutes';
-import EditUserDialog from './components/EditUserDialog';
+import EditUserDialog from './components/users/EditUserDialog';
 import Breadcrumb from './components/Breadcrumb';
 import ErrorBoundary from "./components/ErrorBoundary";
 import { jwtDecode } from "jwt-decode";
