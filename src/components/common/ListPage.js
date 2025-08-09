@@ -1,5 +1,3 @@
-// ListPage.jsx
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -16,6 +14,7 @@ import PaginationControls from "../PaginationControls";
 export default function ListPage({
   endpoint,
   title,
+  singular,
   renderItem,
   canCreate = false,
   onCreate,
@@ -63,7 +62,7 @@ export default function ListPage({
         <Typography variant="h4">{title}</Typography>
         {canCreate && onCreate && (
           <Button variant="contained" color="primary" onClick={onCreate}>
-            {`Cadastrar ${title.slice(0, -1)}`}
+            {`Cadastrar ${singular || title.slice(0, -1)}`}
           </Button>
         )}
       </Box>
