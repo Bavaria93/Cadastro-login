@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
 import axios from "axios";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Box,
@@ -20,6 +20,8 @@ export default function ListPage({
   onCreate,
   itemsPerPage = 9,
   refreshTrigger = 0,
+  canAssociate = false,
+  onAssociate = null,
 }) {
   const [items, setItems] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
@@ -53,23 +55,27 @@ export default function ListPage({
 
   return (
     <Container maxWidth="md" style={{ padding: "20px" }}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-      >
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">{title}</Typography>
-        {canCreate && onCreate && (
-          <Button variant="contained" color="primary" onClick={onCreate}>
-            {`Cadastrar ${singular || title.slice(0, -1)}`}
-          </Button>
-        )}
+
+        {/* 🔘 Botões de ação fixos */}
+        <Box display="flex" gap={2}>
+          {canCreate && onCreate && (
+            <Button variant="contained" color="primary" onClick={onCreate}>
+              {`Cadastrar ${singular || title.slice(0, -1)}`}
+            </Button>
+          )}
+          {canAssociate && onAssociate && (
+            <Button variant="contained" color="secondary" onClick={onAssociate}>
+              {`Associar ${singular || title.slice(0, -1)}`}
+            </Button>
+          )}
+        </Box>
       </Box>
 
       <TextField
         fullWidth
-        label={`Pesquisar ${title.slice(0, -1)}`}
+        label={`Pesquisar ${singular || title.slice(0, -1)}`}
         variant="outlined"
         value={searchTerm}
         onChange={(e) => {
@@ -80,21 +86,11 @@ export default function ListPage({
       />
 
       {loading ? (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight={200}
-        >
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
           <CircularProgress />
         </Box>
       ) : items.length === 0 ? (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight={200}
-        >
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
           <Typography variant="body1">
             {searchTerm
               ? "Nenhum resultado encontrado."

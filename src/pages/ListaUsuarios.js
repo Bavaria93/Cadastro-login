@@ -1,6 +1,6 @@
+import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { usePermission } from "../hooks/usePermission";
 import ListPage from "../components/common/ListPage";
 import UserCard from "../components/users/UserCard";
@@ -21,7 +21,7 @@ export default function ListaUsuarios() {
   const formatDate = (dateString) =>
     dateString ? new Date(dateString).toLocaleDateString() : "N/A";
 
-  const handleCreate = () => navigate("/usuarios/cadastro");
+  const handleCreate = () => navigate("/usuarios/cadastroUsuario");
 
   const handleEdit = (user) => {
     setSelected(user);

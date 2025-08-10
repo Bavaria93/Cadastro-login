@@ -1,6 +1,6 @@
+import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { usePermission } from "../hooks/usePermission";
 import ListPage from "../components/common/ListPage";
 import ProfileCard from "../components/profiles/ProfileCard";
@@ -10,6 +10,7 @@ import DeleteProfileDialog from "../components/profiles/DeleteProfileDialog";
 export default function ListaPerfis() {
   const navigate = useNavigate();
   const canCreate = usePermission("Cadastrar Perfil");
+  const canAssociate = usePermission("Atualizar Usuário");
   const canEdit = usePermission("Atualizar Perfil");
   const canDelete = usePermission("Excluir Perfil");
 
@@ -21,7 +22,8 @@ export default function ListaPerfis() {
   const formatDate = (dateString) =>
     dateString ? new Date(dateString).toLocaleDateString() : "N/A";
 
-  const handleCreate = () => navigate("/perfis/cadastro");
+  const handleCreate = () => navigate("/perfis/cadastroPerfil");
+  const handleAssociate = () => navigate("/perfis/associarPerfil");
 
   const handleEdit = (profile) => {
     setSelected(profile);
@@ -63,6 +65,8 @@ export default function ListaPerfis() {
         renderItem={renderItem}
         canCreate={canCreate}
         onCreate={handleCreate}
+        canAssociate={canAssociate}
+        onAssociate={handleAssociate}
         refreshTrigger={refresh}
       />
 

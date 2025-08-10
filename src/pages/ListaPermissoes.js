@@ -1,254 +1,88 @@
 import axios from "axios";
-import React, { useState, useEffect } from "react";
-import {
-  Container,
-  Grid,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Typography,
-  Box,
-  TextField,
-  CircularProgress,
-} from "@mui/material";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { usePermission } from "../hooks/usePermission";
-import PermissionCard from "../components/PermissionCard";
-import EditPermissionDialog from "../components/EditPermissionDialog";
-import PaginationControls from "../components/PaginationControls";
+import ListPage from "../components/common/ListPage";
+import PermissionCard from "../components/permissions/PermissionCard";
+import EditPermissionDialog from "../components/permissions/EditPermissionDialog";
+import DeletePermissionDialog from "../components/permissions/DeletePermissionDialog";
 
-// helper para capitalizar
-const capitalize = str =>
-  str.charAt(0).toUpperCase() + str.slice(1);
-
-function ListaPermissoes() {
-  // Estado para os dados retornados do backend (apenas a página atual)
-  const [dbPermissions, setDbPermissions] = useState([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 9;
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // loading
-  const [loadingPermissions, setLoadingPermissions] = useState(false);
-
-  // Estados para dialogs
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [selectedPermissionId, setSelectedPermissionId] = useState(null);
-
-  const { pathname } = useLocation();
+export default function ListaPermissoes() {
   const navigate = useNavigate();
+  const canCreate = usePermission("Cadastrar Permissão");
+  const canAssociate = usePermission("Atualizar Perfil");
+  const canEdit = usePermission("Atualizar Permissão");
+  const canDelete = usePermission("Excluir Permissão");
 
-  // extrai o último segmento ou "dashboard" se for raiz
-  const segments = pathname.split("/").filter(Boolean);
-  const currentSegment = segments.pop() || "dashboard";
-
-  // Permissões do usuário para ações na tela
-  const canCreatePermissions = usePermission("Cadastrar Permissão");
-  const canAssociatePermissions = usePermission("Atualizar Perfil");
-  const canEditPermissions = usePermission("Atualizar Permissão");
-  const canDeletePermissions = usePermission("Excluir Permissão");
-
-  const title = capitalize(currentSegment);
-
-  // Busca os dados do backend para a página atual
-  useEffect(() => {
-    const fetchPermissions = async () => {
-      setLoadingPermissions(true);
-      try {
-        const response = await axios.get("http://localhost:8000/permissions/", {
-          params: {
-            page: currentPage + 1,
-            limit: itemsPerPage,
-            search: searchTerm,
-          },
-        });
-        console.log("Dados retornados da API (permissões):", response.data);
-        if (response.data && Array.isArray(response.data.items)) {
-          setDbPermissions(response.data.items);
-          setTotalItems(response.data.total);
-        } else {
-          setDbPermissions([]);
-          setTotalItems(0);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar permissões:", error);
-        setDbPermissions([]);
-        setTotalItems(0);
-      } finally {
-        setLoadingPermissions(false);
-      }
-    };
-
-    fetchPermissions();
-  }, [currentPage, itemsPerPage, searchTerm]);
-
-  const handleOpenEditDialog = (permissionId) => {
-    setSelectedPermissionId(permissionId);
-    setEditDialogOpen(true);
-  };
-
-  const handleCloseEditDialog = () => {
-    setSelectedPermissionId(null);
-    setEditDialogOpen(false);
-  };
-
-  const handleOpenDeleteDialog = (permission) => {
-    setSelectedPermissionId(permission.id);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setSelectedPermissionId(null);
-    setDeleteDialogOpen(false);
-  };
-
-  const handleDeletePermission = async () => {
-    if (!selectedPermissionId) return;
-    try {
-      await axios.delete(
-        `http://localhost:8000/permissions/${selectedPermissionId}`
-      );
-      setDbPermissions((prevPermissions) =>
-        prevPermissions.filter(
-          (permission) => permission.id !== selectedPermissionId
-        )
-      );
-      handleCloseDeleteDialog();
-    } catch (error) {
-      console.error("Erro ao excluir permissão:", error);
-    }
-  };
+  const [selected, setSelected] = useState(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [delOpen, setDelOpen] = useState(false);
+  const [refresh, setRefresh] = useState(0);
 
   const formatDate = (dateString) =>
     dateString ? new Date(dateString).toLocaleDateString() : "N/A";
 
-  const handlePageChange = (pageIndex) => {
-    setCurrentPage(pageIndex);
+  const handleCreate = () => navigate("/permissoes/cadastroPermissao");
+  const handleAssociate = () => navigate("/permissoes/associarPermissao");
+
+  const handleEdit = (permission) => {
+    setSelected(permission);
+    setEditOpen(true);
   };
 
-  return (
-    <Container maxWidth="md" sx={{ p: 2 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">{title}</Typography>
-        <Box display="flex" gap={2}>
-          {canCreatePermissions && (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate("/permissoes/cadastroPermissao")}
-            >
-              Cadastrar Permissão
-            </Button>
-          )}
-          {canAssociatePermissions && (
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => navigate("/permissoes/associarPermissao")}
-            >
-              Associar Permissão aos Perfis
-            </Button>
-          )}
-        </Box>
-      </Box>
+  const handleDelete = (permission) => {
+    setSelected(permission);
+    setDelOpen(true);
+  };
 
-      <TextField
-        fullWidth
-        label="Pesquisar Permissão"
-        variant="outlined"
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-          setCurrentPage(0);
-        }}
-        sx={{ mb: 2 }}
+  const confirmDelete = async () => {
+    try {
+      if (!selected?.id) return;
+      await axios.delete(`http://localhost:8000/permissions/${selected.id}`);
+      setDelOpen(false);
+      setSelected(null);
+      setRefresh((r) => r + 1);
+    } catch (err) {
+      console.error("Erro ao excluir permissão:", err);
+    }
+  };
+
+  const renderItem = (permission) => (
+    <PermissionCard
+      permission={permission}
+      onEdit={canEdit ? () => handleEdit(permission) : null}
+      onDelete={canDelete ? () => handleDelete(permission) : null}
+      formatDate={formatDate}
+    />
+  );
+
+  return (
+    <>
+      <ListPage
+        endpoint="http://localhost:8000/permissions/"
+        title="Permissões"
+        singular="Permissão"
+        renderItem={renderItem}
+        canCreate={canCreate}
+        onCreate={handleCreate}
+        canAssociate={canAssociate}
+        onAssociate={handleAssociate}
+        refreshTrigger={refresh}
       />
 
-      {loadingPermissions ? (
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-          <CircularProgress />
-        </Box>
-      ) : dbPermissions.length === 0 ? (
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-          <Typography variant="body1">
-            {searchTerm
-              ? "Nenhuma permissão encontrada."
-              : "Nenhuma permissão cadastrada."}
-          </Typography>
-        </Box>
-      ) : (
-        <Grid container spacing={3} justifyContent="center">
-          {dbPermissions.map((permission) => (
-            <Grid item key={permission.id} xs={12} sm={6} md={4}>
-              <PermissionCard
-                permission={permission}
-                onEdit={
-                  canEditPermissions
-                    ? () => handleOpenEditDialog(permission.id)
-                    : null
-                }
-                onDelete={
-                  canDeletePermissions
-                    ? () => handleOpenDeleteDialog(permission)
-                    : null
-                }
-                formatDate={formatDate}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      )}
+      <EditPermissionDialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        permission={selected}
+        onSaved={() => setRefresh((r) => r + 1)}
+      />
 
-      <Box mt={3}>
-        <PaginationControls
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          currentPage={currentPage}
-          onPageChange={handlePageChange}
-          lazyLoad={false}
-        />
-      </Box>
-
-      {canDeletePermissions && (
-        <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
-          <DialogTitle>Confirmar Exclusão</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Tem certeza de que deseja excluir a permissão{" "}
-              <strong>
-                {
-                  dbPermissions.find((p) => p.id === selectedPermissionId)
-                    ?.type
-                }
-              </strong>
-              ?
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDeleteDialog} color="primary">
-              Cancelar
-            </Button>
-            <Button onClick={handleDeletePermission} color="secondary">
-              Excluir
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
-
-      {canEditPermissions && (
-        <EditPermissionDialog
-          open={editDialogOpen}
-          onClose={handleCloseEditDialog}
-          permission={dbPermissions.find((p) => p.id === selectedPermissionId)}
-          setPermissions={setDbPermissions}
-        />
-      )}
-    </Container>
+      <DeletePermissionDialog
+        open={delOpen}
+        onClose={() => setDelOpen(false)}
+        permission={selected}
+        onConfirm={confirmDelete}
+      />
+    </>
   );
 }
-
-export default ListaPermissoes;
