@@ -39,7 +39,7 @@ const UserCard = ({ user, onEdit, onDelete, formatDate }) => {
       <Typography variant="body2" color="textSecondary" sx={{ fontSize: 12 }}>
         Perfis:{" "}
         {user.profiles && user.profiles.length > 0
-          ? user.profiles.map((p) => p.type).join(", ")
+          ? user.profiles.map((perfile) => perfile.type).join(", ")
           : "Nenhum"}
       </Typography>
     </GenericCard>

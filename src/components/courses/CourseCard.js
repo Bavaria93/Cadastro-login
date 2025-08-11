@@ -2,9 +2,9 @@ import React from "react";
 import { Typography } from "@mui/material";
 import GenericCard from "../GenericCard";
 
-const ProfileCard = ({ profile, onEdit, onDelete, formatDate }) => {
+const CourseCard = ({ course, onEdit, onDelete, formatDate }) => {
   return (
-    <GenericCard data={profile} onEdit={onEdit} onDelete={onDelete}>
+    <GenericCard data={course} onEdit={onEdit} onDelete={onDelete}>
       <Typography
         variant="h5"
         sx={{
@@ -13,37 +13,27 @@ const ProfileCard = ({ profile, onEdit, onDelete, formatDate }) => {
           fontSize: 18,
         }}
       >
-        {profile.type}
+        {course.name}
       </Typography>
       <Typography
         variant="body1"
         color="textSecondary"
         sx={{ mb: 0.5, fontSize: 14 }}
       >
-        Descrição: {profile.description || "Sem descrição"}
+        Descrição: {course.description || "Sem descrição"}
       </Typography>
       <Typography
         variant="body2"
         color="textSecondary"
         sx={{ mb: 0.5, fontSize: 12 }}
       >
-        Criado em: {formatDate(profile.creation_date)}
-      </Typography>
-      <Typography
-        variant="body2"
-        color="textSecondary"
-        sx={{ fontSize: 12 }}
-      >
-        Atualizado em: {formatDate(profile.update_date)}
+        Criado em: {formatDate(course.creation_date)}
       </Typography>
       <Typography variant="body2" color="textSecondary" sx={{ fontSize: 12 }}>
-        Perfis:{" "}
-        {profile.permissions && profile.permissions.length > 0
-          ? profile.permissions.map((permission) => permission.type).join(", ")
-          : "Nenhum"}
+        Atualizado em: {formatDate(course.update_date)}
       </Typography>
     </GenericCard>
   );
 };
 
-export default ProfileCard;
+export default CourseCard;
