@@ -5,7 +5,7 @@ import { usePermission } from "../hooks/usePermission";
 import ListPage from "../components/common/ListPage";
 import ProfileCard from "../components/profiles/ProfileCard";
 import EditProfileDialog from "../components/profiles/EditProfileDialog";
-import DeleteProfileDialog from "../components/profiles/DeleteProfileDialog";
+import DeleteDialog from "../components/common/DeleteDialog";
 
 export default function ListaPerfis() {
   const navigate = useNavigate();
@@ -77,12 +77,13 @@ export default function ListaPerfis() {
         onSaved={() => setRefresh((r) => r + 1)}
       />
 
-      <DeleteProfileDialog
-        open={delOpen}
-        onClose={() => setDelOpen(false)}
-        profile={selected}
-        onConfirm={confirmDelete}
-      />
+      <DeleteDialog
+  open={delOpen}
+  onClose={() => setDelOpen(false)}
+  onConfirm={confirmDelete}
+  entityLabel="o perfil"
+  entityValue={selected?.type}
+/>
     </>
   );
 }
