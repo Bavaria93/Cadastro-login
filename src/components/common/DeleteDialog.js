@@ -8,16 +8,15 @@ import {
   Button,
 } from "@mui/material";
 
-const DeleteUserDialog = ({ open, onClose, user, onConfirm }) => {
-  if (!user) return null;
+const DeleteDialog = ({ open, onClose, onConfirm, entityLabel, entityValue }) => {
+  if (!entityValue) return null;
 
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Confirmar Exclusão</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Tem certeza que deseja excluir o usuário{" "}
-          <strong>{user.name}</strong>?
+          Tem certeza que deseja excluir {entityLabel} <strong>{entityValue}</strong>?
         </DialogContentText>
       </DialogContent>
       <DialogActions>
@@ -32,4 +31,4 @@ const DeleteUserDialog = ({ open, onClose, user, onConfirm }) => {
   );
 };
 
-export default DeleteUserDialog;
+export default DeleteDialog;

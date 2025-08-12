@@ -5,7 +5,7 @@ import { usePermission } from "../hooks/usePermission";
 import ListPage from "../components/common/ListPage";
 import UserCard from "../components/users/UserCard";
 import EditUserDialog from "../components/users/EditUserDialog";
-import DeleteUserDialog from "../components/users/DeleteUserDialog";
+import DeleteDialog from "../components/common/DeleteDialog";
 
 export default function ListaUsuarios() {
   const navigate = useNavigate();
@@ -70,11 +70,12 @@ export default function ListaUsuarios() {
         onSaved={() => setRefresh((r) => r + 1)}
       />
 
-      <DeleteUserDialog
+      <DeleteDialog
         open={delOpen}
         onClose={() => setDelOpen(false)}
-        user={selected}
         onConfirm={confirmDelete}
+        entityLabel="o usuário"
+        entityValue={selected?.name}
       />
     </>
   );
