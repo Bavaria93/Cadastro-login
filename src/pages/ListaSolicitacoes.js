@@ -5,7 +5,7 @@ import { usePermission } from "../hooks/usePermission";
 import ListPage from "../components/common/ListPage";
 import SolicitacaoCard from "../components/solicitacoes/SolicitacaoCard";
 import EditSolicitacaoDialog from "../components/solicitacoes/EditSolicitacaoDialog";
-import DeleteSolicitacaoDialog from "../components/solicitacoes/DeleteSolicitacaoDialog";
+import DeleteDialog from "../components/common/DeleteDialog";
 
 export default function ListaSolicitacoes() {
   const navigate = useNavigate();
@@ -70,11 +70,12 @@ export default function ListaSolicitacoes() {
         onSaved={() => setRefresh((r) => r + 1)}
       />
 
-      <DeleteSolicitacaoDialog
+      <DeleteDialog
         open={delOpen}
         onClose={() => setDelOpen(false)}
-        solicitacao={selected}
         onConfirm={confirmDelete}
+        entityLabel="a solicitação"
+        entityValue={selected?.notice_label}
       />
     </>
   );
