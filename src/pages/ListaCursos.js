@@ -5,7 +5,7 @@ import { usePermission } from "../hooks/usePermission";
 import ListPage from "../components/common/ListPage";
 import CourseCard from "../components/courses/CourseCard";
 import EditCourseDialog from "../components/courses/EditCourseDialog";
-import DeleteCourseDialog from "../components/courses/DeleteCourseDialog";
+import DeleteDialog from "../components/common/DeleteDialog";
 
 export default function ListaCursos() {
   const navigate = useNavigate();
@@ -70,11 +70,12 @@ export default function ListaCursos() {
         onSaved={() => setRefresh((r) => r + 1)}
       />
 
-      <DeleteCourseDialog
+      <DeleteDialog
         open={delOpen}
         onClose={() => setDelOpen(false)}
-        course={selected}
         onConfirm={confirmDelete}
+        entityLabel="o curso"
+        entityValue={selected?.name}
       />
     </>
   );
