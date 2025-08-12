@@ -5,7 +5,7 @@ import { usePermission } from "../hooks/usePermission";
 import ListPage from "../components/common/ListPage";
 import PermissionCard from "../components/permissions/PermissionCard";
 import EditPermissionDialog from "../components/permissions/EditPermissionDialog";
-import DeletePermissionDialog from "../components/permissions/DeletePermissionDialog";
+import DeleteDialog from "../components/common/DeleteDialog";
 
 export default function ListaPermissoes() {
   const navigate = useNavigate();
@@ -77,11 +77,12 @@ export default function ListaPermissoes() {
         onSaved={() => setRefresh((r) => r + 1)}
       />
 
-      <DeletePermissionDialog
+      <DeleteDialog
         open={delOpen}
         onClose={() => setDelOpen(false)}
-        permission={selected}
         onConfirm={confirmDelete}
+        entityLabel="a permissão"
+        entityValue={selected?.type}
       />
     </>
   );
