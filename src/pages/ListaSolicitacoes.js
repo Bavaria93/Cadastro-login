@@ -57,6 +57,7 @@ export default function ListaSolicitacoes() {
       <ListPage
         endpoint="http://localhost:8000/requests/"
         title="Solicitações"
+        singular="Solicitação"
         renderItem={renderItem}
         canCreate={canCreate}
         onCreate={handleCreate}
