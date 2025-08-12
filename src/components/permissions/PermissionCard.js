@@ -13,7 +13,7 @@ const PermissionCard = ({ permission, onEdit, onDelete, formatDate }) => {
           fontSize: 18,
         }}
       >
-        {permission.name}
+        {permission.type}
       </Typography>
       <Typography
         variant="body1"
