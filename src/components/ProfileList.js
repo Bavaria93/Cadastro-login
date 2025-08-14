@@ -1,6 +1,5 @@
 import React from "react";
-import { List, ListItem, ListItemText, Checkbox } from "@mui/material";
-import PaginationControls from "./PaginationControls";
+import SelectablePaginatedList from "./common/lists/SelectablePaginatedList";
 
 const ProfileList = ({
   profiles,
@@ -11,33 +10,16 @@ const ProfileList = ({
   totalItems,
   onPageChange,
 }) => {
-  const displayProfiles = profiles;
-
   return (
-    <>
-      <List>
-        {displayProfiles.map((profile) => (
-          <ListItem
-            key={profile.id}
-            button
-            onClick={() => onToggleProfile(profile.id)}
-          >
-            <Checkbox checked={selectedProfiles.includes(profile.id)} />
-            <ListItemText
-              primary={profile.type}
-              secondary={profile.description}
-            />
-          </ListItem>
-        ))}
-      </List>
-
-      <PaginationControls
-        totalItems={totalItems || profiles.length}
-        itemsPerPage={itemsPerPage}
-        currentPage={currentPage}
-        onPageChange={onPageChange}
-      />
-    </>
+    <SelectablePaginatedList
+      items={profiles}
+      selectedItems={selectedProfiles}
+      onToggleItem={onToggleProfile}
+      itemsPerPage={itemsPerPage}
+      currentPage={currentPage}
+      totalItems={totalItems}
+      onPageChange={onPageChange}
+    />
   );
 };
 
