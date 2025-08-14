@@ -6,7 +6,6 @@ import {
   CircularProgress,
 } from "@mui/material";
 import ProfileList from "./ProfileList";
-import SelectableProfileList from "./SelectableProfileList";
 
 const ProfileSection = ({
   selectionMode = "multiple",
@@ -54,21 +53,14 @@ const ProfileSection = ({
         >
           <CircularProgress />
         </Box>
-      ) : selectionMode === "single" ? (
-        <SelectableProfileList
-          profiles={profiles}
-          selectedProfile={selectedProfile}
-          onSelectProfile={onSelectProfile}
-          itemsPerPage={itemsPerPage}
-          currentPage={currentPage}
-          totalItems={totalItems}
-          onPageChange={onPageChange}
-        />
       ) : (
         <ProfileList
           profiles={profiles}
+          multiSelect={selectionMode !== "single"}
           selectedProfiles={selectedProfiles}
           onToggleProfile={onToggleProfile}
+          selectedProfile={selectedProfile}
+          onSelectProfile={onSelectProfile}
           itemsPerPage={itemsPerPage}
           currentPage={currentPage}
           totalItems={totalItems}

@@ -1,24 +1,48 @@
 import React from "react";
+import SelectableList from "./common/lists/SelectableList";
 import SelectablePaginatedList from "./common/lists/SelectablePaginatedList";
 
 const ProfileList = ({
-  profiles,
-  selectedProfiles,
+  profiles = [],
+  // Props para seleção única
+  selectedProfile,
+  onSelectProfile,
+
+  // Props para seleção múltipla
+  selectedProfiles = [],
   onToggleProfile,
+
+  // Configuração comum
   itemsPerPage = 5,
-  currentPage,
-  totalItems,
+  currentPage = 0,
+  totalItems = profiles.length,
   onPageChange,
+
+  // Define o modo
+  multiSelect = false,
 }) => {
-  return (
+  const listProps = {
+    items: profiles,
+    itemsPerPage,
+    currentPage,
+    totalItems,
+    onPageChange,
+    serverSide: true,
+    getPrimaryText: (profile) => profile.type,
+    getSecondaryText: (profile) => profile.description,
+  };
+
+  return multiSelect ? (
     <SelectablePaginatedList
-      items={profiles}
+      {...listProps}
       selectedItems={selectedProfiles}
       onToggleItem={onToggleProfile}
-      itemsPerPage={itemsPerPage}
-      currentPage={currentPage}
-      totalItems={totalItems}
-      onPageChange={onPageChange}
+    />
+  ) : (
+    <SelectableList
+      {...listProps}
+      selectedItem={selectedProfile}
+      onSelectItem={onSelectProfile}
     />
   );
 };
