@@ -1,6 +1,5 @@
 import React from "react";
-import { Box, List, ListItem, Checkbox, ListItemText, CircularProgress } from "@mui/material";
-import PaginationControls from "./PaginationControls";
+import SelectablePaginatedList from "./common/lists/SelectablePaginatedList";
 
 export default function PermissionList({
   permissions = [],
@@ -12,47 +11,16 @@ export default function PermissionList({
   onPageChange,
   loading = false,
 }) {
-  // reserva o espaço equivalente a N itens (64px de altura aproximada cada)
-  const listHeight = itemsPerPage * 64;
-
   return (
-    <>
-      {loading ? (
-        // spinner ocupando todo o espaço e centralizado verticalmente
-        <Box
-          sx={{
-            height: listHeight,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      ) : (
-        <List>
-          {permissions.map((perm) => (
-            <ListItem
-              key={perm.id}
-              button
-              onClick={() => onTogglePermission(perm.id)}
-            >
-              <Checkbox checked={selectedPermissions.includes(perm.id)} />
-              <ListItemText
-                primary={perm.type}
-                secondary={perm.description}
-              />
-            </ListItem>
-          ))}
-        </List>
-      )}
-
-      <PaginationControls
-        totalItems={totalItems}
-        itemsPerPage={itemsPerPage}
-        currentPage={currentPage}
-        onPageChange={onPageChange}
-      />
-    </>
+    <SelectablePaginatedList
+      items={permissions}
+      selectedItems={selectedPermissions}
+      onToggleItem={onTogglePermission}
+      itemsPerPage={itemsPerPage}
+      currentPage={currentPage}
+      totalItems={totalItems}
+      onPageChange={onPageChange}
+      loading={loading}
+    />
   );
 }
