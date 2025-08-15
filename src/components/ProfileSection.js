@@ -1,13 +1,8 @@
 import React from "react";
-import {
-  Box,
-  TextField,
-  Typography,
-  CircularProgress,
-} from "@mui/material";
+import GenericSection from "./common/GenericSection";
 import ProfileList from "./ProfileList";
 
-const ProfileSection = ({
+export default function ProfileSection({
   selectionMode = "multiple",
   profiles,
   loading = false,
@@ -23,37 +18,20 @@ const ProfileSection = ({
   // única
   selectedProfile,
   onSelectProfile,
-}) => {
-  const listHeight = itemsPerPage * 64;
-
+}) {
   return (
-    <Box>
-      <TextField
-        fullWidth
-        label="Pesquisar Perfil"
-        variant="outlined"
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-          onPageChange(0);
-        }}
-        sx={{ mb: 2, mt: 2 }}
-      />
-
-      <Typography variant="h6">Selecione os Perfis:</Typography>
-
-      {loading ? (
-        <Box
-          sx={{
-            height: listHeight,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      ) : (
+    <GenericSection
+      title="Selecione os Perfis:"
+      showSearch
+      searchLabel="Pesquisar Perfil"
+      searchTerm={searchTerm}
+      setSearchTerm={setSearchTerm}
+      loading={loading}
+      itemsPerPage={itemsPerPage}
+      currentPage={currentPage}
+      totalItems={totalItems}
+      onPageChange={onPageChange}
+      renderList={({ itemsPerPage, currentPage, totalItems, onPageChange }) => (
         <ProfileList
           profiles={profiles}
           multiSelect={selectionMode !== "single"}
@@ -67,8 +45,6 @@ const ProfileSection = ({
           onPageChange={onPageChange}
         />
       )}
-    </Box>
+    />
   );
-};
-
-export default ProfileSection;
+}
