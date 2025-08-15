@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, TextField, Typography } from "@mui/material";
+import GenericSection from "./common/GenericSection";
 import PermissionList from "./PermissionList";
 
 export default function PermissionSection({
@@ -15,30 +15,29 @@ export default function PermissionSection({
   setSearchTerm,
 }) {
   return (
-    <Box sx={{ mt: 4 }}>
-      <TextField
-        fullWidth
-        label="Pesquisar Permissão"
-        variant="outlined"
-        value={searchTerm}
-        onChange={e => {
-          setSearchTerm(e.target.value);
-          onPageChange(0);
-        }}
-        sx={{ mb: 2 }}
-      />
-
-      <Typography variant="h6">Selecione as Permissões:</Typography>
-      <PermissionList
-        permissions={permissions}
-        selectedPermissions={selectedPermissions}
-        onTogglePermission={onTogglePermission}
-        itemsPerPage={itemsPerPage}
-        currentPage={currentPage}
-        totalItems={totalItems}
-        onPageChange={onPageChange}
-        loading={loading}
-      />
-    </Box>
+    <GenericSection
+      title="Selecione as Permissões:"
+      showSearch
+      searchLabel="Pesquisar Permissão"
+      searchTerm={searchTerm}
+      setSearchTerm={setSearchTerm}
+      loading={loading}
+      itemsPerPage={itemsPerPage}
+      currentPage={currentPage}
+      totalItems={totalItems}
+      onPageChange={onPageChange}
+      renderList={({ itemsPerPage, currentPage, totalItems, onPageChange }) => (
+        <PermissionList
+          permissions={permissions}
+          selectedPermissions={selectedPermissions}
+          onTogglePermission={onTogglePermission}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          totalItems={totalItems}
+          onPageChange={onPageChange}
+          loading={loading}
+        />
+      )}
+    />
   );
 }
