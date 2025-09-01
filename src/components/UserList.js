@@ -1,5 +1,5 @@
 import React from "react";
-import SelectableList from "./common/lists/SelectableList"; // ajuste o path conforme seu projeto
+import SingleSelect from "./common/lists/SingleSelect"; // ajuste o path conforme seu projeto
 
 const UserList = ({
   users,
@@ -12,7 +12,7 @@ const UserList = ({
   serverSide = false
 }) => {
   return (
-    <SelectableList
+    <SingleSelect
       items={users}
       selectedItem={selectedUser}
       onSelectItem={onSelectUser}

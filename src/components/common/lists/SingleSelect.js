@@ -3,7 +3,7 @@ import { List, ListItem, ListItemText } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PaginationControls from "../../PaginationControls";
 
-const SelectableList = ({
+const SingleSelect = ({
   items = [],
   selectedItem,
   onSelectItem,
@@ -73,4 +73,4 @@ const SelectableList = ({
   );
 };
 
-export default SelectableList;
+export default SingleSelect;

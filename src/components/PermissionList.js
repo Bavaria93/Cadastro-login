@@ -1,5 +1,5 @@
 import React from "react";
-import SelectablePaginatedList from "./common/lists/SelectablePaginatedList";
+import MultiSelect from "./common/lists/MultiSelect";
 
 export default function PermissionList({
   permissions = [],
@@ -12,7 +12,7 @@ export default function PermissionList({
   loading = false,
 }) {
   return (
-    <SelectablePaginatedList
+    <MultiSelect
       items={permissions}
       selectedItems={selectedPermissions}
       onToggleItem={onTogglePermission}

@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import PaginationControls from "../../PaginationControls";
 
-export default function SelectablePaginatedList({
+export default function MultiSelect({
   items = [],
   selectedItems = [],
   onToggleItem,

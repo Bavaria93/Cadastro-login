@@ -1,6 +1,6 @@
 import React from "react";
-import SelectableList from "./common/lists/SelectableList";
-import SelectablePaginatedList from "./common/lists/SelectablePaginatedList";
+import SingleSelect from "./common/lists/SingleSelect";
+import MultiSelect from "./common/lists/MultiSelect";
 
 const ProfileList = ({
   profiles = [],
@@ -33,13 +33,13 @@ const ProfileList = ({
   };
 
   return multiSelect ? (
-    <SelectablePaginatedList
+    <MultiSelect
       {...listProps}
       selectedItems={selectedProfiles}
       onToggleItem={onToggleProfile}
     />
   ) : (
-    <SelectableList
+    <SingleSelect
       {...listProps}
       selectedItem={selectedProfile}
       onSelectItem={onSelectProfile}
