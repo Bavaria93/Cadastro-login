@@ -5,8 +5,8 @@ import ProfileSection from "../components/ProfileSection";
 export default function StepAssociarPerfis({
   profiles,
   loadingProfiles,
-  selectedProfiles,          // ⬅️ deve bater com o nome do estado lá no root
-  onToggleProfile,           // ⬅️ handler exato do root
+  selectedProfiles,
+  onToggleProfile,           // vem do useCadastroUsuario via {...state}
   profileCurrentPage,
   setProfileCurrentPage,
   constProfileItemsPerPage,
@@ -19,11 +19,11 @@ export default function StepAssociarPerfis({
       <ProfileSection
         selectionMode="multiple"
         profiles={profiles}
-        loading={loadingProfiles}               // ⬅️ props nomes iguais ao ProfileSection
-        selectedProfiles={selectedProfiles}     // ⬅️
-        onToggleProfile={onToggleProfile}       // ⬅️
+        loading={loadingProfiles}
+        selectedProfiles={selectedProfiles}
+        onToggleProfile={onToggleProfile}          // mapeia para o nome que o ProfileSection espera
         currentPage={profileCurrentPage}
-        onPageChange={setProfileCurrentPage}    // ⬅️
+        onPageChange={setProfileCurrentPage}
         itemsPerPage={constProfileItemsPerPage}
         totalItems={totalProfiles}
         searchTerm={profileSearchTerm}
