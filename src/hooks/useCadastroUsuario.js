@@ -41,6 +41,14 @@ export default function useCadastroUsuario(steps) {
     );
   };
 
+  // Função para trocar a foto
+  const onPhotoChange = e => {
+    if (e.target.files?.[0]) {
+      setSelectedPhoto(e.target.files[0]);
+    }
+  };
+
+  // Gera preview da foto
   useEffect(() => {
     if (!selectedPhoto) return setPreviewPhoto("");
     const url = URL.createObjectURL(selectedPhoto);
@@ -118,14 +126,15 @@ export default function useCadastroUsuario(steps) {
   return {
     activeStep, nextStep, prevStep, isLast,
     name, setName, email, setEmail, password, setPassword, errors,
-    selectedPhoto, setSelectedPhoto, previewPhoto,
+    selectedPhoto, previewPhoto,
     selectedProfiles, setSelectedProfiles,
     draftUser, dialog, setDialog,
     loadingProfiles,
     profileCurrentPage, setProfileCurrentPage,
     totalProfiles, profileSearchTerm, setProfileSearchTerm,
     setProfiles, setTotalProfiles, constProfileItemsPerPage, profiles,
-    onToggleProfile, // ⬅️ agora faz parte do state
+    onToggleProfile,
+    onPhotoChange, // ⬅️ agora faz parte do state
     handleNext, clearForm
   };
 }
