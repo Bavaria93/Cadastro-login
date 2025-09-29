@@ -1,9 +1,11 @@
 import { styled } from "@mui/material/styles";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Paper } from "@mui/material";
 
-// Wrapper geral do gráfico, com margem inferior
-export const ChartWrapper = styled(Box)(({ theme }) => ({
+// Wrapper geral do gráfico, agora com Paper para parecer um card
+export const ChartWrapper = styled(Paper)(({ theme }) => ({
   marginBottom: theme.spacing(4),
+  padding: theme.spacing(2),
+  elevation: 1
 }));
 
 // Título do gráfico com tipografia h6 e espaçamento

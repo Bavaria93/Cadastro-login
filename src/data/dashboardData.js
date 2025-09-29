@@ -1,48 +1,49 @@
 export const cardData = [
   { title: "Total de Editais", value: 120 },
-  { title: "Editais Abertos",    value: 45  },
-  { title: "Editais Fechados",   value: 60  },
-  { title: "Pendentes",          value: 15  }
+  { title: "Cursos com Mais Editais",    value: 45  },
+  { title: "Novos Hoje",   value: 60  },
+  { title: "Editais Expirados",          value: 15  }
 ];
 
 export const tableData = [
   {
-    id:         1,
-    edital:     "Edital 001",
-    status:     "Aberto",
-    dataInicio: "01/07/2025",
-    dataFim:    "30/07/2025"
+    id: 1,
+    curso: "Engenharia de Software",
+    tipoPublicacao: "Edital",
+    dataPublicacao: "01/07/2025"
   },
   {
-    id:         2,
-    edital:     "Edital 002",
-    status:     "Fechado",
-    dataInicio: "15/06/2025",
-    dataFim:    "15/07/2025"
+    id: 2,
+    curso: "Direito",
+    tipoPublicacao: "Aviso",
+    dataPublicacao: "15/06/2025"
   },
   {
-    id:         3,
-    edital:     "Edital 003",
-    status:     "Aberto",
-    dataInicio: "05/07/2025",
-    dataFim:    "05/08/2025"
+    id: 3,
+    curso: "Administração",
+    tipoPublicacao: "Edital",
+    dataPublicacao: "05/07/2025"
   },
   {
-    id:         4,
-    edital:     "Edital 004",
-    status:     "Pendente",
-    dataInicio: "—",
-    dataFim:    "—"
+    id: 4,
+    curso: "Medicina",
+    tipoPublicacao: "Comunicado",
+    dataPublicacao: "—"
+  },
+  {
+    id: 5,
+    curso: "Medicina",
+    tipoPublicacao: "Comunicado",
+    dataPublicacao: "—"
   }
 ];
 
 export const barData = [
-  { month: "Jan", editais: 20 },
-  { month: "Fev", editais: 25 },
-  { month: "Mar", editais: 18 },
-  { month: "Abr", editais: 30 },
-  { month: "Mai", editais: 22 },
-  { month: "Jun", editais: 28 }
+  { curso: "Engenharia", solicitacoes: 120 },
+  { curso: "Direito", solicitacoes: 95 },
+  { curso: "Administração", solicitacoes: 80 },
+  { curso: "Medicina", solicitacoes: 60 },
+  { curso: "Arquitetura", solicitacoes: 40 }
 ];
 
 export const lineData = [

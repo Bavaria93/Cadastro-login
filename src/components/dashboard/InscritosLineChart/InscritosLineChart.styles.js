@@ -1,18 +1,20 @@
 import { styled } from "@mui/material/styles";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Paper } from "@mui/material";
 
-// Wrapper que envolve título e gráfico, com margem inferior
-export const ChartWrapper = styled(Box)(({ theme }) => ({
+// Wrapper agora é um Paper (card) com padding e margem
+export const ChartWrapper = styled(Paper)(({ theme }) => ({
   marginBottom: theme.spacing(4),
+  padding: theme.spacing(2),
+  elevation: 1
 }));
 
-// Título do gráfico usando a variante h6 e espaçamento inferior
+// Título do gráfico
 export const ChartTitle = styled(Typography)(({ theme }) => ({
   ...theme.typography.h6,
   marginBottom: theme.spacing(1),
 }));
 
-// Container que define altura fixa para o responsive chart
+// Container interno com altura fixa
 export const ChartContent = styled(Box)(() => ({
   width: "100%",
   height: 300,

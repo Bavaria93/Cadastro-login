@@ -9,41 +9,30 @@ import {
   Legend,
   Bar
 } from "recharts";
-import { barData } from "../../../data/dashboardData";
+import { barData } from "../../../data/dashboardData"; 
 import {
   ChartWrapper,
   ChartTitle,
   ChartContent
 } from "./EditaisBarChart.styles";
 
-// gráfico de barras que mostra número de editais por mês
 const EditaisBarChart = () => {
   return (
-    // envolve título e gráfico
     <ChartWrapper>
-      {/* título do gráfico */}
-      <ChartTitle>
-        Editais por Mês
-      </ChartTitle>
+      <ChartTitle>Solicitações por Curso</ChartTitle>
 
-      {/* área reservada para o gráfico, altura fixa */}
       <ChartContent>
-        {/* container responsivo ajusta SVG ao espaço */}
         <ResponsiveContainer width="100%" height="100%">
-          {/* componente principal do gráfico de barras */}
           <BarChart data={barData}>
-            {/* linhas de grade de fundo */}
             <CartesianGrid strokeDasharray="3 3" />
-            {/* eixo X mapeando o campo 'month' */}
-            <XAxis dataKey="month" />
-            {/* eixo Y automático */}
+            {/* eixo X agora usa 'curso' */}
+            <XAxis dataKey="curso" />
             <YAxis />
-            {/* tooltip ao passar o mouse */}
             <Tooltip />
-            {/* legenda das séries */}
-            <Legend />
-            {/* série de barras, usando cor primary */}
-            <Bar dataKey="editais" fill="#1976d2" />
+            {/* legenda posicionada no topo */}
+            <Legend verticalAlign="top" />
+            {/* barras representando quantidade de solicitações */}
+            <Bar dataKey="solicitacoes" fill="#1976d2" />
           </BarChart>
         </ResponsiveContainer>
       </ChartContent>
@@ -51,5 +40,4 @@ const EditaisBarChart = () => {
   );
 };
 
-// memoização evita re-render sem necessidade
 export default React.memo(EditaisBarChart);

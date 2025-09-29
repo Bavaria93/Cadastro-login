@@ -9,39 +9,46 @@ import {
   Legend,
   Line
 } from "recharts";
-// Dados de exemplo para inscritos por mês
+import { Box, Typography } from "@mui/material";
 import { lineData } from "../../../data/dashboardData";
-// Componentes estilizados para layout e título
 import {
   ChartWrapper,
   ChartTitle,
   ChartContent
 } from "./InscritosLineChart.styles";
 
-// Componente de gráfico de linha de inscritos por mês
+const CustomLegend = ({ payload }) => (
+  <Box display="flex" justifyContent="center" gap={2} mb={1}>
+    {payload.map((entry) => (
+      <Box key={entry.value} display="flex" alignItems="center" gap={1}>
+        <Box
+          sx={{
+            width: 14,
+            height: 14,
+            border: `2px solid ${entry.color}`,
+            borderRadius: "3px"
+          }}
+        />
+        <Typography variant="body2">{entry.value}</Typography>
+      </Box>
+    ))}
+  </Box>
+);
+
 const InscritosLineChart = () => {
   return (
-    // Envolve título e área do gráfico
     <ChartWrapper>
-      {/* Título do gráfico */}
-      <ChartTitle>Inscritos por Mês</ChartTitle>
+      <ChartTitle>Evolução das Solicitações</ChartTitle>
 
-      {/* Área fixa para o gráfico responsivo */}
       <ChartContent>
         <ResponsiveContainer width="100%" height="100%">
-          {/* LineChart recebe dados e desenha linhas */}
           <LineChart data={lineData}>
-            {/* Grade de fundo pontilhada */}
             <CartesianGrid strokeDasharray="3 3" />
-            {/* Eixo X baseado no campo 'month' */}
             <XAxis dataKey="month" />
-            {/* Eixo Y automático conforme valores */}
             <YAxis />
-            {/* Tooltip ao passar o mouse sobre pontos */}
             <Tooltip />
-            {/* Legenda das séries */}
-            <Legend />
-            {/* Série de linha, tipo monotone, com estilo customizado */}
+            {/* legenda customizada no topo */}
+            <Legend verticalAlign="top" align="center" content={CustomLegend} />
             <Line
               type="monotone"
               dataKey="inscritos"
@@ -56,5 +63,4 @@ const InscritosLineChart = () => {
   );
 };
 
-// Memoização para evitar re-renders quando não há mudanças
 export default React.memo(InscritosLineChart);

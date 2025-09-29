@@ -1,44 +1,34 @@
 import React from "react";
 import {
   Table,
-  TableHead,
   TableRow,
   TableCell,
-  TableBody
+  TableBody,
+  Typography
 } from "@mui/material";
 import { tableData } from "../../../data/dashboardData";
 import { StyledPaper } from "./EditalTable.styles";
 
-// definição das colunas: chave do dado e rótulo exibido
+// definição das colunas: chave do dado (sem label, já que não vamos exibir)
 const columns = [
-  { id: "edital",     label: "Edital" },
-  { id: "status",     label: "Status" },
-  { id: "dataInicio", label: "Data Início" },
-  { id: "dataFim",    label: "Data Fim" }
+  { id: "id" },
+  { id: "curso" },
+  { id: "tipoPublicacao" },
+  { id: "dataPublicacao" }
 ];
 
-// componente principal que renderiza a tabela de editais
 const EditalTable = () => {
   return (
-    // container com barra de rolagem horizontal e padding automático
     <StyledPaper elevation={1}>
-      {/* TableHead e TableBody compartilham colunas definidas acima */}
-      <Table aria-label="Tabela de Editais">
-        <TableHead>
-          <TableRow>
-            {columns.map(({ id, label }) => (
-              // cabeçalho gerado dinamicamente
-              <TableCell key={id}>{label}</TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
+      <Typography variant="h6" sx={{ p: 2 }}>
+        Solicitações Recentes
+      </Typography>
 
+      <Table aria-label="Tabela de Solicitações Recentes">
         <TableBody>
           {tableData.map((row) => (
-            // cada linha reflete um objeto de tableData
             <TableRow hover key={row.id}>
               {columns.map(({ id }) => (
-                // mapeia cada campo da coluna para uma célula
                 <TableCell key={id}>{row[id]}</TableCell>
               ))}
             </TableRow>
@@ -49,5 +39,4 @@ const EditalTable = () => {
   );
 };
 
-// React.memo otimiza evitando re-renders se props não mudarem
 export default React.memo(EditalTable);
